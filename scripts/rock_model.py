@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Python mirror of the Rock Tracker calculated columns (schema 2.1.0 `excel` plus `rule`).
+"""Python mirror of the Rock Tracker calculated columns (schema 2.2.0 `excel` plus `rule`).
 
 Input: rock tabs, one dict per rock (see `normalize_rock`). Output: the six consolidated
 sheets (Rocks, Milestones, Risks, CallOuts, Decisions, Teams) as lists of dicts in schema
@@ -41,7 +41,7 @@ DATE_COLUMNS = {"UpdateDate", "StartDate", "PlannedDate", "ForecastDate", "Actua
                 "SteercoDate", "DecideBy"}
 MILESTONE_INPUTS = ("Title", "Owner", "Commitment", "StartDate", "PlannedDate", "ForecastDate",
                     "ActualDate", "LeadStatus", "Comment", "KRLink", "ADOId", "ADOLink",
-                    "Description", "Detail1", "Detail2", "Detail3")
+                    "Description", "Detail1", "Detail2", "Detail3", "Progress")
 
 
 # ---------------------------------------------------------------- helpers
@@ -148,7 +148,7 @@ def milestone_row(m, rock, slot, p, today):
     row = {"MilestoneKey": key}
     for c in MILESTONE_INPUTS:
         row[c] = m.get(c, None if c in DATE_COLUMNS else "")
-    calc = ("Status", "SlipWeeks", "TimelineDate", "MCQuarter", "InOutlook", "Visible", "Overdue",
+    calc = ("Status", "ProgressShown", "SlipWeeks", "TimelineDate", "MCQuarter", "InOutlook", "Visible", "Overdue",
             "RockID", "Rock", "GPM")
     if key == "":
         row.update({c: "" for c in calc})
@@ -156,6 +156,8 @@ def milestone_row(m, rock, slot, p, today):
     status = milestone_status(m)
     pl, fc, ac = m.get("PlannedDate"), m.get("ForecastDate"), m.get("ActualDate")
     row["Status"] = status
+    prog = m.get("Progress", "")
+    row["ProgressShown"] = 100 if status == "Completed" else ("" if prog in ("", None) else prog)
     row["SlipWeeks"] = excel_round1((n(fc) - n(pl)) / 7) if status == "Slipped" else ""
     tl = ac if n(ac) > 0 else fc if n(fc) > 0 else pl if n(pl) > 0 else ""
     row["TimelineDate"] = tl

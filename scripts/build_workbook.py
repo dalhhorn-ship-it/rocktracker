@@ -312,8 +312,13 @@ def value_validation(c, first_cell="A1"):
         dv = DataValidation(type="custom", formula1=f'OR({first_cell}="",LEFT({first_cell},8)="https://")', allow_blank=True)
         dv.error, dv.errorTitle = "Enter a link that starts with https://", "Not a secure link"
     elif c["type"] == "integer":
-        dv = DataValidation(type="whole", operator="greaterThanOrEqual", formula1="0", allow_blank=True)
-        dv.error, dv.errorTitle = "Enter a whole number, 0 or more", "Not a number"
+        if "max" in c:
+            lo, hi = c.get("min", 0), c["max"]
+            dv = DataValidation(type="whole", operator="between", formula1=str(lo), formula2=str(hi), allow_blank=True)
+            dv.error, dv.errorTitle = f"Enter a whole number from {lo} to {hi}", "Not a valid percentage"
+        else:
+            dv = DataValidation(type="whole", operator="greaterThanOrEqual", formula1="0", allow_blank=True)
+            dv.error, dv.errorTitle = "Enter a whole number, 0 or more", "Not a number"
     else:
         return None
     dv.showErrorMessage = True
@@ -786,7 +791,9 @@ def main(argv=None):
         rows = {}
         for s in table_sheets:
             if s["kind"] == "lookup":
-                rows[s["name"]] = [list(r) for r in s.get("seed", [])] + sample["lookups"].get(s["name"], [])
+                seed = [list(r) for r in s.get("seed", [])]
+                seen = {str(r[0]) for r in seed}  # sample rows already in the seed are skipped
+                rows[s["name"]] = seed + [r for r in sample["lookups"].get(s["name"], []) if str(r[0]) not in seen]
             else:
                 rows[s["name"]] = sample["snapshots"].get(s["name"], [])
         data = {"rocks": sample["rocks"], "rows": rows}

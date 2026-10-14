@@ -1,6 +1,6 @@
 {
   "title": "Rock Tracker",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "schema_format": 2,
   "workbook": "data/workbook.xlsx",
   "deploy_file": "dist/Rock Tracker/Rock Tracker.xlsx",
@@ -9,6 +9,7 @@
 
   "migration": {
     "from_version": "1.0.0",
+    "v2_1_to_v2_2": "2.1 to 2.2 copies everything as is. The new Milestones input column Progress starts empty (ProgressShown is calculated, so Completed milestones show 100 straight away). No lookup or history change.",
     "old_schema": "schema/history/workbook.schema.v1.0.0.json",
     "live_data": "None expected: the v1 workbook was not deployed (PLAN T13 and T19 open). The mapping below is what `--from` does if a v1 file was loaded early.",
     "rock_tab": [
@@ -43,11 +44,11 @@
       "Your update, top to bottom on your rock tab only. Aim for 7 minutes per rock.",
       "1. Update: set Update date to today (Ctrl+; types today), check State, rewrite Main message only if it changed, keep the 3 key risks or attention points current (one line each). The grey lines below them show the open decision requests from section 6.",
       "2. Look at Signals (grey, calculated). If the data signal is worse than your State, either fix the data or say why in the main message.",
-      "3. Milestones: change Forecast date and Comment only where they moved. When a milestone is done, set Lead status to Completed and type the Actual date. Set Lead status to On hold or On watch when it applies; leave it empty otherwise.",
+      "3. Milestones: change Forecast date and Comment only where they moved. When a milestone is done, set Lead status to Completed and type the Actual date. Set Lead status to On hold or On watch when it applies; leave it empty otherwise. Progress %, a whole number from 0 to 100, is optional; Completed always shows 100%.",
       "4. Risks: change only risks that changed. Closed risks: set Status to Closed.",
       "5. Call outs: add new ones, set Status to Closed when done.",
       "6. Decisions: add a row for each decision you need from steerco, one line each. After steerco, fill in Outcome, Owner and Follow up on the same row, and set commitment levels on your milestones. Never clear a decided row: it is the decision log.",
-      "8. Teams: change Budgeted or Actual only when a position is added, filled or left.",
+      "7. Teams: change Budgeted or Actual only when a position is added, filled or left.",
       "Everything else carries over: values stay in place until you change them. Grey cells are calculated; never type in them."
     ],
     "add_rock": [
@@ -114,7 +115,7 @@
     "strip_row": 2,
     "strip_hidden": true,
     "guide_cell": "A3",
-    "guide_text": "Update top to bottom in about 7 minutes: 1 Update and key points, 2 check Signals, 3 Milestones that moved, 4 Risks that changed, 5 Call outs, 6 Decisions, 8 Teams when they change. White cells are yours; grey cells are calculated.",
+    "guide_text": "Update top to bottom in about 7 minutes: 1 Update and key points, 2 check Signals, 3 Milestones that moved, 4 Risks that changed, 5 Call outs, 6 Decisions, 7 Teams when they change. White cells are yours; grey cells are calculated.",
     "formula_syntax": {
       "[Column]": "the cell of that column in the same block, same row (relative)",
       "{Field}": "the absolute address of a single rock tab field (sections Update, Signals, Profile)",
@@ -289,6 +290,7 @@
       "purpose": "Every milestone of every active rock: commitment, dates, derived status, MC quarter and outlook flags. Read only, stacked from section 3 of every rock tab",
       "owner": "formula (no one types here)",
       "primary_key": "MilestoneKey",
+      "keep_zero_columns": ["ProgressShown"],
       "foreign_keys": {"RockID": "Rocks.RockID"},
       "columns": [
         {"name": "MilestoneKey", "label": "Key", "type": "string", "required": true, "formula": true,
@@ -310,6 +312,10 @@
         {"name": "Detail1", "label": "Detail 1", "type": "string", "required": false, "read_by": "milestone pop up"},
         {"name": "Detail2", "label": "Detail 2", "type": "string", "required": false, "read_by": "milestone pop up"},
         {"name": "Detail3", "label": "Detail 3", "type": "string", "required": false, "read_by": "milestone pop up"},
+        {"name": "Progress", "label": "Progress %", "type": "integer", "required": false, "min": 0, "max": 100, "owner": "lead", "read_by": "ProgressShown (progress bar on the roadmap list and in the pop up)"},
+        {"name": "ProgressShown", "label": "Progress shown", "type": "integer", "required": false, "formula": true,
+         "excel": "=IF([MilestoneKey]=\"\",\"\",IF([Status]=\"Completed\",100,IF([Progress]=\"\",\"\",[Progress])))",
+         "rule": "100 when Status is Completed (whatever Progress holds), else the typed Progress; empty when Progress is empty. The portal reads this column for the progress bar. A typed 0 stays 0 on the consolidated sheet (keep_zero_columns)."},
         {"name": "Status", "label": "Status", "type": "string", "required": true, "formula": true, "lookup": "lkp_MilestoneStatus.Value",
          "excel": "=IF([MilestoneKey]=\"\",\"\",IF([LeadStatus]=\"Completed\",\"Completed\",IF([LeadStatus]=\"On hold\",\"On hold\",IF([Commitment]<>\"Committed\",\"Not committed\",IF(AND(N([PlannedDate])>0,N([ForecastDate])>N([PlannedDate])),\"Slipped\",IF([LeadStatus]=\"On watch\",\"On watch\",\"On plan\"))))))",
          "rule": "First match wins: Lead status Completed gives Completed; Lead status On hold; Commitment not Committed (or empty) gives Not committed; Forecast later than Planned gives Slipped; Lead status On watch; otherwise On plan. Slipped overrides On watch."},

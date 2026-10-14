@@ -1,5 +1,5 @@
 {
- "_note": "Synthetic sample for the rock tab model (schema 2.1.0). 'today' for tests is 2026-10-14 (MC26Q3 current, MC26Q4 next). Each rock holds profile, update (with Attention1 to 3), and one list per block (Milestones, Risks, CallOuts, Decisions, Teams) in slot order; a list entry is a dict of the input (non calculated) schema columns, an empty dict {} leaves that slot empty, slots after the list are empty. 'lookups' rows are appended after the schema seed rows (lkp_Steercos extra rows come after the seed row 2026-10-21). 'snapshots' rows (RockSnapshots, MilestoneSnapshots) are in schema column order, three weekly snapshots. RockTab is the sheet name. R01 has 6 open decision requests (About check fires). R04 is deliberately half filled (no attention lines, Budgeted 0), R05 is inactive. Milestone cases are listed in tests/test_sample.py.",
+ "_note": "Synthetic sample for the rock tab model (schema 2.2.0). 'today' for tests is 2026-10-14 (MC26Q3 current, MC26Q4 next). Each rock holds profile, update (with Attention1 to 3), and one list per block (Milestones, Risks, CallOuts, Decisions, Teams) in slot order; a list entry is a dict of the input (non calculated) schema columns, an empty dict {} leaves that slot empty, slots after the list are empty. 'lookups' rows are appended after the schema seed rows (rows already in the seed, such as steerco 2026-10-21, are skipped when the workbook is built). 'snapshots' rows (RockSnapshots, MilestoneSnapshots) are in schema column order, three weekly snapshots. RockTab is the sheet name. R01 has 6 open decision requests (About check fires). R04 is deliberately half filled (no attention lines, Budgeted 0), R05 is inactive. Milestone cases are listed in tests/test_sample.py.",
  "today": "2026-10-14",
  "lookups": {
   "lkp_People": [
@@ -49,6 +49,10 @@
     "Past steerco"
    ],
    [
+    "2026-10-21",
+    "First steerco from the portal (assumed date, confirm)"
+   ],
+   [
     "2026-11-18",
     null
    ],
@@ -93,7 +97,8 @@
      "Description": "Single page that replaces the five step checkout.",
      "Detail1": "Design signed off",
      "Detail2": "Build in test",
-     "Detail3": "Release window to agree with ops"
+     "Detail3": "Release window to agree with ops",
+     "Progress": 60
     },
     {
      "Title": "Saved payment methods",
@@ -111,7 +116,8 @@
      "Description": "Let returning customers pay with a stored method.",
      "Detail1": "Vendor sandbox pending",
      "Detail2": "Tokenisation design done",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": 30
     },
     {
      "Title": "Address form speed up",
@@ -129,7 +135,8 @@
      "Description": "Autocomplete on the address form.",
      "Detail1": "Shipped to all markets",
      "Detail2": "Form time down by a third",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": null
     },
     {
      "Title": "Wallet support",
@@ -147,7 +154,8 @@
      "Description": "Pay with the phone wallet.",
      "Detail1": "Funding decision open",
      "Detail2": "Three options on the table",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": null
     },
     {
      "Title": "Express pay button",
@@ -165,7 +173,8 @@
      "Description": "A one tap pay button on the basket page.",
      "Detail1": "Live on web",
      "Detail2": "App follows later",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": 80
     }
    ],
    "Risks": [
@@ -333,7 +342,8 @@
      "Description": "Guided list of the first five setup steps.",
      "Detail1": "Design review ran long",
      "Detail2": "Build starts next week",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": 25
     },
     {
      "Title": "In app tips",
@@ -351,7 +361,8 @@
      "Description": "Short tips shown at the right moment.",
      "Detail1": "Paused by decision",
      "Detail2": "Content draft started",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": 40
     },
     {
      "Title": "Starter templates",
@@ -369,7 +380,8 @@
      "Description": "Role based templates for a faster start.",
      "Detail1": "Scope not agreed",
      "Detail2": "Needs research input",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": null
     },
     {
      "Title": "Role picker",
@@ -387,7 +399,8 @@
      "Description": "Ask the role at signup and tailor the checklist.",
      "Detail1": "Role list agreed",
      "Detail2": "Build not started",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": 0
     },
     {
      "Title": "Brand colour audit",
@@ -405,7 +418,8 @@
      "Description": "Check onboarding screens against the brand colours.",
      "Detail1": "All screens reviewed",
      "Detail2": "Fixes folded into checklist",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": null
     }
    ],
    "Risks": [
@@ -524,7 +538,8 @@
      "Description": "Connect the two same day carriers.",
      "Detail1": "Certification took longer",
      "Detail2": "Extra people requested",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": 15
     },
     {
      "Title": "Cut off time logic",
@@ -542,7 +557,8 @@
      "Description": "Order cut off times per region.",
      "Detail1": "Rules drafted",
      "Detail2": "Waits on carrier slots",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": null
     },
     {
      "Title": "Delivery promise on product pages",
@@ -560,7 +576,8 @@
      "Description": "Show the same day promise on every product page.",
      "Detail1": "Design not started",
      "Detail2": "Depends on cut off logic",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": null
     },
     {
      "Title": "Region one pilot",
@@ -578,7 +595,8 @@
      "Description": "Limited pilot in the first region.",
      "Detail1": "Pilot ran for two weeks",
      "Detail2": "Close out report open",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": 70
     },
     {
      "Title": "Third region rollout",
@@ -596,7 +614,8 @@
      "Description": "Extend same day delivery to a third region.",
      "Detail1": "Starts after region two",
      "Detail2": "Plan to be refined",
-     "Detail3": null
+     "Detail3": null,
+     "Progress": null
     }
    ],
    "Risks": [
@@ -715,7 +734,8 @@
      "Description": null,
      "Detail1": null,
      "Detail2": null,
-     "Detail3": null
+     "Detail3": null,
+     "Progress": null
     },
     {},
     {
@@ -734,7 +754,8 @@
      "Description": null,
      "Detail1": null,
      "Detail2": null,
-     "Detail3": null
+     "Detail3": null,
+     "Progress": null
     }
    ],
    "Risks": [
@@ -801,7 +822,8 @@
      "Description": "Move all open returns to the new flow.",
      "Detail1": "All open returns moved",
      "Detail2": null,
-     "Detail3": null
+     "Detail3": null,
+     "Progress": null
     }
    ],
    "Risks": [
