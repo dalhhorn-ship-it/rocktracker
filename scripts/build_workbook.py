@@ -303,8 +303,12 @@ def value_validation(c, first_cell="A1"):
         dv.error, dv.errorTitle = f"Pick a value from the list ({ref})", "Not in the list"
         if c.get("validation") == "warning":
             dv.errorStyle = "warning"
-            dv.error = "This date is not in lkp_Steercos yet. Keep it, or ask the workbook owner to add the steerco date."
-            dv.errorTitle = "Not a listed steerco date"
+            if ref.startswith("lkp_Steercos"):
+                dv.error = "This date is not in lkp_Steercos yet. Keep it, or ask the workbook owner to add the steerco date."
+                dv.errorTitle = "Not a listed steerco date"
+            else:
+                dv.error = f"This name is not in {ref.split('.')[0]} yet. Keep it, or ask the workbook owner to add the person."
+                dv.errorTitle = "Not a listed name"
     elif c["type"] == "date":
         dv = DataValidation(type="date", operator="greaterThan", formula1="DATE(2000,1,1)", allow_blank=True)
         dv.error, dv.errorTitle = "Enter a date, for example 16 Oct 2026", "Not a date"

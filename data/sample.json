@@ -102,7 +102,7 @@
     },
     {
      "Title": "Saved payment methods",
-     "Owner": "Lena Testfield",
+     "Owner": "Omar Fictiv",
      "Commitment": "Committed",
      "StartDate": "2026-09-01",
      "PlannedDate": "2026-12-15",
@@ -140,7 +140,7 @@
     },
     {
      "Title": "Wallet support",
-     "Owner": "Lena Testfield",
+     "Owner": "Marco Demoso",
      "Commitment": "Choice point",
      "StartDate": null,
      "PlannedDate": null,
@@ -159,7 +159,7 @@
     },
     {
      "Title": "Express pay button",
-     "Owner": "Lena Testfield",
+     "Owner": "Tove Nomen",
      "Commitment": "Committed",
      "StartDate": "2026-09-14",
      "PlannedDate": "2026-10-14",
@@ -347,7 +347,7 @@
     },
     {
      "Title": "In app tips",
-     "Owner": "Omar Fictiv",
+     "Owner": "Ines Samplewood",
      "Commitment": "Committed",
      "StartDate": "2026-11-30",
      "PlannedDate": "2027-01-31",
@@ -385,7 +385,7 @@
     },
     {
      "Title": "Role picker",
-     "Owner": "Omar Fictiv",
+     "Owner": "Ravi Placeholder",
      "Commitment": "Committed",
      "StartDate": "2026-10-05",
      "PlannedDate": "2026-12-18",
@@ -562,7 +562,7 @@
     },
     {
      "Title": "Delivery promise on product pages",
-     "Owner": "Tove Nomen",
+     "Owner": "Priya Sampleton",
      "Commitment": "Committed",
      "StartDate": "2026-12-01",
      "PlannedDate": "2027-03-10",
@@ -581,7 +581,7 @@
     },
     {
      "Title": "Region one pilot",
-     "Owner": "Tove Nomen",
+     "Owner": "Omar Fictiv",
      "Commitment": "Committed",
      "StartDate": "2026-07-20",
      "PlannedDate": "2026-09-10",
@@ -740,7 +740,7 @@
     {},
     {
      "Title": "Pilot group selection",
-     "Owner": "Ravi Placeholder",
+     "Owner": null,
      "Commitment": "Not committed",
      "StartDate": null,
      "PlannedDate": null,

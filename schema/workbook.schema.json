@@ -297,7 +297,7 @@
          "excel": "=IF(OR([Title]=\"\",{RockID}=\"\",{Active}<>\"Yes\"),\"\",{RockID}&\"-M\"&TEXT({slot},\"00\"))",
          "rule": "RockID-M plus the two digit slot number; empty when the row has no title, the rock has no ID or the rock is not active. A slot is one milestone for life."},
         {"name": "Title", "label": "Milestone", "type": "string", "required": true},
-        {"name": "Owner", "label": "Owner", "type": "string", "required": false, "read_by": "milestone pop up (tab 3)"},
+        {"name": "Owner", "label": "Owner", "type": "string", "required": false, "lookup": "lkp_People.Name", "validation": "warning", "read_by": "roadmap list and milestone pop up (tab 3), email per rock section"},
         {"name": "Commitment", "label": "Commitment", "type": "string", "required": true, "lookup": "lkp_Commitment.Value"},
         {"name": "StartDate", "label": "Start date", "type": "date", "required": false, "read_by": "milestone pop up; Visible rule"},
         {"name": "PlannedDate", "label": "Planned date", "type": "date", "required": false, "required_when": "Commitment is Committed"},
