@@ -3,13 +3,18 @@
 Fill this in, then run `/kickoff`.
 
 ## Idea
-{IDEA}: one or two sentences. What should exist that does not today?
+Develop cockpit for strategic initiatives (rocks) that gives steerco level view of state, roadmap, risks, progress, attention points. It should replace static steerco decks and also to be used to generate email update when required. Also have an overlaying summary view that shows all rocks tracked. 
 
 ## Users and their jobs
-{USERS}: who uses it, and what decision or task does it help them with?
+Product director: always understand rock progress, bottlenecks, risks, progress
+Executives: see roadmap, commitments, risks, choice points. no confusion of state
+Product managers: avoid many different reporting formats, only upkeep this excel to feed all exec questions. 
 
 ## Requirements
-{REQUIREMENTS}
+Per initiative: Purpose, goals, what it delivers, value chain/vertical, initiative lead
+Show overview of 6 month roadmap of main releases (clearly show committed work, choice points, not committed future needs)
+Show status (planned vs forecast date, deliveries at risk, initiative team resourcing state (x out of x positions filled)
+Risk tracker / matrix + key actions
 
 ## Stack and constraints
 * Backend: shared Excel workbook ({LOCATION}, for example SharePoint site or OneDrive folder)
@@ -17,7 +22,7 @@ Fill this in, then run `/kickoff`.
 * Other constraints: {CONSTRAINTS}
 
 ## Budget and limits
-* Upkeep budget: {MINUTES} minutes per person per week
+* Upkeep budget: 15 minutes per person per week
 * Deadline: {DATE}
 
 ## Access and keys
