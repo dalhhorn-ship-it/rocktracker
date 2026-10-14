@@ -3,8 +3,9 @@
 The workbook lives here as `workbook.xlsx` (path set in `schema/workbook.schema.json`).
 Synthetic sample data only. The live workbook stays in SharePoint or OneDrive.
 
-## sample.json (schema 2.3.0)
+## sample.json (schema 2.4.0)
 
+Value chains are only B2C, B2B, Trade, Assets and Enterprise (the schema seed of lkp_ValueChains; the sample adds none).
 Rocks hold profile, update with Attention1 to 3, and the blocks Milestones, Risks,
 CallOuts, Decisions and Teams. Snapshots are RockSnapshots and MilestoneSnapshots in
 schema column order. Today is 2026-10-14 (MC26Q3 current, MC26Q4 next). Cases:

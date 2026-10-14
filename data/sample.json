@@ -32,17 +32,7 @@
     "Lead"
    ]
   ],
-  "lkp_ValueChains": [
-   [
-    "Checkout"
-   ],
-   [
-    "Onboarding"
-   ],
-   [
-    "Fulfilment"
-   ]
-  ],
+  "lkp_ValueChains": [],
   "lkp_Steercos": [
    [
     "2026-09-16",
@@ -67,7 +57,7 @@
    "RockTab": "R01 Checkout Speed",
    "RockID": "R01",
    "RockName": "Checkout Speed",
-   "ValueChain": "Checkout",
+   "ValueChain": "B2C",
    "Lead": "Lena Testfield",
    "GPM": "Priya Sampleton",
    "Active": "Yes",
@@ -312,7 +302,7 @@
    "RockTab": "R02 Guided Onboarding",
    "RockID": "R02",
    "RockName": "Guided Onboarding",
-   "ValueChain": "Onboarding",
+   "ValueChain": "B2B",
    "Lead": "Omar Fictiv",
    "GPM": "Priya Sampleton",
    "Active": "Yes",
@@ -508,7 +498,7 @@
    "RockTab": "R03 Same Day Fulfilment",
    "RockID": "R03",
    "RockName": "Same Day Fulfilment",
-   "ValueChain": "Fulfilment",
+   "ValueChain": "Trade",
    "Lead": "Tove Nomen",
    "GPM": "Marco Demoso",
    "Active": "Yes",
@@ -742,7 +732,7 @@
    "RockTab": "R04 Loyalty Pilot",
    "RockID": "R04",
    "RockName": "Loyalty Pilot",
-   "ValueChain": "Checkout",
+   "ValueChain": "B2C",
    "Lead": "Ravi Placeholder",
    "GPM": "Marco Demoso",
    "Active": "Yes",
@@ -830,7 +820,7 @@
    "RockTab": "R05 Legacy Returns",
    "RockID": "R05",
    "RockName": "Legacy Returns",
-   "ValueChain": "Fulfilment",
+   "ValueChain": "Assets",
    "Lead": "Ines Samplewood",
    "GPM": "Marco Demoso",
    "Active": "No",

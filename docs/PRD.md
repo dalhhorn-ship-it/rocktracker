@@ -2,6 +2,15 @@
 
 Owner: `pm`. Status: v1, 14 Oct 2026. Builds on `docs/BRAINSTORM.md`, option B "cockpit core" as adjusted by the user answers of 14 Oct 2026. The "how" (sheets, keys, formulas, portal layout) belongs to the `architect`.
 
+## Change request 3 (user, 14 Oct 2026, workbook)
+
+Binding; wins over older sections where they conflict. Schema 2.4.0.
+
+1. **Excel opens the file cleanly.** Excel said the file has critical issues and offered a repair. Find and fix the cause in the generator, and give the user a small set of variant files to open when the fix needs checking (`dist/repair_check/`). Unverified until the user opens the file.
+2. **Rock tab order.** Rock profile moves to the top of the rock tab, directly under the title, strip and guide rows; then Update, Signals, Milestones, Risks, Call outs, Decisions, Teams.
+3. **Value chain list.** lkp_ValueChains holds exactly B2C, B2B, Trade, Assets, Enterprise, in that order; every sample rock uses one of them.
+4. **Grey cells explained in plain language, in the workbook itself.** Every calculated field and column has a one sentence explanation without formulas: next to the grey field on the rock tab, as a note on the grey column header, and as a table on the About sheet.
+
 ## Change request 2 (user, 14 Oct 2026, portal)
 
 Binding; wins over older sections where they conflict.

@@ -379,7 +379,7 @@ def test_teams_anchor_formula_has_the_column_guard(schema):
     assert teams["keep_zero_columns"] == ["Budgeted", "Actual", "FillPct"]
     cols = [c["name"] for c in teams["columns"]]
     f = bw.consolidation_formula(schema, teams, bw.Resolver(schema))
-    guard = "".join(f"*(c<>{cols.index(k) + 1})" for k in teams["keep_zero_columns"])
+    guard = "".join(f"*(colno<>{cols.index(k) + 1})" for k in teams["keep_zero_columns"])
     assert f'IF((f=0){guard},"",f)' in f and "SEQUENCE(1,COLUMNS(f))" in f
     others = next(s for s in schema["sheets"] if s["name"] == "Risks")
     g = bw.consolidation_formula(schema, others, bw.Resolver(schema))

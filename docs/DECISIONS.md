@@ -2,6 +2,20 @@
 
 Owner: `architect`. Newest first.
 
+## 0022 Excel repair fix, rock tab with the profile first, value chain list, plain explanations of grey cells (14 Oct 2026, operator, PRD change request 3)
+
+* **Context:** Excel reports critical issues on opening the workbook and offers a repair. There is no Excel here, so the cause was found by inspecting every part of the generated package against the OOXML rules and against XlsxWriter output (a writer that Excel accepts).
+* **Decision 1, root cause and fixes (unverified in Excel, TD35):**
+  1. Most likely cause: the Milestones and Teams consolidation formulas declared a LET variable named `c`. `c` (like `r`) is reserved in Excel, and it was also written without the `_xlpm.` prefix, so Excel cannot parse the formula and repairs the sheet. Renamed to `colno` (`CONSOLIDATION_NAMES`, now a tuple).
+  2. The duplicate Rock ID conditional format held `_xlfn.ANCHORARRAY(Rocks!$A$2)`, a spill reference to another sheet inside a conditional format. Replaced by the defined name `RockIDList` (`Rocks!$A$2:$A$200`, schema param), the classic way to refer to another sheet from a rule.
+  3. Empty `<v></v>` elements on every formula cell, and inline string cells with no content (`t="inlineStr"` and no `<is>`, from empty strings on the About sheet), are no longer written. `[Content_Types].xml` is the first entry of the zip.
+  4. Checked and found equal to what XlsxWriter writes: `cm="1"`, `<f t="array" ref="A2">`, `xl/metadata.xml`, the content type and the `sheetMetadata` relationship. Element order inside `<worksheet>` is correct. Defined names, data validation texts (title 32 and message 255 characters), table names and headers, and sheet protection attributes are valid.
+* **Decision 2, test and bisect kit:** `tests/test_package.py` checks well formed parts, content types, relationship targets, element order, no empty `<v>`, metadata wiring, LET names, `_xlfn.` prefixes, rules without spill or sheet references, validation limits and overlap, defined names, tables and the kit. `python3 scripts/build_workbook.py --repair-kit` writes six variants to `dist/repair_check/` with a 5 line `CHECK.md`.
+* **Decision 3, rock tab layout (schema 2.4.0):** Rock profile is section 1 at rows 5 to 14, directly under the title, hidden strip and guide rows; then Update 16 to 28, Signals 30 to 44, Milestones 46 to 62, Risks 64 to 75, Call outs 77 to 86, Decisions 88 to 114, Teams 116 to 122. Sections are renumbered 1 to 8 in reading order. Consolidation, the Python mirror and the Cowork rock test read by schema, so they follow. `--from` reads a 2.3 file by its old rows (`schema/history/workbook.schema.v2.3.0.json`, `detect_layout`) and writes the new rows; typed values are copied by name, nothing is lost.
+* **Decision 4, value chains:** lkp_ValueChains is seeded with B2C, B2B, Trade, Assets, Enterprise in that order. The sample rocks use them (B2C, B2B, Trade, B2C, Assets) and the sample no longer adds other values. A migrated live copy keeps its own rows (TD38).
+* **Decision 5, plain explanations:** every calculated field and column carries `plain`, one sentence without formulas. Shown in column D next to each grey field (small grey italic), as a note on each grey column header of the list sections, and as the About table "How the grey cells are calculated". Schema driven, so a new calculated column fails the schema test until it has a `plain`.
+* **Consequences:** headers the portal reads are unchanged (tested against the 2.3 schema), so `portal/COWORK_PORTAL.md` needs no change; `portal/COWORK_ROCK_TEST.md` has the new row addresses. The three known `test_portal` failures are unrelated (stale portal spec).
+
 ## 0021 Portal layout for change request 2 (14 Oct 2026, operator, PRD change request 2 items 2 to 5)
 
 * **Context:** change request 2 merges the roadmap into tab 2, turns tab 3 into the full list and asks for a bar style roadmap. The full brief is `portal/COWORK_PORTAL.md`.

@@ -24,9 +24,14 @@ def test_profile_fields_and_unique_ids():
     assert [r["Active"] for r in S["rocks"]].count("No") == 1
 
 
+def _schema_seed(name):
+    schema = json.loads((ROOT / "schema" / "workbook.schema.json").read_text())
+    return next(s for s in schema["sheets"] if s["name"] == name)["seed"]
+
+
 def test_lookup_values_are_known():
     people = {p[0] for p in S["lookups"]["lkp_People"]}
-    chains = {c[0] for c in S["lookups"]["lkp_ValueChains"]}
+    chains = {c[0] for c in S["lookups"]["lkp_ValueChains"]} | {c[0] for c in _schema_seed("lkp_ValueChains")}
     for r in S["rocks"]:
         assert {r["Lead"], r["GPM"]} <= people and r["ValueChain"] in chains
 

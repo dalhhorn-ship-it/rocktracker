@@ -36,10 +36,15 @@ LOOKUP_ROWS = 200  # last row of a lookup list (defined names lst_*); NextSteerc
 INK, SUBTLE, RULE, ACCENT_TINT = "0F1116", "72777D", "E6E7E9", "F6E8EE"  # design/tokens.css
 CALC_GREY, SLATE = "EAEAEA", "5B6067"  # --rule-soft, --slate
 DATE_FORMAT = "d mmm yyyy"
+# Features that can be switched off to bisect an Excel repair prompt (--without, --repair-kit).
+FEATURES = ("dynamic", "cf", "dv", "names", "comments")
+OFF = set()  # features switched off for the build in progress (set by build())
 
 # Layout of the formula that fills a consolidated sheet (plan A, 3D VSTACK). One place only:
 # a change of formula path (plan B or C) edits `consolidation_formula` and `consolidation_names`.
-CONSOLIDATION_NAMES = "dkf"  # LET variable names used by the schema formulas
+# LET variable names used by the schema formulas. Never c or r (reserved in Excel) and never a cell
+# address: Excel rejects the formula and repairs the file. Each gets the _xlpm. prefix in the file.
+CONSOLIDATION_NAMES = ("d", "k", "f", "colno")
 
 
 def load_schema():
@@ -130,16 +135,18 @@ def consolidation_formula(schema, sheet, resolver):
     formula = pattern.replace("{span}", cf["span"]).replace("{range}", rng)
     keep = [i + 1 for i, c in enumerate(sheet["columns"]) if c["name"] in sheet.get("keep_zero_columns", [])]
     if keep and sheet["source"] != "strip":  # DECISIONS 0018: column aware zero to blank wrap
-        guard = "".join(f"*(c<>{n})" for n in keep)
+        guard = "".join(f"*(colno<>{n})" for n in keep)
         old = 'IF(f=0,"",f)'
         assert old in formula, "consolidation pattern has no zero wrap to make column aware"
         formula = formula.replace(old, f'IF((f=0){guard},"",f)').replace(
-            ',IF((f=0)', ',c,SEQUENCE(1,COLUMNS(f)),IF((f=0)')
+            ',IF((f=0)', ',colno,SEQUENCE(1,COLUMNS(f)),IF((f=0)')
     return formula
 
 
 def dynamic_cells(schema):
     """(sheet, cell) pairs to mark as dynamic arrays after saving."""
+    if "dynamic" in OFF:
+        return []
     anchor = schema["rock_tab"]["consolidation_formula"]["anchor"]
     return [(s["name"], anchor) for s in schema["sheets"] if s["kind"] == "consolidated"]
 
@@ -329,6 +336,22 @@ def value_validation(c, first_cell="A1"):
     return dv
 
 
+def add_validation(ws, dv, rng):
+    """Add one data validation to a range, unless validations are switched off."""
+    if "dv" in OFF or ("names" in OFF and dv.type == "list"):
+        return
+    ws.add_data_validation(dv)
+    dv.add(rng)
+
+
+def grey_note(c):
+    """Cell comment on the header of a calculated column: the schema `plain` explanation."""
+    from openpyxl.comments import Comment
+    note = Comment(f"Calculated, do not type here.\n{c['plain']}", "Rock Tracker")
+    note.width, note.height = 320, 40 + 16 * (len(c["plain"]) // 45 + 1)
+    return note
+
+
 def build_rock_tab(wb, name, schema, R, rock=None):
     """One rock tab. rock=None builds the empty template (Active = Yes)."""
     rt = schema["rock_tab"]
@@ -389,14 +412,16 @@ def build_rock_tab(wb, name, schema, R, rock=None):
                     cell.alignment = Alignment(horizontal="left")
                     if number_format(f):
                         cell.number_format = number_format(f)
+                    if f.get("plain"):
+                        note = ws.cell(row=f["row"], column=4, value=f["plain"])  # column D, next to the grey cell
+                        note.font = Font(italic=True, size=9, color=SUBTLE)
                     continue
                 style_entry(cell, f)
                 value = rock.get(f["name"]) if rock is not None else f.get("template_value")
                 put(cell, f, value)
                 dv = value_validation(f, first_cell=cell.coordinate)
                 if dv:
-                    ws.add_data_validation(dv)
-                    dv.add(cell.coordinate)
+                    add_validation(ws, dv, cell.coordinate)
                 if f.get("required"):
                     cf_rules.append((cell.coordinate, f'{cell.coordinate.replace(vcol, "$" + vcol)}=""'))
                 if f.get("highlight_when"):
@@ -409,6 +434,8 @@ def build_rock_tab(wb, name, schema, R, rock=None):
                 h.font = Font(bold=True, color=SLATE)
                 h.border = Border(bottom=Side(style="thin", color=INK))
                 h.alignment = Alignment(wrap_text=True, vertical="bottom")
+                if c.get("formula") and c.get("plain") and "comments" not in OFF:
+                    h.comment = grey_note(c)
             last_row = sec["first_row"] + sec["capacity"] - 1
             slots = (rock or {}).get(sec["block"]) or []
             typed = [(i, c) for i, c in enumerate(cols, start=1) if not c.get("formula")]
@@ -433,8 +460,7 @@ def build_rock_tab(wb, name, schema, R, rock=None):
             for i, c in typed:
                 dv = value_validation(c, first_cell=f"{get_column_letter(i)}{first}")
                 if dv:
-                    ws.add_data_validation(dv)
-                    dv.add(f"{get_column_letter(i)}{first}:{get_column_letter(i)}{last_row}")
+                    add_validation(ws, dv, f"{get_column_letter(i)}{first}:{get_column_letter(i)}{last_row}")
             # pink: required entry cell empty on a row that has a title, and conditional requirement
             for i, c in typed[1:]:
                 letter = get_column_letter(i)
@@ -451,7 +477,8 @@ def build_rock_tab(wb, name, schema, R, rock=None):
                              f'AND(${tl}{first}="",COUNTA(${a}{first}:${z}{first})>0)'))
 
     for rng, formula in cf_rules:
-        ws.conditional_formatting.add(rng, FormulaRule(formula=[spill_refs(formula)], fill=pink()))
+        if "cf" not in OFF:
+            ws.conditional_formatting.add(rng, FormulaRule(formula=[spill_refs(formula)], fill=pink()))
 
     # layout: A key, B labels and titles, C values, D onward block columns
     ws.column_dimensions["A"].width = 10
@@ -485,7 +512,8 @@ def build_consolidated(wb, schema, sheet, R):
             for r in range(2, sheet.get("max_rows", MAX_ROWS) + 1):
                 ws.cell(row=r, column=i).number_format = number_format(c)
     anchor = schema["rock_tab"]["consolidation_formula"]["anchor"]
-    set_dynamic_formula(ws, anchor, consolidation_formula(schema, sheet, R), CONSOLIDATION_NAMES)
+    if "dynamic" not in OFF:
+        set_dynamic_formula(ws, anchor, consolidation_formula(schema, sheet, R), CONSOLIDATION_NAMES)
     ws.freeze_panes = "A2"
     ws.protection.sheet = True
     return ws
@@ -528,10 +556,8 @@ def build_table_sheet(wb, schema, sheet, rows, deploy_kind):
         letter = get_column_letter(i)
         rng = f"{letter}2:{letter}{max_rows}"
         if c["type"] == "date":
-            dv = value_validation(c)
-            ws.add_data_validation(dv)
-            dv.add(rng)
-        if c.get("required") and c["name"] != sheet["primary_key"]:
+            add_validation(ws, value_validation(c), rng)
+        if c.get("required") and c["name"] != sheet["primary_key"] and "cf" not in OFF:
             ws.conditional_formatting.add(rng, FormulaRule(formula=[f'AND(${pk}2<>"",{letter}2="")'], fill=pink()))
     return ws
 
@@ -547,6 +573,32 @@ def check_formula(schema, excel):
         return f"INDEX({m.group(1)}!{anchor}#,,{names.index(m.group(2)) + 1})"
 
     return to_file_formula(spill_refs(re.sub(r"<(\w+)\.(\w+)>", ref, excel)))
+
+
+def grey_cells(schema):
+    """(label, plain explanation, where) of every calculated cell a person sees on a rock tab: the
+    grey fields and the grey columns of the list sections. Columns with the same label and
+    explanation in several sections (Rock ID, Rock, GPM) are listed once."""
+    out, index = [], {}
+    for sec in schema["rock_tab"]["sections"]:
+        title = re.sub(r"^\d+\s+", "", sec["title"]).split(" (")[0]
+        if sec["kind"] == "fields":
+            for f in sec["fields"]:
+                if f.get("formula") and f.get("plain"):  # schema tests require plain; old schemas have none
+                    out.append([f["label"], f["plain"], f"Section {sec['id']} {title}"])
+            continue
+        sheet = next(s for s in schema["sheets"] if s["name"] == sec["block"])
+        for c in sheet["columns"]:
+            if not (c.get("formula") and c.get("plain")):
+                continue
+            label = c.get("label") or c["name"]
+            key = (label, c["plain"])
+            if key in index:
+                out[index[key]][2] = "Every list section"
+                continue
+            index[key] = len(out)
+            out.append([label, c["plain"], f"Section {sec['id']} {title}"])
+    return [tuple(r) for r in out]
 
 
 def build_about(wb, schema):
@@ -597,7 +649,7 @@ def build_about(wb, schema):
     section("Checks")
     header("Check", "OK when", "Result")
     for chk in spec.get("checks", []):
-        about.append([chk["label"], chk["ok_when"], check_formula(schema, chk["excel"])])
+        about.append([chk["label"], chk["ok_when"], "switched off" if "dynamic" in OFF else check_formula(schema, chk["excel"])])
         r = about.max_row
         for col in (1, 2, 3):
             about.cell(row=r, column=col).alignment = wrap
@@ -606,6 +658,14 @@ def build_about(wb, schema):
     lines("Add a rock", spec.get("add_rock", []))
     lines("Close a rock", spec.get("close_rock", []))
     lines("Rules", spec.get("rules", []))
+    section("How the grey cells are calculated")
+    header("Field", "Plain explanation", "Where")
+    for label, plain, where in grey_cells(schema):
+        about.append([label, plain, where])
+        r = about.max_row
+        for col in (1, 2, 3):
+            about.cell(row=r, column=col).alignment = wrap
+        about.row_dimensions[r].height = 15 * (max(len(plain) // widths["B"], len(label) // widths["A"], len(where) // widths["C"]) + 1)
     section("Definitions")
     header("Term", "Meaning", "Group", "What ends it")
     for d in spec.get("definitions", []):
@@ -621,6 +681,8 @@ def build_about(wb, schema):
 
 def add_names(wb, schema):
     """Params and lookup lists as defined names."""
+    if "names" in OFF:
+        return
     for p in schema["params"]:
         wb.defined_names[p["name"]] = DefinedName(p["name"], attr_text=file_formula(p["formula"]))
     sheets = {s["name"]: s for s in schema["sheets"]}
@@ -640,8 +702,11 @@ def add_names(wb, schema):
         wb.defined_names[name] = DefinedName(name, attr_text=f"'{sheet}'!${letter}$2:${letter}${LOOKUP_ROWS}")
 
 
-def build(schema, data, deploy):
-    """data: {"rocks": [rock dicts with RockTab], "rows": {sheet name: rows for lookup and history sheets}}."""
+def build(schema, data, deploy, off=()):
+    """data: {"rocks": [rock dicts with RockTab], "rows": {sheet name: rows for lookup and history sheets}}.
+    off: features to leave out (see FEATURES), only for bisecting an Excel repair prompt."""
+    OFF.clear()
+    OFF.update(off)
     wb = Workbook()
     wb.remove(wb.active)
     R = Resolver(schema)
@@ -657,6 +722,11 @@ def build(schema, data, deploy):
         else:
             build_table_sheet(wb, schema, sheet, data.get("rows", {}).get(sheet["name"], []), deploy)
     add_names(wb, schema)
+    for ws in wb.worksheets:  # an empty string cell is written as an inline string without content: leave it empty
+        for row in ws.iter_rows():
+            for cell in row:
+                if cell.value == "":
+                    cell.value = None
     wb.calculation.fullCalcOnLoad = True  # no cached values: Excel calculates on open
     return wb
 
@@ -714,42 +784,108 @@ def set_dynamic_formula(ws, cell, formula, names=()):
 
 
 def mark_dynamic_arrays(path, cells):
-    """Patch a saved xlsx so the listed (sheet name, cell) pairs are dynamic arrays: adds
-    cm="1" on the cell, xl/metadata.xml, its content type and workbook relationship."""
+    """Patch a saved xlsx. For the listed (sheet name, cell) pairs: cm="1" on the cell, xl/metadata.xml,
+    its content type and workbook relationship (the same wiring XlsxWriter writes). For every sheet:
+    drop empty <v></v> elements (Excel writes no value for a formula without a cached result).
+    [Content_Types].xml is written first in the zip, as Excel does."""
     path = Path(path)
     with zipfile.ZipFile(path) as z:
         files = {n: z.read(n) for n in z.namelist()}
-    wbxml = files["xl/workbook.xml"].decode()
-    rels = files["xl/_rels/workbook.xml.rels"].decode()
-    rid_target = {m.group(1): m.group(2) for m in re.finditer(r'<Relationship\b[^>]*?\bId="([^"]+)"[^>]*?\bTarget="([^"]+)"', rels)}
-    rid_target.update({m.group(2): m.group(1) for m in re.finditer(r'<Relationship\b[^>]*?\bTarget="([^"]+)"[^>]*?\bId="([^"]+)"', rels)})
-    sheet_file = {}
-    for m in re.finditer(r"<sheet\b[^>]*>", wbxml):
-        tag = m.group(0)
-        name = re.search(r'\bname="([^"]*)"', tag).group(1)
-        rid = re.search(r'\br:id="([^"]*)"', tag).group(1)
-        target = rid_target[rid].lstrip("/")
-        sheet_file[name.replace("&amp;", "&")] = target if target.startswith("xl/") else "xl/" + target
-    for sheet, cell in cells:
-        fn = sheet_file[sheet]
-        xml = files[fn].decode()
-        new, n = re.subn(r'<c r="%s"(?![^>]*\bcm=)' % re.escape(cell), '<c r="%s" cm="1"' % cell, xml, count=1)
-        if n != 1:
-            raise ValueError(f"cell {sheet}!{cell} not found in {fn}")
-        files[fn] = new.encode()
-    files["xl/metadata.xml"] = _METADATA_XML.encode()
-    ct = files["[Content_Types].xml"].decode()
-    if "sheetMetadata" not in ct:
-        ct = ct.replace("</Types>", '<Override PartName="/xl/metadata.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheetMetadata+xml"/></Types>')
-    files["[Content_Types].xml"] = ct.encode()
-    if "sheetMetadata" not in rels:
-        rels = rels.replace("</Relationships>", '<Relationship Id="rIdMeta1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sheetMetadata" Target="metadata.xml"/></Relationships>')
-    files["xl/_rels/workbook.xml.rels"] = rels.encode()
+    for n in [n for n in files if n.startswith("xl/worksheets/sheet") and n.endswith(".xml")]:
+        files[n] = re.sub(rb"<v\s*/>|<v></v>", b"", files[n])
+    if cells:
+        wbxml = files["xl/workbook.xml"].decode()
+        rels = files["xl/_rels/workbook.xml.rels"].decode()
+        rid_target = {m.group(1): m.group(2) for m in re.finditer(r'<Relationship\b[^>]*?\bId="([^"]+)"[^>]*?\bTarget="([^"]+)"', rels)}
+        rid_target.update({m.group(2): m.group(1) for m in re.finditer(r'<Relationship\b[^>]*?\bTarget="([^"]+)"[^>]*?\bId="([^"]+)"', rels)})
+        sheet_file = {}
+        for m in re.finditer(r"<sheet\b[^>]*>", wbxml):
+            tag = m.group(0)
+            name = re.search(r'\bname="([^"]*)"', tag).group(1)
+            rid = re.search(r'\br:id="([^"]*)"', tag).group(1)
+            target = rid_target[rid].lstrip("/")
+            sheet_file[name.replace("&amp;", "&")] = target if target.startswith("xl/") else "xl/" + target
+        for sheet, cell in cells:
+            fn = sheet_file[sheet]
+            xml = files[fn].decode()
+            new, n = re.subn(r'<c r="%s"(?![^>]*\bcm=)' % re.escape(cell), '<c r="%s" cm="1"' % cell, xml, count=1)
+            if n != 1:
+                raise ValueError(f"cell {sheet}!{cell} not found in {fn}")
+            files[fn] = new.encode()
+        files["xl/metadata.xml"] = _METADATA_XML.encode()
+        ct = files["[Content_Types].xml"].decode()
+        if "sheetMetadata" not in ct:
+            ct = ct.replace("</Types>", '<Override PartName="/xl/metadata.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheetMetadata+xml"/></Types>')
+        files["[Content_Types].xml"] = ct.encode()
+        if "sheetMetadata" not in rels:
+            rels = rels.replace("</Relationships>", '<Relationship Id="rIdMeta1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sheetMetadata" Target="metadata.xml"/></Relationships>')
+        files["xl/_rels/workbook.xml.rels"] = rels.encode()
+    order = ["[Content_Types].xml"] + [n for n in files if n != "[Content_Types].xml"]
     tmp = Path(tempfile.mkdtemp()) / "patched.xlsx"
     with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as z:
-        for n, b in files.items():
-            z.writestr(n, b)
+        for n in order:
+            z.writestr(n, files[n])
     shutil.move(str(tmp), path)
+
+
+# ---------------------------------------------------------------------------
+# Reading a live copy with the rock tab layout of an older schema (migration 2.3 to 2.4)
+# ---------------------------------------------------------------------------
+OLD_LAYOUTS = ("schema/history/workbook.schema.v2.3.0.json",)  # rock tab layouts older than the current schema
+
+
+def detect_layout(path, schema):
+    """The schema whose rock tab layout the file at `path` was built with: the current one, else an older
+    one from OLD_LAYOUTS (matched by the section titles at their header rows on the template tab)."""
+    rt = schema["rock_tab"]
+    wb = load_workbook(path, read_only=False)
+    if rt["template_sheet"] not in wb.sheetnames:
+        return schema
+    ws = wb[rt["template_sheet"]]
+
+    def matches(s):
+        r = s["rock_tab"]
+        return all(ws[f"{r['label_column']}{sec['header_row']}"].value == sec["title"] for sec in r["sections"])
+
+    if matches(schema):
+        return schema
+    for rel in OLD_LAYOUTS:
+        old = json.loads((ROOT / rel).read_text())
+        if matches(old):
+            print(f"source rock tabs use the layout of schema {old['version']}; reading them by those rows")
+            return old
+    return schema
+
+
+def repair_kit(schema, out_dir):
+    """Small variant workbooks that each switch one suspect feature off, to find what Excel asks to repair."""
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    table_sheets = [s for s in schema["sheets"] if s["kind"] != "consolidated"]
+    variants = [
+        ("1_full", ()),
+        ("2_no_dynamic_arrays", ("dynamic",)),
+        ("3_no_conditional_formats", ("cf",)),
+        ("4_no_data_validation", ("dv",)),
+        ("5_no_defined_names", ("names",)),
+        ("6_bare", FEATURES),
+    ]
+    for old in out_dir.glob("*.xlsx"):
+        old.unlink()
+    for name, off in variants:
+        data = {"rocks": [], "rows": {s["name"]: [list(r) for r in s.get("seed", [])] for s in table_sheets}}
+        path = out_dir / f"{name}.xlsx"
+        build(schema, data, deploy=True, off=off).save(path)
+        mark_dynamic_arrays(path, dynamic_cells(schema))
+        OFF.clear()  # the switches belong to one build only
+    (out_dir / "CHECK.md").write_text(
+        "Open each file in Excel for the web, in this order, and note which ones show a repair or critical issues message.\n"
+        "1_full is the real deployment workbook; 6_bare has no dynamic arrays, conditional formats, validation, names or notes.\n"
+        "2 has no dynamic array formulas, 3 no conditional formats, 4 no data validation, 5 no defined names (and no dropdown lists).\n"
+        "The variant that opens cleanly while 1_full does not points at the cause; if only 6_bare opens, the cause is in sheets, tables or styles.\n"
+        "Reply with the list of file names that asked for repair (and, if Excel shows it, the repair log text), and say whether 1_full still does.\n"
+    )
+    return [p.name for p in sorted(out_dir.iterdir())]
 
 
 def main(argv=None):
@@ -757,8 +893,15 @@ def main(argv=None):
     ap.add_argument("--deploy", action="store_true", help="build the deployment workbook")
     ap.add_argument("--from", dest="source", help="migrate rows from this existing workbook")
     ap.add_argument("--out", help="output path (default from schema)")
+    ap.add_argument("--without", default="", help="comma separated features to leave out: " + ", ".join(FEATURES))
+    ap.add_argument("--repair-kit", action="store_true", help="write the bisect kit to dist/repair_check/ and stop")
     args = ap.parse_args(argv)
     schema = load_schema()
+    if args.repair_kit:
+        print("wrote dist/repair_check/:", ", ".join(repair_kit(schema, ROOT / "dist" / "repair_check")))
+        return
+    off = {x for x in args.without.split(",") if x}
+    assert off <= set(FEATURES), f"--without takes {FEATURES}"
     table_sheets = [s for s in schema["sheets"] if s["kind"] != "consolidated"]
 
     if args.source and is_v1(args.source, schema):
@@ -784,7 +927,7 @@ def main(argv=None):
             names = {c["name"] for c in s["columns"]}
             dropped += [f"{s['name']}.{h}" for h in (old[0].keys() if old else []) if h not in names]
             rows[s["name"]] = old or [list(r) for r in s.get("seed", [])]
-        data = {"rocks": read_rock_tabs(args.source, schema), "rows": rows}
+        data = {"rocks": read_rock_tabs(args.source, detect_layout(args.source, schema)), "rows": rows}
         if dropped:
             print("WARNING: columns in the source that the schema no longer has (data not copied):")
             print("\n".join(f"  {d}" for d in dropped))
@@ -804,8 +947,9 @@ def main(argv=None):
 
     out = Path(args.out) if args.out else ROOT / (schema["deploy_file"] if args.deploy else schema["workbook"])
     out.parent.mkdir(parents=True, exist_ok=True)
-    build(schema, data, deploy=args.deploy).save(out)
+    build(schema, data, deploy=args.deploy, off=off).save(out)
     mark_dynamic_arrays(out, dynamic_cells(schema))
+    OFF.clear()
     print(f"wrote {out.relative_to(ROOT) if out.is_relative_to(ROOT) else out}")
 
 

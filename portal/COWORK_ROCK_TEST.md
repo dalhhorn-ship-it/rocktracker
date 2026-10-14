@@ -42,46 +42,46 @@ Show tab 1 first. Only one tab is visible at a time; the active tab has a crimso
 
 Labels are in column B, values in column C, for the single value sections.
 
-**Section 1, Update and steerco message (rows 6 to 17, column C):**
-| Row | Field | Note |
-| :--- | :--- | :--- |
-| 6 | Update date | |
-| 7 | State | On track, At risk or Off track |
-| 8 | Main message | |
-| 9, 10, 11 | Attention point 1, 2, 3 | one line each, may be empty |
-| 12 | Open decision requests | calculated count, can be more than 5 |
-| 13 to 17 | Decision requested 1 to 5 | calculated, empty when there is none |
-
-**Section 2, Signals (rows 20 to 33, column C, calculated by the workbook, use as is):**
-20 Days since update, 21 Data signal, 22 Check the call (Yes or No), 23 Outlook (the two MC
-quarters, for example `MC26Q3 and MC26Q4`), 24 Committed milestones in the outlook, 25 of which
-Slipped, 26 of which On plan, On watch or Completed, 27 of which Completed, 28 Committed
-milestones overdue, 29 Open High risks, 30 High risks without key action or owner, 31 Positions
-budgeted, 32 Positions actual, 33 Fill % (a fraction, show as a percentage; empty means no
-budget).
-
-**Section 7, Rock profile (rows 106 to 114, column C):**
+**Section 1, Rock profile (rows 6 to 14, column C):**
 | Row | Field |
 | :--- | :--- |
-| 106 | Rock ID |
-| 107 | Rock name |
-| 108 | Value chain |
-| 109 | Initiative lead |
-| 110 | GPM |
-| 111 | Active (Yes or No) |
-| 112 | Purpose |
-| 113 | Goals |
-| 114 | What it delivers |
+| 6 | Rock ID |
+| 7 | Rock name |
+| 8 | Value chain (B2C, B2B, Trade, Assets or Enterprise) |
+| 9 | Initiative lead |
+| 10 | GPM |
+| 11 | Active (Yes or No) |
+| 12 | Purpose |
+| 13 | Goals |
+| 14 | What it delivers |
+
+**Section 2, Update and steerco message (rows 17 to 28, column C):**
+| Row | Field | Note |
+| :--- | :--- | :--- |
+| 17 | Update date | |
+| 18 | State | On track, At risk or Off track |
+| 19 | Main message | |
+| 20, 21, 22 | Attention point 1, 2, 3 | one line each, may be empty |
+| 23 | Open decision requests | calculated count, can be more than 5 |
+| 24 to 28 | Decision requested 1 to 5 | calculated, empty when there is none |
+
+**Section 3, Signals (rows 31 to 44, column C, calculated by the workbook, use as is):**
+31 Days since update, 32 Data signal, 33 Check the call (Yes or No), 34 Outlook (the two MC
+quarters, for example `MC26Q3 and MC26Q4`), 35 Committed milestones in the outlook, 36 of which
+Slipped, 37 of which On plan, On watch or Completed, 38 of which Completed, 39 Committed
+milestones overdue, 40 Open High risks, 41 High risks without key action or owner, 42 Positions
+budgeted, 43 Positions actual, 44 Fill % (a fraction, show as a percentage; empty means no
+budget). Column D holds a plain explanation of each grey cell; ignore it.
 
 **Tables.** Each table has its column headers in the row named below and data from the next row
 down. A row counts only when its **Key** (column A) is not empty. Ignore all other rows.
 
 | Table | Header row | Data rows | Columns |
 | :--- | :--- | :--- | :--- |
-| Milestones | 36 | 37 to 51 | A Key, B Milestone, C Owner, D Commitment, E Start date, F Planned date, G Forecast date, H Actual date, I Lead status, J Comment, K Key result link, L ADO id, M ADO link, N Description, O Detail 1, P Detail 2, Q Detail 3, R Progress % (typed, may be empty), S Progress shown, T Status, U Slip (weeks), V Slip severity, W Timeline date, X MC quarter, Y Quarter ahead, Z In outlook, AA Visible, AB Overdue |
-| Risks | 54 | 55 to 64 | A Key, B Risk, C Likelihood, D Impact, E Key action, F Action owner, G Status (empty means Open), H Score, I High, J Needs action |
-| Call outs | 67 | 68 to 75 | A Key, B Call out, C Date, D Status (empty means Open) |
-| Decisions | 78 | 79 to 103 | A Key, B Decision requested, C Steerco, D Decide by, E Choice point, F Options, G Outcome, H Follow up owner, I Follow up (empty means Open), J State (Requested or Decided), K Request no, L Due at next steerco, M Open follow up |
+| Milestones (section 4) | 47 | 48 to 62 | A Key, B Milestone, C Owner, D Commitment, E Start date, F Planned date, G Forecast date, H Actual date, I Lead status, J Comment, K Key result link, L ADO id, M ADO link, N Description, O Detail 1, P Detail 2, Q Detail 3, R Progress % (typed, may be empty), S Progress shown, T Status, U Slip (weeks), V Slip severity, W Timeline date, X MC quarter, Y Quarter ahead, Z In outlook, AA Visible, AB Overdue |
+| Risks (section 5) | 65 | 66 to 75 | A Key, B Risk, C Likelihood, D Impact, E Key action, F Action owner, G Status (empty means Open), H Score, I High, J Needs action |
+| Call outs (section 6) | 78 | 79 to 86 | A Key, B Call out, C Date, D Status (empty means Open) |
+| Decisions (section 7) | 89 | 90 to 114 | A Key, B Decision requested, C Steerco, D Decide by, E Choice point, F Options, G Outcome, H Follow up owner, I Follow up (empty means Open), J State (Requested or Decided), K Request no, L Due at next steerco, M Open follow up |
 | Teams (section 8) | 117 | 118 to 122 | A Key, B Team, C Team lead, D Budgeted, E Actual, F Fill % |
 
 Use the workbook's own calculated columns (Progress shown, Status, Slip, Timeline date, MC quarter,
@@ -110,20 +110,20 @@ headline that is a short sentence ending in a full stop, and a crimson serif led
 lines. Then the evidence. Blocks are separated by generous white space and a 1px hairline.
 
 ### Tab 1 · What does steerco need to hear?
-* Headline: the lead's **Main message** (C8), as written.
+* Headline: the lead's **Main message** (C19), as written.
 * Lede: `State: {State}. Updated {Days since update} days ago.` If the workbook's **Stale** flag is Yes (cell Q2, in the
   hidden row 2 of the sheet; the workbook decides the number of days, do not hard code it), add
   `Update is stale.` in crimson.
 * If **Check the call** is Yes, show one crimson line under the lede:
   `The data says {Data signal}, the lead says {State}. Check the call.`
 * Two cards side by side, each with a serif heading phrased as a question:
-  1. **What do we need from you?** The requested decisions from C13 to C17, in order, skipping
+  1. **What do we need from you?** The requested decisions from C24 to C28, in order, skipping
      empty ones (up to 5). For each, look up the decision row in the Decisions table by exact
      match of the text in column B, and add the decide by date in bold and a small `Choice point`
-     label when Choice point is Yes. Keep the order of C13 to C17. Mark rows with Due at next
-     steerco = Yes with a small `Next steerco` label, without reordering. If Open decision requests (C12) is more than 5, add a
-     grey line `{C12} requests are open, showing the first 5. All are in the workbook.`
-  2. **What should you know?** The attention points from C9 to C11, skipping empty ones (up to
+     label when Choice point is Yes. Keep the order of C24 to C28. Mark rows with Due at next
+     steerco = Yes with a small `Next steerco` label, without reordering. If Open decision requests (C23) is more than 5, add a
+     grey line `{C23} requests are open, showing the first 5. All are in the workbook.`
+  2. **What should you know?** The attention points from C20 to C22, skipping empty ones (up to
      3), one line each. Under them, a small grey list `Coming up` of Call outs where Status is
      not Closed, newest date first: date in bold, then the text.
 
@@ -151,7 +151,7 @@ Positions actual and Fill %. If there are no teams, show `No teams recorded yet.
 
 ### Tab 3 · What ships in the next two quarters?
 * A filter above the chart, **MC quarter**, with the choices `All`, and the two quarters of the
-  Outlook cell (C23, for example MC26Q3 and MC26Q4). Default `All`. It filters the chart and the
+  Outlook cell (C34, for example MC26Q3 and MC26Q4). Default `All`. It filters the chart and the
   list below by the MC quarter in column X. Milestones without an MC quarter (no date yet) show
   only under `All`, in the `Not dated yet` list. Overdue milestones from an earlier MC quarter
   (for example MC26Q2) also show under `All` only, because they match neither quarter chip.
@@ -264,7 +264,7 @@ Use this to check that Cowork read the workbook correctly. Values come from
 `scripts/rock_model.py` (it supports schema 2.3.0), run on `data/sample.json` with today
 2026-10-14 and the sample steerco dates (21 Oct is the next steerco).
 
-* **Masthead:** R01 · Checkout Speed, value chain Checkout, GPM Priya Sampleton, lead Lena
+* **Masthead:** R01 · Checkout Speed, value chain B2C, GPM Priya Sampleton, lead Lena
   Testfield, as of 12 Oct 2026. Theme switch LIGHT and DARK.
 * **Tab 1:**
   * Headline starts "One page checkout is in test and on plan." State On track, updated 2 days

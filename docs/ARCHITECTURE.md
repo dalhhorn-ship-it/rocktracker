@@ -50,13 +50,13 @@ Columns: A key (narrow, grey), B labels and titles (wide), C values, D onward bl
 | 1 | Title | formula | Rock ID · Rock name |
 | 2 (hidden) | Strip | formula | the Rocks row: profile, update, key points and signals in Rocks column order |
 | 3 | Guide | static | the 7 minute order of work |
-| 5 to 17 | 1 Update and steerco message | lead, plus grey lines | 6 Update date, 7 State, 8 Main message, 9 to 11 key risks or attention points 1 to 3; grey: 12 open decision requests count, 13 to 17 decision requested 1 to 5 (from section 6) |
-| 19 to 33 | 2 Signals | formula | 20 days since update, 21 data signal, 22 check the call, 23 outlook quarters, 24 committed y, 25 slipped x, 26 on plan, 27 completed, 28 overdue, 29 open High risks, 30 High risks without action, 31 positions budgeted, 32 positions actual, 33 fill % |
-| 35 to 51 | 3 Milestones | lead | 15 slots (rows 37 to 51): Title, Owner, Commitment, Start, Planned, Forecast, Actual, Lead status, Comment, KR link, ADO id, ADO link, Description, Detail 1 to 3, Progress % (R); then grey Progress shown (S), Status, Slip weeks (U), Slip severity (V), Timeline date, MC quarter (X), Quarter ahead (Y), In outlook, Visible (AA), Overdue, RockID, Rock, GPM (columns A to AE). Owner has a lkp_People dropdown (warning style) |
-| 53 to 64 | 4 Risks | lead | 10 slots (55 to 64): Title, Likelihood, Impact, Key action, Action owner, Status; then grey Score, High, Needs action, RockID, Rock, GPM |
-| 66 to 75 | 5 Call outs | lead | 8 slots (68 to 75): Text, Date, Status; then grey RockID, Rock, GPM |
-| 77 to 103 | 6 Decisions | lead | 25 slots (79 to 103): Decision (one line), Steerco, Decide by, Choice point, Options, Outcome, Owner, Follow up; then grey State, Open request no., Due at next steerco, Open follow up, RockID, Rock, GPM |
-| 105 to 114 | 7 Rock profile | owner | 106 Rock ID, name, value chain, lead, GPM, 111 Active, purpose, goals, 114 delivers |
+| 5 to 14 | 1 Rock profile | owner | 6 Rock ID, 7 name, 8 value chain (lkp_ValueChains: B2C, B2B, Trade, Assets, Enterprise), 9 lead, 10 GPM, 11 Active, 12 purpose, 13 goals, 14 delivers |
+| 16 to 28 | 2 Update and steerco message | lead, plus grey lines | 17 Update date, 18 State, 19 Main message, 20 to 22 key risks or attention points 1 to 3; grey: 23 open decision requests count, 24 to 28 decision requested 1 to 5 (from section 7) |
+| 30 to 44 | 3 Signals | formula | 31 days since update, 32 data signal, 33 check the call, 34 outlook quarters, 35 committed y, 36 slipped x, 37 on plan, 38 completed, 39 overdue, 40 open High risks, 41 High risks without action, 42 positions budgeted, 43 positions actual, 44 fill % |
+| 46 to 62 | 4 Milestones | lead | 15 slots (rows 48 to 62): Title, Owner, Commitment, Start, Planned, Forecast, Actual, Lead status, Comment, KR link, ADO id, ADO link, Description, Detail 1 to 3, Progress % (R); then grey Progress shown (S), Status, Slip weeks (U), Slip severity (V), Timeline date, MC quarter (X), Quarter ahead (Y), In outlook, Visible (AA), Overdue, RockID, Rock, GPM (columns A to AE). Owner has a lkp_People dropdown (warning style) |
+| 64 to 75 | 5 Risks | lead | 10 slots (66 to 75): Title, Likelihood, Impact, Key action, Action owner, Status; then grey Score, High, Needs action, RockID, Rock, GPM |
+| 77 to 86 | 6 Call outs | lead | 8 slots (79 to 86): Text, Date, Status; then grey RockID, Rock, GPM |
+| 88 to 114 | 7 Decisions | lead | 25 slots (90 to 114): Decision (one line), Steerco, Decide by, Choice point, Options, Outcome, Owner, Follow up; then grey State, Open request no., Due at next steerco, Open follow up, RockID, Rock, GPM |
 | 116 to 122 | 8 Teams | lead | 5 slots (118 to 122): Team, Team lead, Budgeted, Actual; then grey Fill %, RockID, Rock, GPM |
 
 Block column order on the rock tab equals the column order of the consolidated sheet, so the stack needs no reordering. Exact rows and formulas are in `rock_tab` of the schema; the generator never hard codes them.
@@ -105,7 +105,7 @@ All in the schema (`excel` plus `rule`), mirrored in `scripts/rock_model.py`. Na
 | Data signal | Off track: a Slipped milestone planned this MC quarter is forecast after its end; At risk: slipped x, overdue or High risks without action above 0; else On track |
 | CheckCall | data signal worse than the lead's State (order On track, At risk, Off track) |
 | DecisionState | Requested until Outcome is filled in, then Decided |
-| RequestNo | position of a Requested row among the rock's Requested rows by slot; section 1 lines and tab 1 show 1 to 5 |
+| RequestNo | position of a Requested row among the rock's Requested rows by slot; section 2 lines and tab 1 show 1 to 5 |
 | DueNextSteerco | Requested and (raised for the next steerco or decide by on or before it) |
 | OpenFollowUp | Decided and FollowUp not Closed; empty FollowUp counts as Open (tab 5 spotlight) |
 
@@ -115,7 +115,7 @@ About sheet checks (schema `about.checks`): rock tabs found, duplicate rock IDs,
 
 ## Decision log (DECISIONS 0012)
 
-One table does request, outcome and log. The lead types a request once, as one line, in section 6 (Decision, Steerco, Decide by, and for a choice point Choice point Yes and Options). Section 1 shows the first 5 open requests as grey lines at once, and tab 1 reads Decisions with RequestNo 1 to 5. After steerco the lead fills Outcome, Owner and Follow up on the same row; DecisionState turns Decided and the row appears on tab 5. Tab 3.1 reads ChoicePoint Yes and Requested. Nothing is copied, cleared or typed twice; the log is live.
+One table does request, outcome and log. The lead types a request once, as one line, in section 7 (Decision, Steerco, Decide by, and for a choice point Choice point Yes and Options). Section 2 shows the first 5 open requests as grey lines at once, and tab 1 reads Decisions with RequestNo 1 to 5. After steerco the lead fills Outcome, Owner and Follow up on the same row; DecisionState turns Decided and the row appears on tab 5. Tab 3.1 reads ChoicePoint Yes and Requested. Nothing is copied, cleared or typed twice; the log is live.
 
 ## History
 
@@ -135,10 +135,10 @@ One table does request, outcome and log. The lead types a request once, as one l
 
 | Role | Fields they touch | When |
 | :--- | :--- | :--- |
-| Lead | Section 1 (UpdateDate, State, MainMessage, Attention1 to 3); Milestones ForecastDate, Comment, LeadStatus (Completed, On hold, On watch) and ActualDate where they moved; Risks rows that changed; CallOuts; Decisions (raise; after steerco Outcome, Owner, FollowUp, and Commitment and PlannedDate on milestones); Teams when positions change | every one or two weeks, 7 minutes |
+| Lead | Section 2 (UpdateDate, State, MainMessage, Attention1 to 3); Milestones ForecastDate, Comment, LeadStatus (Completed, On hold, On watch) and ActualDate where they moved; Risks rows that changed; CallOuts; Decisions (raise; after steerco Outcome, Owner, FollowUp, and Commitment and PlannedDate on milestones); Teams when positions change | every one or two weeks, 7 minutes |
 | Lead (one off per milestone) | Owner, StartDate, Description, Detail1 to 3, ADO id and link | when a milestone is added; part of the first load |
 | GPM | none in steady state; presses Save snapshot only if the flow is off | before steerco |
-| Workbook owner | Section 7 profile of new rocks, Active = No to close, lkp_People, lkp_ValueChains, lkp_Steercos | quarterly |
+| Workbook owner | Section 1 profile of new rocks, Active = No to close, lkp_People, lkp_ValueChains, lkp_Steercos | quarterly |
 | Director | Power Automate flow (one off) | deploy |
 | Executives | nothing | |
 
@@ -163,3 +163,10 @@ Lead edits rock tab, formulas recalculate at once, consolidated sheets update, t
 * Adding a column to a block or moving a section changes cell addresses on every rock tab: schema version bump, keep the old schema in `schema/history/`, rebuild, and `--from` migration that reads the old layout by its schema version and writes the new one (schema `migration` describes the mapping).
 * Adding a consolidated column is safe for the portal only when appended at the end of a block.
 * Every change: schema first, then generator, tests, DECISIONS entry with migration note.
+
+## Grey cell explanations and Excel file hygiene (schema 2.4.0, DECISIONS 0022)
+
+* Every calculated field and column has a one sentence `plain` text in the schema. The builder shows it in column D next to each grey field of a rock tab (small grey italic), as a note on each grey column header of the list sections, and as the table "How the grey cells are calculated" on the About sheet (`grey_cells` in `scripts/build_workbook.py`).
+* The generator writes no `<v></v>`, no inline string cell without content, uses LET variable names that Excel accepts (`colno`, never `c` or `r`) and no spill reference in a conditional format or validation (the duplicate Rock ID rule uses the defined name `RockIDList`). `tests/test_package.py` checks the parts, the element order inside `<worksheet>`, the dynamic array wiring and these rules.
+* `python3 scripts/build_workbook.py --repair-kit` writes six variant workbooks to `dist/repair_check/` (each switching one feature off) with a `CHECK.md`, for finding what Excel asks to repair. `--without dynamic,cf,dv,names,comments` builds any single variant.
+* `--from` reads a file by the rock tab layout it was built with (`detect_layout`: the current schema, else `schema/history/workbook.schema.v2.3.0.json`), so a 2.3 live copy migrates to the new rows.

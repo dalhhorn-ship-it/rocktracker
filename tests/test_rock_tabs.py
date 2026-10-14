@@ -92,7 +92,7 @@ def test_pink_rules_present(wb, schema, sheets):
     rules = {str(r.sqref): [x.formula[0] for x in r.rules] for r in ws.conditional_formatting}
     cells = field_cells(schema)
     rock_id = cells["RockID"]
-    assert rock_id in rules and any("ANCHORARRAY" in f and f"${rock_id[0]}${rock_id[1:]}" in f for f in rules[rock_id])
+    assert rock_id in rules and any("RockIDList" in f and f"${rock_id[0]}${rock_id[1:]}" in f for f in rules[rock_id])
     optional = {"Purpose", "Goals", "Delivers"} | {f"Attention{i}" for i in (1, 2, 3)}
     for sec in schema["rock_tab"]["sections"]:
         for f in sec.get("fields", []):
