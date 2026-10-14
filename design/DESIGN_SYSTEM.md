@@ -40,7 +40,9 @@ Captured from the **Finance, Procurement, Margin & Forecasting Hub** (Eneco · G
 | Token | Hex | Use |
 |---|---|---|
 | `--accent` (crimson) | `#B22D5B` | Lede text, highlighted figures in narrative, active-tab underline, "In Progress" bar |
-| `--accent-tint` | `#F6E8EE` | Hover / selected backgrounds (sparingly) |
+| `--accent-tint` | `#F6E8EE` | Hover / selected backgrounds (sparingly); Major slip extension on roadmap bars |
+| `--amber-tint` | `#F5E3D1` | Minor slip extension on roadmap bars |
+| `--plan-bar` | `#D5D7DA` | Grey plan bar (start to planned) on roadmap bars |
 | `--brand-red` | `#D4494C` | Logo mark only (plus one category colour) |
 | `--spot-bg` | `#DDEFDF` | Spotlight KPI tile background (positive / "live" state) |
 | `--spot-ink` | `#1F3C23` | Number on spotlight tile |
@@ -129,6 +131,8 @@ Dark mode is a second value set for the same token names (`design/tokens.css`), 
 | `--subtle` | `#72777D` | `#868B92` | 4.52 | 5.41 | 4.97 |
 | `--accent` | `#B22D5B` | `#E06A93` | 6.14 | 5.88 | 5.40 |
 | `--accent-tint` | `#F6E8EE` | `#3A1E29` | | | |
+| `--amber-tint` | `#F5E3D1` | `#3A2A1B` | | | |
+| `--plan-bar` | `#D5D7DA` | `#3A3D43` | | | |
 | `--rule-strong` | `#45474B` | `#5A5D63` | | | |
 | `--rule` | `#E6E7E9` | `#2C2E33` | | | |
 | `--rule-soft` | `#EAEAEA` | `#26282C` | | | |
@@ -284,7 +288,7 @@ Use the same tokens: 11px sans body, UPPERCASE 9–10px header in `--subtle`, 1p
   --rule-strong:#45474B; --rule:#E6E7E9; --rule-soft:#EAEAEA; --grid:#F3F3F4;
   --bg:#FFFFFF;
   /* accent & status */
-  --accent:#B22D5B; --accent-tint:#F6E8EE; --brand-red:#D4494C;
+  --accent:#B22D5B; --accent-tint:#F6E8EE; --amber-tint:#F5E3D1; --plan-bar:#D5D7DA; --brand-red:#D4494C;
   --spot-bg:#DDEFDF; --spot-ink:#1F3C23; --spot-label:#486B4F;
   /* categorical */
   --cat-other:#8B8F96; --cat-1:#B22D5B; --cat-2:#CC7C2E; --cat-3:#A85923;
