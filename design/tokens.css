@@ -1,0 +1,64 @@
+/* Editorial Portfolio design tokens and starter CSS. Source of truth: design/DESIGN_SYSTEM.md */
+:root{
+  /* core */
+  --ink:#0F1116; --ink-2:#1E2025; --ink-3:#3D3F43;
+  --slate:#5B6067; --muted:#686D73; --subtle:#8C9097;
+  --rule-strong:#45474B; --rule:#E6E7E9; --rule-soft:#EAEAEA; --grid:#F3F3F4;
+  --bg:#FFFFFF;
+  /* accent & status */
+  --accent:#B22D5B; --accent-tint:#F6E8EE; --brand-red:#D4494C;
+  --spot-bg:#DDEFDF; --spot-ink:#1F3C23; --spot-label:#486B4F;
+  /* categorical */
+  --cat-other:#8B8F96; --cat-1:#B22D5B; --cat-2:#CC7C2E; --cat-3:#A85923;
+  --cat-4:#D4494C; --cat-5:#2D679C; --cat-6:#438852; --cat-7:#743EE4; --cat-8:#AE2A3F;
+  /* stages */
+  --stage-backlog:#5B6067; --stage-progress:#B22D5B; --stage-review:#CC7C2E; --stage-done:#438852;
+  /* type */
+  --font-sans:"Inter","Segoe UI",system-ui,sans-serif;
+  --font-serif:"Source Serif 4","Source Serif Pro",Georgia,serif;
+  /* shape */
+  --radius:8px; --gap:16px; --maxw:1180px;
+}
+body{margin:0;background:var(--bg);color:var(--ink-2);font:400 12px/1.5 var(--font-sans);}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+
+.eyebrow{font:500 10px/1 var(--font-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--subtle);}
+
+/* masthead */
+.mast{display:flex;justify-content:space-between;align-items:center;padding:20px 0 16px;border-bottom:1px solid var(--rule-strong);}
+.mast h1{font:600 16px/1.2 var(--font-sans);color:var(--ink);margin:4px 0 0;}
+.meta{text-align:right;margin-left:32px;}
+.meta b{display:block;font:600 11px/1.4 var(--font-sans);color:var(--ink);margin-top:4px;}
+
+/* tabs */
+.tabs{display:flex;gap:30px;border-bottom:1px solid var(--rule-strong);}
+.tab{font:500 11px/1 var(--font-sans);letter-spacing:.06em;text-transform:uppercase;color:var(--slate);
+     padding:14px 4px 12px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;}
+.tab:hover{color:var(--ink);}
+.tab.active{color:var(--ink);border-bottom-color:var(--accent);}
+
+/* section intro */
+.h1{font:600 31px/1.15 var(--font-sans);letter-spacing:-.01em;color:var(--ink);margin:8px 0 12px;}
+.lede{font:400 13.5px/1.6 var(--font-serif);color:var(--accent);max-width:560px;}
+.narrative{font:400 13px/1.6 var(--font-serif);color:var(--ink-2);margin:32px 0 24px;}
+.fig{font-style:normal;font-weight:600;color:var(--accent);}
+
+/* cards */
+.grid{display:grid;gap:var(--gap);margin-bottom:var(--gap);}
+.g3{grid-template-columns:repeat(3,1fr);} .g6{grid-template-columns:repeat(6,1fr);} .g2{grid-template-columns:repeat(2,1fr);}
+.card{background:var(--bg);border:1px solid var(--rule);border-radius:var(--radius);padding:20px;}
+.card h3{font:600 15px/1.3 var(--font-serif);color:var(--ink);margin:0 0 12px;}
+.card p,.card li{font-size:11.5px;color:var(--ink-3);}
+
+/* KPI */
+.kpi{padding:16px;}
+.kpi .num{font:600 36px/1.1 var(--font-sans);letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ink);margin:12px 0 10px;}
+.kpi .sub{font-size:9.5px;color:var(--muted);}
+.kpi.spot{background:var(--spot-bg);border-color:transparent;}
+.kpi.spot .eyebrow,.kpi.spot .sub{color:var(--spot-label);}
+.kpi.spot .num{color:var(--spot-ink);}
+
+/* chart card */
+.chart h4{font:500 15px/1.3 var(--font-sans);color:var(--ink);margin:6px 0 12px;padding-bottom:12px;border-bottom:1px solid var(--rule-soft);}
+.bar{height:18px;border-radius:3px;}
+.legend i{display:inline-block;width:8px;height:8px;margin-right:6px;}

@@ -1,0 +1,48 @@
+{
+  "design_system": "design/DESIGN_SYSTEM.md",
+  "tokens": "design/tokens.css",
+  "masthead": {
+    "breadcrumb": ["Org", "Group Product Management", "Product team"],
+    "title": "Product portfolio hub",
+    "board": "Product leadership"
+  },
+  "stage_map": {
+    "Not started": "backlog",
+    "On track": "progress",
+    "At risk": "review",
+    "Done": "done"
+  },
+  "tabs": [
+    {
+      "question": "Where do we stand?",
+      "eyebrow": "Section 01 · Portfolio",
+      "headline": "Where delivery stands.",
+      "lede": "Every initiative the product team has committed to, and how it is tracking against its goal.",
+      "narrative": "The portfolio holds {live} initiatives across {goals} goals and {owners} owners, with {in_flight} in flight right now. {done} have been delivered.",
+      "insights": [
+        {"question": "Are we on track?", "text": "{in_flight} in flight, {done} delivered. {at_risk} at risk and need a look."},
+        {"question": "What needs a look?", "list": {"table": "Initiatives", "where": {"Status": ["At risk"]}, "item": "Title", "date": "TargetDate", "limit": 3}, "empty": "Nothing is at risk."},
+        {"question": "What lands next?", "list": {"table": "Initiatives", "where": {"Status": ["On track", "At risk"]}, "item": "Title", "date": "TargetDate", "limit": 3}, "empty": "Nothing scheduled."}
+      ],
+      "kpis": [
+        {"id": "live", "label": "Live portfolio", "table": "Initiatives", "agg": "count", "where": {"Status": ["Not started", "On track", "At risk"]}, "sub": "initiatives not yet done"},
+        {"id": "in_flight", "label": "In flight", "table": "Initiatives", "agg": "count", "where": {"Status": ["On track", "At risk"]}, "sub": "{at_risk} at risk", "spotlight": true},
+        {"id": "at_risk", "label": "At risk", "table": "Initiatives", "agg": "count", "where": {"Status": ["At risk"]}, "sub": "need a look this week"},
+        {"id": "done", "label": "Delivered", "table": "Initiatives", "agg": "count", "where": {"Status": ["Done"]}, "sub": "all time"},
+        {"id": "goals", "label": "Goals", "table": "Goals", "agg": "count", "sub": "strategic goals"},
+        {"id": "owners", "label": "Owners", "table": "Initiatives", "agg": "distinct", "column": "Owner", "sub": "people leading work"}
+      ],
+      "charts": [
+        {"eyebrow": "Lifecycle", "title": "Initiatives by status", "type": "bar", "table": "Initiatives", "group_by": "Status", "color": "stage"},
+        {"eyebrow": "Mix", "title": "Initiatives by owner", "type": "donut", "table": "Initiatives", "group_by": "Owner", "color": "categorical"}
+      ]
+    },
+    {
+      "question": "The full list",
+      "eyebrow": "Section 02 · Full list",
+      "headline": "Every initiative in one place.",
+      "lede": "Filter and sort the whole portfolio. This is the same data as the workbook.",
+      "table": {"table": "Initiatives", "columns": ["ID", "Title", "Owner", "Status", "TargetDate"], "status_column": "Status"}
+    }
+  ]
+}

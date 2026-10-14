@@ -1,0 +1,82 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Product portfolio hub</title><style>/* Editorial Portfolio design tokens and starter CSS. Source of truth: design/DESIGN_SYSTEM.md */
+:root{
+  /* core */
+  --ink:#0F1116; --ink-2:#1E2025; --ink-3:#3D3F43;
+  --slate:#5B6067; --muted:#686D73; --subtle:#8C9097;
+  --rule-strong:#45474B; --rule:#E6E7E9; --rule-soft:#EAEAEA; --grid:#F3F3F4;
+  --bg:#FFFFFF;
+  /* accent & status */
+  --accent:#B22D5B; --accent-tint:#F6E8EE; --brand-red:#D4494C;
+  --spot-bg:#DDEFDF; --spot-ink:#1F3C23; --spot-label:#486B4F;
+  /* categorical */
+  --cat-other:#8B8F96; --cat-1:#B22D5B; --cat-2:#CC7C2E; --cat-3:#A85923;
+  --cat-4:#D4494C; --cat-5:#2D679C; --cat-6:#438852; --cat-7:#743EE4; --cat-8:#AE2A3F;
+  /* stages */
+  --stage-backlog:#5B6067; --stage-progress:#B22D5B; --stage-review:#CC7C2E; --stage-done:#438852;
+  /* type */
+  --font-sans:"Inter","Segoe UI",system-ui,sans-serif;
+  --font-serif:"Source Serif 4","Source Serif Pro",Georgia,serif;
+  /* shape */
+  --radius:8px; --gap:16px; --maxw:1180px;
+}
+body{margin:0;background:var(--bg);color:var(--ink-2);font:400 12px/1.5 var(--font-sans);}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+
+.eyebrow{font:500 10px/1 var(--font-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--subtle);}
+
+/* masthead */
+.mast{display:flex;justify-content:space-between;align-items:center;padding:20px 0 16px;border-bottom:1px solid var(--rule-strong);}
+.mast h1{font:600 16px/1.2 var(--font-sans);color:var(--ink);margin:4px 0 0;}
+.meta{text-align:right;margin-left:32px;}
+.meta b{display:block;font:600 11px/1.4 var(--font-sans);color:var(--ink);margin-top:4px;}
+
+/* tabs */
+.tabs{display:flex;gap:30px;border-bottom:1px solid var(--rule-strong);}
+.tab{font:500 11px/1 var(--font-sans);letter-spacing:.06em;text-transform:uppercase;color:var(--slate);
+     padding:14px 4px 12px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;}
+.tab:hover{color:var(--ink);}
+.tab.active{color:var(--ink);border-bottom-color:var(--accent);}
+
+/* section intro */
+.h1{font:600 31px/1.15 var(--font-sans);letter-spacing:-.01em;color:var(--ink);margin:8px 0 12px;}
+.lede{font:400 13.5px/1.6 var(--font-serif);color:var(--accent);max-width:560px;}
+.narrative{font:400 13px/1.6 var(--font-serif);color:var(--ink-2);margin:32px 0 24px;}
+.fig{font-style:normal;font-weight:600;color:var(--accent);}
+
+/* cards */
+.grid{display:grid;gap:var(--gap);margin-bottom:var(--gap);}
+.g3{grid-template-columns:repeat(3,1fr);} .g6{grid-template-columns:repeat(6,1fr);} .g2{grid-template-columns:repeat(2,1fr);}
+.card{background:var(--bg);border:1px solid var(--rule);border-radius:var(--radius);padding:20px;}
+.card h3{font:600 15px/1.3 var(--font-serif);color:var(--ink);margin:0 0 12px;}
+.card p,.card li{font-size:11.5px;color:var(--ink-3);}
+
+/* KPI */
+.kpi{padding:16px;}
+.kpi .num{font:600 36px/1.1 var(--font-sans);letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ink);margin:12px 0 10px;}
+.kpi .sub{font-size:9.5px;color:var(--muted);}
+.kpi.spot{background:var(--spot-bg);border-color:transparent;}
+.kpi.spot .eyebrow,.kpi.spot .sub{color:var(--spot-label);}
+.kpi.spot .num{color:var(--spot-ink);}
+
+/* chart card */
+.chart h4{font:500 15px/1.3 var(--font-sans);color:var(--ink);margin:6px 0 12px;padding-bottom:12px;border-bottom:1px solid var(--rule-soft);}
+.bar{height:18px;border-radius:3px;}
+.legend i{display:inline-block;width:8px;height:8px;margin-right:6px;}
+
+.meta b{text-transform:none;letter-spacing:0}
+.brow{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center;margin:8px 0;font:500 10px/1 var(--font-sans);color:var(--ink-3)}
+.brow span{text-align:right}.track{background:linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/25% 100%}
+.donut{display:flex;gap:24px;align-items:center}.legend div{font-size:10px;color:var(--ink-3);margin:4px 0}
+.card ul{margin:0;padding-left:16px}.list{width:100%;border-collapse:collapse;font-size:11px}
+.list th{font:500 9.5px/1 var(--font-sans);letter-spacing:.12em;text-transform:uppercase;color:var(--subtle);text-align:left;padding:8px}
+.list td{padding:8px;border-top:1px solid var(--rule)}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px}
+@media (max-width:900px){.g6{grid-template-columns:repeat(3,1fr)}.g3,.g2{grid-template-columns:1fr}.mast{flex-wrap:wrap;gap:12px}.tabs{overflow-x:auto}}
+</style></head><body>
+<header class="wrap mast"><div style="display:flex;gap:16px;align-items:center">
+<svg width="20" height="20" aria-hidden="true"><circle cx="5" cy="5" r="3" fill="#D4494C"/><circle cx="13" cy="9" r="2.5" fill="#D4494C"/><circle cx="8" cy="15" r="2.5" fill="#D4494C"/></svg>
+<div><div class="eyebrow">Org · Group Product Management · Product team</div><h1>Product portfolio hub</h1></div></div>
+<div style="display:flex"><div class="meta eyebrow">As of<b>14 Oct 2026</b></div><div class="meta eyebrow">Board<b>Product leadership</b></div></div></header>
+<nav class="wrap tabs"><span class="tab active" data-tab="0">Where do we stand?</span><span class="tab" data-tab="1">The full list</span></nav><main class="wrap"><section class="panel" id="tab0"><div class="eyebrow" style="margin-top:24px">Section 01 · Portfolio</div><h2 class="h1">Where delivery stands.</h2><p class="lede">Every initiative the product team has committed to, and how it is tracking against its goal.</p><p class="narrative">The portfolio holds <em class="fig">5</em> initiatives across <em class="fig">2</em> goals and <em class="fig">4</em> owners, with <em class="fig">4</em> in flight right now. <em class="fig">2</em> have been delivered.</p><div class="grid g3"><div class="card"><h3>Are we on track?</h3><p><em class="fig">4</em> in flight, <em class="fig">2</em> delivered. <em class="fig">1</em> at risk and need a look.</p></div><div class="card"><h3>What needs a look?</h3><ul><li>Self service help centre — <b>1 Feb 2027</b></li></ul></div><div class="card"><h3>What lands next?</h3><ul><li>Referral programme — <b>15 Nov 2026</b></li><li>Onboarding redesign — <b>1 Dec 2026</b></li><li>Activation emails — <b>10 Jan 2027</b></li></ul></div></div><div class="grid g6"><div class="card kpi"><div class="eyebrow">Live portfolio</div><div class="num">5</div><div class="sub">initiatives not yet done</div></div><div class="card kpi spot"><div class="eyebrow">In flight</div><div class="num">4</div><div class="sub">1 at risk</div></div><div class="card kpi"><div class="eyebrow">At risk</div><div class="num">1</div><div class="sub">need a look this week</div></div><div class="card kpi"><div class="eyebrow">Delivered</div><div class="num">2</div><div class="sub">all time</div></div><div class="card kpi"><div class="eyebrow">Goals</div><div class="num">2</div><div class="sub">strategic goals</div></div><div class="card kpi"><div class="eyebrow">Owners</div><div class="num">4</div><div class="sub">people leading work</div></div></div><div class="grid g2"><div class="card chart"><div class="eyebrow">Lifecycle</div><h4>Initiatives by status</h4><div class="brow"><span>Not started</span><div class="track"><div class="bar" title="1" style="width:33%;background:var(--stage-backlog)"></div></div></div><div class="brow"><span>On track</span><div class="track"><div class="bar" title="3" style="width:100%;background:var(--stage-progress)"></div></div></div><div class="brow"><span>At risk</span><div class="track"><div class="bar" title="1" style="width:33%;background:var(--stage-review)"></div></div></div><div class="brow"><span>Done</span><div class="track"><div class="bar" title="2" style="width:67%;background:var(--stage-done)"></div></div></div></div><div class="card chart"><div class="eyebrow">Mix</div><h4>Initiatives by owner</h4><div class="donut"><svg viewBox="0 0 100 100" width="140" height="140" style="transform:rotate(-90deg)"><circle r="40" cx="50" cy="50" fill="none" stroke="var(--cat-1)" stroke-width="18" stroke-dasharray="71.81 179.52" stroke-dashoffset="-0.00"><title>Alex Example: 2</title></circle><circle r="40" cx="50" cy="50" fill="none" stroke="var(--cat-2)" stroke-width="18" stroke-dasharray="71.81 179.52" stroke-dashoffset="-71.81"><title>Sam Example: 2</title></circle><circle r="40" cx="50" cy="50" fill="none" stroke="var(--cat-3)" stroke-width="18" stroke-dasharray="71.81 179.52" stroke-dashoffset="-143.62"><title>Jo Example: 2</title></circle><circle r="40" cx="50" cy="50" fill="none" stroke="var(--cat-4)" stroke-width="18" stroke-dasharray="35.90 215.42" stroke-dashoffset="-215.42"><title>Kim Example: 1</title></circle></svg><div class="legend"><div><i style="background:var(--cat-1)"></i>Alex Example</div><div><i style="background:var(--cat-2)"></i>Sam Example</div><div><i style="background:var(--cat-3)"></i>Jo Example</div><div><i style="background:var(--cat-4)"></i>Kim Example</div></div></div></div></div></section><section class="panel" id="tab1" hidden><div class="eyebrow" style="margin-top:24px">Section 02 · Full list</div><h2 class="h1">Every initiative in one place.</h2><p class="lede">Filter and sort the whole portfolio. This is the same data as the workbook.</p><div class="card"><table class="list"><thead><tr><th>ID</th><th>Title</th><th>Owner</th><th>Status</th><th>TargetDate</th></tr></thead><tbody><tr><td>I1</td><td>Onboarding redesign</td><td>Alex Example</td><td><i class="dot" style="background:var(--stage-progress)"></i>On track</td><td>1 Dec 2026</td></tr><tr><td>I2</td><td>Self service help centre</td><td>Sam Example</td><td><i class="dot" style="background:var(--stage-review)"></i>At risk</td><td>1 Feb 2027</td></tr><tr><td>I3</td><td>Referral programme</td><td>Jo Example</td><td><i class="dot" style="background:var(--stage-progress)"></i>On track</td><td>15 Nov 2026</td></tr><tr><td>I4</td><td>Pricing page test</td><td>Alex Example</td><td><i class="dot" style="background:var(--stage-done)"></i>Done</td><td>30 Sep 2026</td></tr><tr><td>I5</td><td>Chatbot triage</td><td>Kim Example</td><td><i class="dot" style="background:var(--stage-backlog)"></i>Not started</td><td></td></tr><tr><td>I6</td><td>Known issues banner</td><td>Sam Example</td><td><i class="dot" style="background:var(--stage-done)"></i>Done</td><td>20 Aug 2026</td></tr><tr><td>I7</td><td>Activation emails</td><td>Jo Example</td><td><i class="dot" style="background:var(--stage-progress)"></i>On track</td><td>10 Jan 2027</td></tr></tbody></table></div></section></main>
+<script>document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));document.querySelectorAll('.panel').forEach((p,i)=>p.hidden=String(i)!==t.dataset.tab);});</script>
+</body></html>

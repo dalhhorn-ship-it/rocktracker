@@ -1,0 +1,108 @@
+{
+  "title": "Product portfolio hub",
+  "version": "0.1.0",
+  "workbook": "data/workbook.xlsx",
+  "deploy_file": "dist/Product portfolio hub/Product portfolio hub.xlsx",
+  "description": "Example contract. The architect replaces these sheets per project; keep the format. 'seed' rows ship in the deployed workbook (lookups); sample rows live in data/sample.json.",
+  "sheets": [
+    {
+      "name": "lkp_Status",
+      "purpose": "Allowed status values",
+      "owner": "architect",
+      "primary_key": "Value",
+      "columns": [
+        {
+          "name": "Value",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "Meaning",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "seed": [
+        [
+          "Not started",
+          "Agreed but no work yet"
+        ],
+        [
+          "On track",
+          "Progressing to plan"
+        ],
+        [
+          "At risk",
+          "Needs attention this week"
+        ],
+        [
+          "Done",
+          "Outcome delivered"
+        ]
+      ]
+    },
+    {
+      "name": "Goals",
+      "purpose": "Strategic goals the team commits to",
+      "owner": "Head of Product",
+      "primary_key": "ID",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "Title",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "Owner",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Initiatives",
+      "purpose": "Work that delivers a goal",
+      "owner": "Product Managers",
+      "primary_key": "ID",
+      "columns": [
+        {
+          "name": "ID",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "GoalID",
+          "type": "string",
+          "required": true,
+          "references": "Goals.ID"
+        },
+        {
+          "name": "Title",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "Owner",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "Status",
+          "type": "string",
+          "required": true,
+          "lookup": "lkp_Status.Value"
+        },
+        {
+          "name": "TargetDate",
+          "type": "date",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

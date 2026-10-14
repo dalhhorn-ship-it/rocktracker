@@ -1,0 +1,73 @@
+{
+  "_note": "Synthetic sample rows per sheet, in schema column order. Dates as YYYY-MM-DD. Lookup sheets use the schema seed rows.",
+  "Goals": [
+    [
+      "G1",
+      "Grow active users",
+      "Alex Example"
+    ],
+    [
+      "G2",
+      "Reduce support load",
+      "Sam Example"
+    ]
+  ],
+  "Initiatives": [
+    [
+      "I1",
+      "G1",
+      "Onboarding redesign",
+      "Alex Example",
+      "On track",
+      "2026-12-01"
+    ],
+    [
+      "I2",
+      "G2",
+      "Self service help centre",
+      "Sam Example",
+      "At risk",
+      "2027-02-01"
+    ],
+    [
+      "I3",
+      "G1",
+      "Referral programme",
+      "Jo Example",
+      "On track",
+      "2026-11-15"
+    ],
+    [
+      "I4",
+      "G1",
+      "Pricing page test",
+      "Alex Example",
+      "Done",
+      "2026-09-30"
+    ],
+    [
+      "I5",
+      "G2",
+      "Chatbot triage",
+      "Kim Example",
+      "Not started",
+      null
+    ],
+    [
+      "I6",
+      "G2",
+      "Known issues banner",
+      "Sam Example",
+      "Done",
+      "2026-08-20"
+    ],
+    [
+      "I7",
+      "G1",
+      "Activation emails",
+      "Jo Example",
+      "On track",
+      "2027-01-10"
+    ]
+  ]
+}
