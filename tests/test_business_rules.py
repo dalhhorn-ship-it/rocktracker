@@ -203,7 +203,8 @@ def test_visible_completed_with_actual_today_is_shown_when_in_outlook():
 
 def test_visible_completed_in_future_follows_outlook():
     assert ms_of(LeadStatus="Completed", PlannedDate="2026-12-01")["Visible"] == "Yes"
-    assert ms_of(LeadStatus="Completed", PlannedDate="2027-06-01")["Visible"] == "No"
+    assert ms_of(LeadStatus="Completed", PlannedDate="2027-09-30")["Visible"] == "Yes"
+    assert ms_of(LeadStatus="Completed", PlannedDate="2027-10-01")["Visible"] == "No"
 
 
 def test_visible_completed_undated_is_hidden():
@@ -219,8 +220,10 @@ def test_visible_not_completed_undated_is_shown():
     assert ms_of(PlannedDate=None)["Visible"] == "Yes"
 
 
-def test_visible_not_completed_beyond_outlook_is_hidden():
-    assert ms_of(PlannedDate="2027-04-01")["Visible"] == "No"
+def test_visible_not_completed_beyond_horizon_is_hidden():
+    assert ms_of(PlannedDate="2027-10-01")["Visible"] == "No"
+    assert ms_of(PlannedDate="2027-04-01")["Visible"] == "Yes"   # 3rd quarter, outside the outlook
+    assert ms_of(PlannedDate="2027-04-01")["InOutlook"] == "No"
 
 
 def test_visible_not_completed_in_outlook_is_shown():
@@ -740,3 +743,60 @@ def test_a_typed_zero_progress_stays_zero_on_the_consolidated_sheet():
 
 def test_progress_shown_is_blank_for_a_row_without_a_key():
     assert model(rock(Milestones=[ms(Title="", Progress=50)]))["Milestones"] == []
+
+
+# ------------------------------------------------------------------ horizon, QuarterAhead (change request 2)
+def test_horizon_params_and_labels():
+    p = rm.params(TODAY, STEERCOS)
+    assert p["HorizonEnd"] == D(2027, 9, 30)
+    assert (p["ThirdMCQuarter"], p["FourthMCQuarter"]) == ("MC27Q1", "MC27Q2")
+    s = strip_of()
+    assert (s["ThirdMCQuarter"], s["FourthMCQuarter"]) == ("MC27Q1", "MC27Q2")
+    p2 = rm.params(D(2027, 1, 5))
+    assert p2["HorizonEnd"] == D(2027, 12, 31) and p2["FourthMCQuarter"] == "MC27Q4"
+
+
+@pytest.mark.parametrize("planned,qa", [
+    ("2026-10-01", 1), ("2026-12-31", 1), ("2027-01-01", 2), ("2027-03-31", 2),
+    ("2027-04-01", 3), ("2027-06-30", 3), ("2027-07-01", 4), ("2027-09-30", 4),
+    ("2027-10-01", ""), (None, ""),
+])
+def test_quarter_ahead_edges(planned, qa):
+    assert ms_of(PlannedDate=planned)["QuarterAhead"] == qa
+
+
+def test_quarter_ahead_overdue_from_earlier_quarter_is_1():
+    m = ms_of(PlannedDate="2026-08-01")
+    assert m["Overdue"] == "Yes" and m["QuarterAhead"] == 1 and m["Visible"] == "Yes"
+
+
+def test_quarter_ahead_earlier_quarter_not_overdue_is_blank_and_hidden():
+    m = ms_of(PlannedDate="2026-08-01", Commitment="Not committed")
+    assert m["Overdue"] == "No" and m["QuarterAhead"] == "" and m["Visible"] == "No"
+
+
+def test_quarter_ahead_uses_timeline_date():
+    assert ms_of(PlannedDate="2026-11-01", ForecastDate="2027-05-01")["QuarterAhead"] == 3
+
+
+def test_quarter_ahead_across_year_end():
+    m = ms_at(D(2027, 11, 2), PlannedDate="2028-08-15")
+    assert m["QuarterAhead"] == 4
+
+
+def test_visible_follows_quarter_ahead():
+    for planned, vis in [("2027-07-01", "Yes"), ("2027-10-01", "No")]:
+        assert ms_of(PlannedDate=planned)["Visible"] == vis
+    assert ms_of(PlannedDate=None)["Visible"] == "Yes"
+    assert ms_of(PlannedDate=None)["QuarterAhead"] == ""
+
+
+# ------------------------------------------------------------------ slip severity
+def test_slip_severity_major_minor_blank():
+    assert ms_of(PlannedDate="2026-12-10", ForecastDate="2027-01-14")["SlipSeverity"] == "Major"
+    assert ms_of(PlannedDate="2026-11-20", ForecastDate="2026-12-04")["SlipSeverity"] == "Minor"
+    assert ms_of(PlannedDate="2026-12-31", ForecastDate="2027-01-01")["SlipSeverity"] == "Major"
+    assert ms_of(PlannedDate="2026-10-01", ForecastDate="2026-12-31")["SlipSeverity"] == "Minor"
+    assert ms_of()["SlipSeverity"] == ""
+    assert ms_of(Commitment="Not committed")["SlipSeverity"] == ""
+    assert ms_of(PlannedDate="2026-12-10", ForecastDate="2027-01-14", LeadStatus="Completed")["SlipSeverity"] == ""

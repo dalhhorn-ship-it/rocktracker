@@ -96,6 +96,9 @@ def params(today: dt.date, steercos=()):
         "OutlookEnd": edate(qs, 6) - dt.timedelta(days=1),
         "CurrentMCQuarter": mc_quarter(qs),
         "NextMCQuarter": mc_quarter(edate(qs, 3)),
+        "ThirdMCQuarter": mc_quarter(edate(qs, 6)),
+        "FourthMCQuarter": mc_quarter(edate(qs, 9)),
+        "HorizonEnd": edate(qs, 12) - dt.timedelta(days=1),
         "NextSteerco": nxt,  # None means 0 in Excel
         "HighRiskMin": HIGH_RISK_MIN,
         "StaleDays": STALE_DAYS,
@@ -148,7 +151,7 @@ def milestone_row(m, rock, slot, p, today):
     row = {"MilestoneKey": key}
     for c in MILESTONE_INPUTS:
         row[c] = m.get(c, None if c in DATE_COLUMNS else "")
-    calc = ("Status", "ProgressShown", "SlipWeeks", "TimelineDate", "MCQuarter", "InOutlook", "Visible", "Overdue",
+    calc = ("Status", "ProgressShown", "SlipWeeks", "SlipSeverity", "TimelineDate", "MCQuarter", "QuarterAhead", "InOutlook", "Visible", "Overdue",
             "RockID", "Rock", "GPM")
     if key == "":
         row.update({c: "" for c in calc})
@@ -159,18 +162,31 @@ def milestone_row(m, rock, slot, p, today):
     prog = m.get("Progress", "")
     row["ProgressShown"] = 100 if status == "Completed" else ("" if prog in ("", None) else prog)
     row["SlipWeeks"] = excel_round1((n(fc) - n(pl)) / 7) if status == "Slipped" else ""
+    row["SlipSeverity"] = ""
+    if status == "Slipped":
+        row["SlipSeverity"] = ("Major" if mc_quarter(to_date(fc)) != mc_quarter(to_date(pl)) else "Minor")
     tl = ac if n(ac) > 0 else fc if n(fc) > 0 else pl if n(pl) > 0 else ""
     row["TimelineDate"] = tl
     row["MCQuarter"] = mc_quarter(tl) if n(tl) > 0 else ""
     lo, hi = n(p["MCQuarterStart"]), n(p["OutlookEnd"])
     in_out = (lo <= n(pl) <= hi) or (lo <= n(tl) <= hi)
     row["InOutlook"] = "Yes" if in_out else "No"
-    if status == "Completed":
-        ref = n(ac) if n(ac) > 0 else n(pl)
-        row["Visible"] = "No" if ref < n(today) else row["InOutlook"]
+    overdue = (m.get("Commitment") == "Committed" and status not in ("Completed", "On hold")
+               and 0 < n(tl) < n(today))
+    qs0 = p["MCQuarterStart"]
+    qa = ""
+    if n(tl) > 0 and n(tl) <= n(p["HorizonEnd"]):
+        if n(tl) < n(qs0):
+            qa = 1 if overdue else ""
+        else:
+            d = to_date(tl)
+            qa = ((d.year - qs0.year) * 12 + d.month - qs0.month) // 3 + 1
+    row["QuarterAhead"] = qa
+    ref = n(ac) if n(ac) > 0 else n(pl)
+    if status == "Completed" and ref < n(today):
+        row["Visible"] = "No"
     else:
-        shown = in_out or n(tl) == 0 or n(tl) < n(today)
-        row["Visible"] = "Yes" if shown else "No"
+        row["Visible"] = "Yes" if (n(tl) == 0 or (qa != "" and qa >= 1)) else "No"
     row["Overdue"] = ("Yes" if (m.get("Commitment") == "Committed"
                                 and status not in ("Completed", "On hold")
                                 and 0 < n(tl) < n(today)) else "No")
@@ -315,7 +331,8 @@ def rock_strip(rock, fields, p):
               "MilestonesCompleted", "MilestonesOverdue", "OpenHighRisks", "HighRisksNoAction",
               "PositionsBudgeted", "PositionsActual", "FillPct", "DataSignal", "CheckCall"):
         row[c] = fields[c]
-    row.update(CurrentMCQuarter=p["CurrentMCQuarter"], NextMCQuarter=p["NextMCQuarter"])
+    row.update(CurrentMCQuarter=p["CurrentMCQuarter"], NextMCQuarter=p["NextMCQuarter"],
+               ThirdMCQuarter=p["ThirdMCQuarter"], FourthMCQuarter=p["FourthMCQuarter"])
     return row
 
 

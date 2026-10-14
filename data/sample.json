@@ -1,5 +1,5 @@
 {
- "_note": "Synthetic sample for the rock tab model (schema 2.2.0). 'today' for tests is 2026-10-14 (MC26Q3 current, MC26Q4 next). Each rock holds profile, update (with Attention1 to 3), and one list per block (Milestones, Risks, CallOuts, Decisions, Teams) in slot order; a list entry is a dict of the input (non calculated) schema columns, an empty dict {} leaves that slot empty, slots after the list are empty. 'lookups' rows are appended after the schema seed rows (rows already in the seed, such as steerco 2026-10-21, are skipped when the workbook is built). 'snapshots' rows (RockSnapshots, MilestoneSnapshots) are in schema column order, three weekly snapshots. RockTab is the sheet name. R01 has 6 open decision requests (About check fires). R04 is deliberately half filled (no attention lines, Budgeted 0), R05 is inactive. Milestone cases are listed in tests/test_sample.py.",
+ "_note": "Synthetic sample for the rock tab model (schema 2.3.0). 'today' for tests is 2026-10-14 (MC26Q3 current, MC26Q4 next). Each rock holds profile, update (with Attention1 to 3), and one list per block (Milestones, Risks, CallOuts, Decisions, Teams) in slot order; a list entry is a dict of the input (non calculated) schema columns, an empty dict {} leaves that slot empty, slots after the list are empty. 'lookups' rows are appended after the schema seed rows (rows already in the seed, such as steerco 2026-10-21, are skipped when the workbook is built). 'snapshots' rows (RockSnapshots, MilestoneSnapshots) are in schema column order, three weekly snapshots. RockTab is the sheet name. R01 has 6 open decision requests (About check fires). R04 is deliberately half filled (no attention lines, Budgeted 0), R05 is inactive. Milestone cases are listed in tests/test_sample.py.",
  "today": "2026-10-14",
  "lookups": {
   "lkp_People": [
@@ -613,6 +613,44 @@
      "ADOLink": null,
      "Description": "Extend same day delivery to a third region.",
      "Detail1": "Starts after region two",
+     "Detail2": "Plan to be refined",
+     "Detail3": null,
+     "Progress": null
+    },
+    {
+     "Title": "Fourth region rollout",
+     "Owner": "Tove Nomen",
+     "Commitment": "Committed",
+     "StartDate": "2027-05-03",
+     "PlannedDate": "2027-08-31",
+     "ForecastDate": null,
+     "ActualDate": null,
+     "LeadStatus": null,
+     "Comment": null,
+     "KRLink": "KR 3.3",
+     "ADOId": "ADO-3306",
+     "ADOLink": null,
+     "Description": "Extend same day delivery to a fourth region.",
+     "Detail1": "Depends on region three",
+     "Detail2": "Plan to be refined",
+     "Detail3": null,
+     "Progress": null
+    },
+    {
+     "Title": "Delivery analytics",
+     "Owner": "Tove Nomen",
+     "Commitment": "Committed",
+     "StartDate": "2027-09-01",
+     "PlannedDate": "2027-11-15",
+     "ForecastDate": null,
+     "ActualDate": null,
+     "LeadStatus": null,
+     "Comment": null,
+     "KRLink": "KR 3.4",
+     "ADOId": "ADO-3307",
+     "ADOLink": null,
+     "Description": "Weekly view of delivery promise accuracy per region.",
+     "Detail1": "Depends on region three",
      "Detail2": "Plan to be refined",
      "Detail3": null,
      "Progress": null

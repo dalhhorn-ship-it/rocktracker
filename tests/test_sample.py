@@ -153,3 +153,17 @@ def test_every_milestone_has_an_owner_from_the_people_lookup():
 
 def test_sample_steercos_hold_the_next_steerco():
     assert "2026-10-21" in {row[0] for row in S["lookups"]["lkp_Steercos"]}
+
+
+def test_sample_covers_every_quarter_ahead_and_slip_severity():
+    import sys
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import datetime as dt
+    import rock_model as rm
+    today = dt.date.fromisoformat(S["today"])
+    mdl = rm.build_model([rm.normalize_rock(r) for r in S["rocks"]], today, [x[0] for x in S["lookups"]["lkp_Steercos"]] if S["lookups"].get("lkp_Steercos") else ())
+    rows = mdl["Milestones"]
+    assert {m["QuarterAhead"] for m in rows if m["MilestoneKey"]} >= {1, 2, 3, 4, ""}
+    assert {m["MCQuarter"] for m in rows} >= {"MC26Q3", "MC26Q4", "MC27Q1", "MC27Q2"}
+    assert any(m["MCQuarter"] > "MC27Q2" for m in rows)
+    assert {m["SlipSeverity"] for m in rows} >= {"Major", "Minor", ""}
