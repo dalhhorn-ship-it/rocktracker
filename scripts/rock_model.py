@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
-"""Python mirror of the Rock Tracker calculated columns (schema `excel` plus `rule`).
+"""Python mirror of the Rock Tracker calculated columns (schema 2.1.0 `excel` plus `rule`).
 
-Input: rock tabs, one dict per rock (see `normalize_rock`). Output: the five
-consolidated sheets (Rocks, Epics, Risks, CallOuts, Decisions) as lists of dicts in
-schema column order, with the consolidation filter applied. Used by the tests, the
-LibreOffice recalc check and the preview, so the preview never reads formula cells.
+Input: rock tabs, one dict per rock (see `normalize_rock`). Output: the six consolidated
+sheets (Rocks, Milestones, Risks, CallOuts, Decisions, Teams) as lists of dicts in schema
+column order, with the consolidation filter applied. Used by the tests, the LibreOffice
+recalc check and the preview, so the preview never reads formula cells.
 
 Rock dict shape (all keys optional, missing means empty):
-  profile/update fields by name: RockID, RockName, ValueChain, Lead, GPM, Active,
-    Purpose, Goals, Delivers, UpdateDate, State, MainMessage, PositionsPlanned,
-    PositionsFilled
-  block rows: "Epics", "Risks", "CallOuts", "Decisions": lists of dicts keyed by the
-    typed column names, one item per slot in order. {} or None is an empty slot.
+  profile/update fields by name: RockID, RockName, ValueChain, Lead, GPM, Active, Purpose,
+    Goals, Delivers, UpdateDate, State, MainMessage, Attention1, Attention2, Attention3
+  block rows: "Milestones", "Risks", "CallOuts", "Decisions", "Teams": lists of dicts keyed
+    by the typed column names, one item per slot in order. {} or None is an empty slot.
+    "Epics" is accepted as an alias of "Milestones" for pre 2.1.0 sample data.
 Dates may be date, datetime or YYYY-MM-DD text.
 
 Blank safety follows the workbook: calculated cells are "" when the row has no key.
+List blocks are consolidated with the zero to blank wrap, so a real numeric 0 (Teams
+Budgeted, Actual, FillPct) is "" on the consolidated sheet; the Rocks strip keeps real zeros.
 """
 from __future__ import annotations
 
@@ -30,13 +32,15 @@ STALE_DAYS = 14
 LEVEL_SCORE = {"Low": 1, "Medium": 2, "High": 3}
 STATE_ORDER = ["On track", "At risk", "Off track"]
 
-BLOCKS = ("Epics", "Risks", "CallOuts", "Decisions")
+BLOCKS = ("Milestones", "Risks", "CallOuts", "Decisions", "Teams")
 PROFILE_FIELDS = ["RockID", "RockName", "ValueChain", "Lead", "GPM", "Active", "Purpose",
                   "Goals", "Delivers"]
-UPDATE_FIELDS = ["UpdateDate", "State", "MainMessage", "PositionsPlanned", "PositionsFilled"]
-KEY_PREFIX = {"Epics": "E", "Risks": "R", "CallOuts": "C", "Decisions": "D"}
-KEY_TITLE = {"Epics": "Title", "Risks": "Title", "CallOuts": "Text", "Decisions": "Decision"}
-DATE_COLUMNS = {"UpdateDate", "PlannedDate", "ForecastDate", "Date", "SteercoDate", "DecideBy"}
+UPDATE_FIELDS = ["UpdateDate", "State", "MainMessage", "Attention1", "Attention2", "Attention3"]
+DATE_COLUMNS = {"UpdateDate", "StartDate", "PlannedDate", "ForecastDate", "ActualDate", "Date",
+                "SteercoDate", "DecideBy"}
+MILESTONE_INPUTS = ("Title", "Owner", "Commitment", "StartDate", "PlannedDate", "ForecastDate",
+                    "ActualDate", "LeadStatus", "Comment", "KRLink", "ADOId", "ADOLink",
+                    "Description", "Detail1", "Detail2", "Detail3")
 
 
 # ---------------------------------------------------------------- helpers
@@ -52,11 +56,12 @@ def to_date(v):
 
 def n(d):
     """Excel N() of a date: 0 when empty, else a comparable number."""
-    return 0 if d is None else d.toordinal()
+    return 0 if d is None or d == "" else d.toordinal()
 
 
-def txt(v):
-    return "" if v is None else str(v).strip() if isinstance(v, str) else v
+def num(v):
+    """Excel N() of a number cell: 0 when empty or text."""
+    return v if isinstance(v, (int, float)) and not isinstance(v, bool) else 0
 
 
 def edate(d: dt.date, months: int) -> dt.date:
@@ -66,15 +71,30 @@ def edate(d: dt.date, months: int) -> dt.date:
                                      31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1]))
 
 
+def excel_round1(x):
+    """Excel ROUND(x, 1): half away from zero."""
+    sign = -1 if x < 0 else 1
+    return sign * int(abs(x) * 10 + 0.5 + 1e-9) / 10
+
+
+def mc_quarter(d):
+    """MC quarter label: shift back 3 months, then MC, 2 digit year, Q, quarter."""
+    if d is None or d == "":
+        return ""
+    s = edate(d, -3)
+    return f"MC{s.year % 100:02d}Q{(s.month + 2) // 3}"
+
+
 def params(today: dt.date, steercos=()):
     qs = dt.date(today.year, (today.month - 1) // 3 * 3 + 1, 1)
     dates = sorted(d for d in (to_date(s) for s in steercos) if d)
     nxt = next((d for d in dates if d >= today), None)
     return {
-        "QuarterStart": qs,
-        "QuarterEnd": edate(qs, 3) - dt.timedelta(days=1),
-        "WindowStart": qs,
-        "WindowEnd": edate(qs, 6) - dt.timedelta(days=1),
+        "MCQuarterStart": qs,
+        "MCQuarterEnd": edate(qs, 3) - dt.timedelta(days=1),
+        "OutlookEnd": edate(qs, 6) - dt.timedelta(days=1),
+        "CurrentMCQuarter": mc_quarter(qs),
+        "NextMCQuarter": mc_quarter(edate(qs, 3)),
         "NextSteerco": nxt,  # None means 0 in Excel
         "HighRiskMin": HIGH_RISK_MIN,
         "StaleDays": STALE_DAYS,
@@ -87,8 +107,11 @@ def normalize_rock(rock: dict) -> dict:
         v = rock.get(f)
         out[f] = to_date(v) if f == "UpdateDate" else ("" if v is None else v)
     for b in BLOCKS:
+        src = rock.get(b)
+        if src is None and b == "Milestones":
+            src = rock.get("Epics")
         rows = []
-        for r in rock.get(b) or []:
+        for r in src or []:
             r = dict(r or {})
             for c in list(r):
                 if c in DATE_COLUMNS:
@@ -101,11 +124,15 @@ def normalize_rock(rock: dict) -> dict:
 
 
 # ---------------------------------------------------------------- row rules
-def epic_status(e):
-    lead, commit = e.get("LeadStatus", ""), e.get("Commitment", "")
-    planned, forecast = e.get("PlannedDate"), e.get("ForecastDate")
-    if lead == "Delivered":
-        return "Delivered"
+def _keyed(rock, text, active_needed=True):
+    return text != "" and rock["RockID"] != "" and (not active_needed or rock["Active"] == "Yes")
+
+
+def milestone_status(m):
+    lead, commit = m.get("LeadStatus", ""), m.get("Commitment", "")
+    planned, forecast = m.get("PlannedDate"), m.get("ForecastDate")
+    if lead == "Completed":
+        return "Completed"
     if lead == "On hold":
         return "On hold"
     if commit != "Committed":
@@ -117,46 +144,51 @@ def epic_status(e):
     return "On plan"
 
 
-def epic_row(e, rock, slot, p, today):
-    active = rock["Active"] == "Yes"
-    key = ""
-    if e.get("Title", "") != "" and rock["RockID"] != "" and active:
-        key = f"{rock['RockID']}-E{slot:02d}"
-    row = {"EpicKey": key}
-    for c in ("Title", "ADOId", "Commitment", "PlannedDate", "ForecastDate", "LeadStatus",
-              "Comment", "KRLink"):
-        row[c] = e.get(c, None if c in DATE_COLUMNS else "")
+def milestone_row(m, rock, slot, p, today):
+    key = f"{rock['RockID']}-M{slot:02d}" if _keyed(rock, m.get("Title", "")) else ""
+    row = {"MilestoneKey": key}
+    for c in MILESTONE_INPUTS:
+        row[c] = m.get(c, None if c in DATE_COLUMNS else "")
+    calc = ("Status", "SlipWeeks", "TimelineDate", "MCQuarter", "InOutlook", "Visible", "Overdue",
+            "RockID", "Rock", "GPM")
     if key == "":
-        row.update(Status="", SlipWeeks="", InWindow="", Overdue="", RockID="", Rock="", GPM="")
+        row.update({c: "" for c in calc})
         return row
-    status = epic_status(e)
-    pl, fc = e.get("PlannedDate"), e.get("ForecastDate")
+    status = milestone_status(m)
+    pl, fc, ac = m.get("PlannedDate"), m.get("ForecastDate"), m.get("ActualDate")
     row["Status"] = status
-    row["SlipWeeks"] = round((n(fc) - n(pl)) / 7 + 1e-9, 1) if status == "Slipped" else ""
-    in_win = any(p["WindowStart"] <= d <= p["WindowEnd"] for d in (pl, fc) if d)
-    row["InWindow"] = "Yes" if in_win else "No"
-    eff = n(fc) if n(fc) > 0 else n(pl)
-    overdue = (e.get("Commitment") == "Committed" and status not in ("Delivered", "On hold")
-               and max(n(pl), n(fc)) > 0 and eff < n(today))
-    row["Overdue"] = "Yes" if overdue else "No"
+    row["SlipWeeks"] = excel_round1((n(fc) - n(pl)) / 7) if status == "Slipped" else ""
+    tl = ac if n(ac) > 0 else fc if n(fc) > 0 else pl if n(pl) > 0 else ""
+    row["TimelineDate"] = tl
+    row["MCQuarter"] = mc_quarter(tl) if n(tl) > 0 else ""
+    lo, hi = n(p["MCQuarterStart"]), n(p["OutlookEnd"])
+    in_out = (lo <= n(pl) <= hi) or (lo <= n(tl) <= hi)
+    row["InOutlook"] = "Yes" if in_out else "No"
+    if status == "Completed":
+        ref = n(ac) if n(ac) > 0 else n(pl)
+        row["Visible"] = "No" if ref < n(today) else row["InOutlook"]
+    else:
+        shown = in_out or n(tl) == 0 or n(tl) < n(today)
+        row["Visible"] = "Yes" if shown else "No"
+    row["Overdue"] = ("Yes" if (m.get("Commitment") == "Committed"
+                                and status not in ("Completed", "On hold")
+                                and 0 < n(tl) < n(today)) else "No")
     row.update(RockID=rock["RockID"], Rock=rock["RockName"], GPM=rock["GPM"])
     return row
 
 
 def risk_row(r, rock, slot, p):
-    key = ""
-    if r.get("Title", "") != "" and rock["RockID"] != "" and rock["Active"] == "Yes":
-        key = f"{rock['RockID']}-R{slot:02d}"
+    key = f"{rock['RockID']}-R{slot:02d}" if _keyed(rock, r.get("Title", "")) else ""
     row = {"RiskKey": key}
-    for c in ("Title", "Likelihood", "Impact", "KeyAction", "ActionOwner", "RiskStatus", "TopRisk"):
+    for c in ("Title", "Likelihood", "Impact", "KeyAction", "ActionOwner", "RiskStatus"):
         row[c] = r.get(c, "")
     if key == "":
         row.update(Score="", High="", NeedsAction="", RockID="", Rock="", GPM="")
         return row
-    lk, im = r.get("Likelihood", ""), r.get("Impact", "")
+    lk, im = row["Likelihood"], row["Impact"]
     score = LEVEL_SCORE[lk] * LEVEL_SCORE[im] if lk != "" and im != "" else ""
     row["Score"] = score
-    high = (score if score != "" else 0) >= p["HighRiskMin"]
+    high = num(score) >= p["HighRiskMin"]
     row["High"] = "Yes" if high else "No"
     needs = (high and row["RiskStatus"] != "Closed"
              and (row["KeyAction"] == "" or row["ActionOwner"] == ""))
@@ -166,9 +198,7 @@ def risk_row(r, rock, slot, p):
 
 
 def callout_row(c, rock, slot):
-    key = ""
-    if c.get("Text", "") != "" and rock["RockID"] != "" and rock["Active"] == "Yes":
-        key = f"{rock['RockID']}-C{slot:02d}"
+    key = f"{rock['RockID']}-C{slot:02d}" if _keyed(rock, c.get("Text", "")) else ""
     row = {"CallOutKey": key, "Text": c.get("Text", ""), "Date": c.get("Date"),
            "CallOutStatus": c.get("CallOutStatus", "")}
     on = key != ""
@@ -179,15 +209,14 @@ def callout_row(c, rock, slot):
 
 def decision_row(d, rock, slot, p):
     # Kept after the rock closes: no Active condition.
-    key = ""
-    if d.get("Decision", "") != "" and rock["RockID"] != "":
-        key = f"{rock['RockID']}-D{slot:02d}"
+    key = f"{rock['RockID']}-D{slot:02d}" if _keyed(rock, d.get("Decision", ""), False) else ""
     row = {"DecisionKey": key}
     for c in ("Decision", "SteercoDate", "DecideBy", "ChoicePoint", "Options", "Outcome",
               "Owner", "FollowUp"):
         row[c] = d.get(c, None if c in DATE_COLUMNS else "")
     if key == "":
-        row.update(DecisionState="", DueNextSteerco="", OpenFollowUp="", RockID="", Rock="", GPM="")
+        row.update(DecisionState="", RequestNo="", DueNextSteerco="", OpenFollowUp="",
+                   RockID="", Rock="", GPM="")
         return row
     state = "Requested" if row["Outcome"] == "" else "Decided"
     nxt = n(p["NextSteerco"])
@@ -195,74 +224,146 @@ def decision_row(d, rock, slot, p):
            and (n(row["SteercoDate"]) == nxt
                 or (n(row["DecideBy"]) > 0 and n(row["DecideBy"]) <= nxt)))
     row["DecisionState"] = state
+    row["RequestNo"] = ""  # filled in by the rock, which knows the other rows
     row["DueNextSteerco"] = "Yes" if due else "No"
     row["OpenFollowUp"] = "Yes" if state == "Decided" and row["FollowUp"] != "Closed" else "No"
     row.update(RockID=rock["RockID"], Rock=rock["RockName"], GPM=rock["GPM"])
     return row
 
 
-def rock_strip(rock, epics, risks, p, today):
-    """Rocks row. `epics` and `risks` are this rock's computed block rows (all slots)."""
-    if rock["RockID"] == "":
-        return None
+def number_request_nos(decisions):
+    """RequestNo: position of a Requested row among the rock's Requested rows, by slot."""
+    k = 0
+    for d in decisions:
+        if d["DecisionState"] == "Requested":
+            k += 1
+            d["RequestNo"] = k
+    return decisions
+
+
+def team_row(t, rock, slot):
+    key = f"{rock['RockID']}-T{slot:02d}" if _keyed(rock, t.get("TeamName", "")) else ""
+    row = {"TeamKey": key, "TeamName": t.get("TeamName", ""), "TeamLead": t.get("TeamLead", ""),
+           "Budgeted": t.get("Budgeted", ""), "Actual": t.get("Actual", "")}
+    if key == "":
+        row.update(FillPct="", RockID="", Rock="", GPM="")
+        return row
+    row["FillPct"] = num(row["Actual"]) / row["Budgeted"] if num(row["Budgeted"]) > 0 else ""
+    row.update(RockID=rock["RockID"], Rock=rock["RockName"], GPM=rock["GPM"])
+    return row
+
+
+def rock_fields(rock, milestones, risks, teams, decisions, p, today):
+    """The calculated fields of the rock tab (sections 1 request lines and 2 Signals)."""
     ud = rock["UpdateDate"]
     age = (today - ud).days if ud else ""
-    committed = [e for e in epics if e["EpicKey"] and e["Commitment"] == "Committed"
-                 and e["InWindow"] == "Yes"]
-    slipped = [e for e in epics if e["EpicKey"] and e["Status"] == "Slipped"
-               and e["InWindow"] == "Yes"]
-    onplan = [e for e in committed if e["Status"] in ("On plan", "On watch", "Delivered")]
-    delivered = [e for e in committed if e["Status"] == "Delivered"]
-    open_high = [r for r in risks if r["RiskKey"] and r["High"] == "Yes"
-                 and r["RiskStatus"] != "Closed"]
-    no_action = [r for r in risks if r["RiskKey"] and r["NeedsAction"] == "Yes"]
-    off = any(e["Status"] == "Slipped" and p["QuarterStart"] <= e["PlannedDate"] <= p["QuarterEnd"]
-              and n(e["ForecastDate"]) > n(p["QuarterEnd"])
-              for e in epics if e["EpicKey"] and e["PlannedDate"])
-    signal = "Off track" if off else ("At risk" if len(slipped) + len(no_action) > 0 else "On track")
+    mk = [m for m in milestones if m["MilestoneKey"]]
+    committed = [m for m in mk if m["Commitment"] == "Committed" and m["InOutlook"] == "Yes"]
+    slipped = [m for m in mk if m["Status"] == "Slipped" and m["InOutlook"] == "Yes"]
+    onplan = [m for m in committed if m["Status"] in ("On plan", "On watch", "Completed")]
+    completed = [m for m in committed if m["Status"] == "Completed"]
+    overdue = [m for m in mk if m["Overdue"] == "Yes"]
+    rk = [r for r in risks if r["RiskKey"]]
+    open_high = [r for r in rk if r["High"] == "Yes" and r["RiskStatus"] != "Closed"]
+    no_action = [r for r in rk if r["NeedsAction"] == "Yes"]
+    tk = [t for t in teams if t["TeamKey"]]
+    budgeted = sum(num(t["Budgeted"]) for t in tk)
+    actual = sum(num(t["Actual"]) for t in tk)
+    signal = ""
+    if rock["RockID"] != "":
+        off = any(m["Status"] == "Slipped"
+                  and n(p["MCQuarterStart"]) <= n(m["PlannedDate"]) <= n(p["MCQuarterEnd"])
+                  and n(m["ForecastDate"]) > n(p["MCQuarterEnd"]) for m in mk)
+        signal = ("Off track" if off else
+                  "At risk" if len(slipped) + len(overdue) + len(no_action) > 0 else "On track")
     state = rock["State"]
     check = ""
     if state != "" and signal != "":
         check = "Yes" if STATE_ORDER.index(signal) > STATE_ORDER.index(state) else "No"
+    requests = {d["RequestNo"]: d["Decision"] for d in decisions
+                if d["DecisionState"] == "Requested"}
+    f = {
+        "OpenRequests": sum(1 for d in decisions if d["DecisionState"] == "Requested"),
+    }
+    for i in range(1, 6):
+        f[f"Request{i}"] = requests.get(i, "")
+    f.update(
+        UpdateAgeDays=age, DataSignal=signal, CheckCall=check,
+        OutlookQuarters=f"{p['CurrentMCQuarter']} and {p['NextMCQuarter']}",
+        MilestonesCommitted=len(committed), MilestonesSlipped=len(slipped),
+        MilestonesOnPlan=len(onplan), MilestonesCompleted=len(completed),
+        MilestonesOverdue=len(overdue), OpenHighRisks=len(open_high),
+        HighRisksNoAction=len(no_action), PositionsBudgeted=budgeted, PositionsActual=actual,
+        FillPct=actual / budgeted if budgeted > 0 else "",
+    )
+    return f
+
+
+def rock_strip(rock, fields, p):
+    """Rocks row from the rock tab fields; None when the tab has no RockID."""
+    if rock["RockID"] == "":
+        return None
 
     def blank(v):  # strip returns "" for blanks, keeps real zeros
         return "" if v in ("", None) else v
 
-    row = {c: blank(rock[c]) for c in PROFILE_FIELDS}
-    row.update({c: blank(rock[c]) for c in UPDATE_FIELDS})
-    row.update(
-        UpdateAgeDays=age,
-        Stale="Yes" if (ud is None or (age if age != "" else 0) > p["StaleDays"]) else "No",
-        EpicsCommitted=len(committed), EpicsSlipped=len(slipped), EpicsOnPlan=len(onplan),
-        EpicsDelivered=len(delivered), OpenHighRisks=len(open_high),
-        HighRisksNoAction=len(no_action), DataSignal=signal, CheckCall=check,
-    )
+    ud = rock["UpdateDate"]
+    row = {c: blank(rock[c]) for c in PROFILE_FIELDS + UPDATE_FIELDS}
+    row["Stale"] = "Yes" if (ud is None or num(fields["UpdateAgeDays"]) > p["StaleDays"]) else "No"
+    for c in ("UpdateAgeDays", "MilestonesCommitted", "MilestonesSlipped", "MilestonesOnPlan",
+              "MilestonesCompleted", "MilestonesOverdue", "OpenHighRisks", "HighRisksNoAction",
+              "PositionsBudgeted", "PositionsActual", "FillPct", "DataSignal", "CheckCall"):
+        row[c] = fields[c]
+    row.update(CurrentMCQuarter=p["CurrentMCQuarter"], NextMCQuarter=p["NextMCQuarter"])
     return row
 
 
 # ---------------------------------------------------------------- consolidation
+def compute_rock(raw, p, today):
+    """Everything one rock tab computes: block rows, tab fields and the strip."""
+    rock = normalize_rock(raw)
+    ms = [milestone_row(m, rock, i, p, today) for i, m in enumerate(rock["Milestones"], 1)]
+    rs = [risk_row(r, rock, i, p) for i, r in enumerate(rock["Risks"], 1)]
+    cs = [callout_row(c, rock, i) for i, c in enumerate(rock["CallOuts"], 1)]
+    ds = number_request_nos([decision_row(d, rock, i, p)
+                             for i, d in enumerate(rock["Decisions"], 1)])
+    ts = [team_row(t, rock, i) for i, t in enumerate(rock["Teams"], 1)]
+    fields = rock_fields(rock, ms, rs, ts, ds, p, today)
+    return {"rock": rock, "fields": fields, "strip": rock_strip(rock, fields, p),
+            "Milestones": ms, "Risks": rs, "CallOuts": cs, "Decisions": ds, "Teams": ts}
+
+
+def zero_wrap(row):
+    """List block consolidation wraps a real numeric 0 to blank."""
+    return {k: ("" if isinstance(v, (int, float)) and not isinstance(v, bool) and v == 0 else v)
+            for k, v in row.items()}
+
+
+KEY = {"Milestones": "MilestoneKey", "Risks": "RiskKey", "CallOuts": "CallOutKey",
+       "Decisions": "DecisionKey", "Teams": "TeamKey"}
+
+
 def build_model(rocks, today: dt.date, steercos=(), schema=None):
-    """Return {"Rocks": [...], "Epics": [...], "Risks": [...], "CallOuts": [...],
-    "Decisions": [...]} for the given rock tabs (in tab order) and frozen today."""
+    """Return {"Rocks", "Milestones", "Risks", "CallOuts", "Decisions", "Teams"} (lists of
+    dicts) for the given rock tabs (in tab order) and frozen today."""
     p = params(today, steercos)
-    out = {"Rocks": [], "Epics": [], "Risks": [], "CallOuts": [], "Decisions": []}
+    out = {"Rocks": [], **{b: [] for b in BLOCKS}}
     for raw in rocks:
-        rock = normalize_rock(raw)
-        epics = [epic_row(e, rock, i, p, today) for i, e in enumerate(rock["Epics"], 1)]
-        risks = [risk_row(r, rock, i, p) for i, r in enumerate(rock["Risks"], 1)]
-        calls = [callout_row(c, rock, i) for i, c in enumerate(rock["CallOuts"], 1)]
-        decs = [decision_row(d, rock, i, p) for i, d in enumerate(rock["Decisions"], 1)]
-        strip = rock_strip(rock, epics, risks, p, today)
-        if strip is not None:
-            out["Rocks"].append(strip)
-        # consolidation filter: key must be non empty text
-        out["Epics"] += [r for r in epics if r["EpicKey"]]
-        out["Risks"] += [r for r in risks if r["RiskKey"]]
-        out["CallOuts"] += [r for r in calls if r["CallOutKey"]]
-        out["Decisions"] += [r for r in decs if r["DecisionKey"]]
+        c = compute_rock(raw, p, today)
+        if c["strip"] is not None:
+            out["Rocks"].append(c["strip"])
+        for b in BLOCKS:  # consolidation filter: key must be non empty text
+            out[b] += [zero_wrap(r) for r in c[b] if r[KEY[b]]]
     if schema is not None:
         out = order_columns(out, schema)
     return out
+
+
+def tab_fields(rocks, today: dt.date, steercos=()):
+    """Calculated rock tab fields (OpenRequests, Request1 to 5, Signals) per rock tab, in
+    tab order, for the recalc check of the tab cells."""
+    p = params(today, steercos)
+    return [compute_rock(raw, p, today)["fields"] for raw in rocks]
 
 
 def order_columns(model, schema):

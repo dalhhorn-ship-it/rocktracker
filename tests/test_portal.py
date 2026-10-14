@@ -35,6 +35,53 @@ def test_design_system_present(spec):
         assert token + ":" in tokens
 
 
+def _css_block(css, start):
+    i = css.index(start)
+    j = css.index("{", i)
+    depth, k = 0, j
+    while True:
+        depth += css[k] == "{"
+        depth -= css[k] == "}"
+        if depth == 0:
+            return css[j + 1:k]
+        k += 1
+
+
+def _vars(block):
+    return dict(re.findall(r"(--[a-z0-9-]+):\s*(#[0-9A-Fa-f]{6})", block))
+
+
+def _lum(hex_):
+    ch = [int(hex_[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    ch = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in ch]
+    return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2]
+
+
+def _contrast(a, b):
+    hi, lo = sorted((_lum(a), _lum(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def test_dark_mode_tokens():
+    css = (ROOT / "design" / "tokens.css").read_text()
+    light = _vars(_block_root(css))
+    dark = _vars(_css_block(css, ':root[data-theme="dark"]'))
+    auto = _vars(_css_block(css, ":root:not([data-theme=\"light\"])"))
+    assert "--card" in light and "--card" in dark
+    missing = set(light) - set(dark) - {"--brand-red"}
+    assert not missing, f"no dark value for {sorted(missing)}"
+    assert dark == auto, "prefers-color-scheme block must match the data-theme dark block"
+    for mode, tokens in (("light", light), ("dark", dark)):
+        for fg in ("--ink", "--ink-2", "--ink-3", "--muted", "--subtle", "--accent"):
+            for bg in ("--bg", "--card"):
+                ratio = _contrast(tokens[fg], tokens[bg])
+                assert ratio >= 4.5, f"{mode} {fg} on {bg} is {ratio:.2f}"
+
+
+def _block_root(css):
+    return _css_block(css, ":root{")
+
+
 def test_tabs_are_questions_with_full_list_last(spec, content_tabs):
     assert spec["tabs"][-1]["question"] == "The full list"
     assert len(content_tabs) == len(spec["tabs"]) - 1
