@@ -2,6 +2,18 @@
 
 Owner: `architect`. Newest first.
 
+## 0021 Portal layout for change request 2 (14 Oct 2026, operator, PRD change request 2 items 2 to 5)
+
+* **Context:** change request 2 merges the roadmap into tab 2, turns tab 3 into the full list and asks for a bar style roadmap. The full brief is `portal/COWORK_PORTAL.md`.
+* **Decision 1, tabs:** tab 2 combines, top to bottom, header, roadmap, key metrics and teams. Tab 3 is the full list of milestones with the description. Tabs 1, 3.1, 4 and 5 are as before; tab 1 adds the major risks at the bottom.
+* **Decision 2, horizon selector:** 1Q to 4Q, default 2Q, shared by tabs 2 and 3. It filters on Milestones.QuarterAhead (1 to N); undated milestones show as "Not dated yet" whatever the horizon. The portal does no date logic (0020).
+* **Decision 3, roadmap bar encoding:** a grey plan bar from StartDate to PlannedDate (none when StartDate is empty, only the marker; dashed for Not committed and Choice point); when Status is Slipped, a shaded extension from PlannedDate to ForecastDate, crimson tint for SlipSeverity Major and amber tint for Minor; a status coloured tick at TimelineDate (an earlier forecast sits on the bar); a label with the date and a word (slipped, completed, overdue, on watch). A Completed milestone ends at its actual date through TimelineDate.
+* **Decision 4, tokens:** two new tokens in `design/tokens.css`, `--amber-tint` (light `#F5E3D1`, dark `#3A2A1B`) and `--plan-bar` (light `#D5D7DA`, dark `#3A3D43`), so no colour is invented in the brief.
+* **Decision 5, masthead:** UPDATED (most recent UpdateDate in view) and NEXT STEERCO (earliest SteercoDate with DueNextSteerco Yes) top right, with the LIGHT and DARK text switch. Portfolio (GPM) and rock filters sit under the tab bar on every tab.
+* **Decision 6, data access:** the full portal reads the six consolidated sheets by header name, keeps only Active rocks (decisions keep closed rocks for tab 5) and uses the calculated columns as they are.
+* **Decision 7, fallback:** `portal/COWORK_ROCK_TEST.md` (one rock, reads one rock tab) stays as the fallback while the Excel check T05 is open and the consolidated sheets may show errors.
+* **Consequences:** PLAN T14 to T16 follow the brief. `portal/COWORK_ROCK_TEST.md` still has the older tab layout (TECH_DEBT TD33). No schema change.
+
 ## 0020 Roadmap horizon of up to 4 MC quarters, QuarterAhead and SlipSeverity (14 Oct 2026, operator, PRD change request 2 item 1)
 
 * **Context:** the roadmap selector shows 1 to 4 MC quarters ahead (default 2). The portal should only filter, with no date logic.

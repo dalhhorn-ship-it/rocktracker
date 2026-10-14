@@ -81,8 +81,8 @@ These go verbatim on the About sheet and in the portal, so nobody has to guess.
 | # | Decision | Who | When | Where in the tool |
 | :--- | :--- | :--- | :--- | :--- |
 | D1 | What must steerco hear and decide today? | Steerco | Each steerco | Tab 1 |
-| D2 | Which rocks need attention: roadmap, risk or resourcing? | Director, steerco | Weekly, each steerco | Tab 2 |
-| D3 | Do we confirm, change or re baseline the six month commitments? | Steerco | Each steerco | Tab 3 |
+| D2 | Which rocks need attention: roadmap, risk or resourcing? | Director, steerco | Weekly, each steerco | Tab 2 (header, roadmap, metrics, teams) |
+| D3 | Do we confirm, change or re baseline the commitments in the horizon? | Steerco | Each steerco | Tabs 2 and 3 (roadmap and full list) |
 | D4 | Which choice points do we close, and which way? | Steerco | Each steerco | Tab 3.1 |
 | D5 | Which risks need help, an owner or an escalation? | Director, steerco | Each steerco | Tab 4 |
 | D6 | What did we decide before, and did it happen? | Director, steerco | Each steerco, quarter end | Tab 5 |
@@ -90,22 +90,25 @@ These go verbatim on the About sheet and in the portal, so nobody has to guess.
 
 ## Portal tabs (the steerco reading order, set by the user)
 
-Aligned to change request 1 by the architect (14 Oct 2026). The portal reads in the order steerco runs; each section is its own tab, in this order: 1, 2, 3, 3.1, 4, 5, then the full list. Each tab follows `design/DESIGN_SYSTEM.md` (headline, lede, narrative, insight cards, KPI tiles with one spotlight, charts, full list) in light and dark mode. Every tab can be filtered to one rock or one GPM portfolio, so there is no separate rock page. The architect finalises tiles in `portal/portal.spec.json`.
+Aligned to change requests 1 and 2 and to `portal/COWORK_PORTAL.md` (DECISIONS 0021). The portal reads in the order steerco runs; each section is its own tab: 1, 2, 3, 3.1, 4, 5. Each tab follows `design/DESIGN_SYSTEM.md` in light and dark mode. The masthead shows UPDATED (most recent update date) and NEXT STEERCO top right. Every tab can be filtered to one rock or one GPM portfolio, so there is no separate rock page. The architect finalises tiles in `portal/portal.spec.json`.
 
 **Tab 1. "What does steerco need to hear?"** (M1). Supports D1. Everything here is written by the initiative lead on the rock tab.
-* Per rock: main message (one or two lines), up to 3 key risks or attention points (one line each), up to 5 decisions requested (one line each, the first 5 open requests on the rock tab, with decide by date and a choice point label), and open call outs.
+* Per rock: main message (one or two lines), up to 3 key risks or attention points (one line each), up to 5 decisions requested (one line each, the first 5 open requests on the rock tab, with decide by date, a choice point label and a next steerco label), and open call outs.
+* At the bottom: the major risks, that is every open High risk, highest score first, with key action and owner.
 * Spotlight: decisions requested for this steerco.
 
-**Tab 2. "Where do the rocks stand?"** (M1). Supports D2. Overall state per rock across three lenses.
-* Per rock: state (On track, At risk, Off track), roadmap (committed milestones slipped x of y in the outlook, overdue milestones), risks (open high risks), resourcing (actual of budgeted positions and fill %, summed over the rock's teams; the teams list with team lead and fill % per team).
-* Spotlight: rocks At risk or Off track.
+**Tab 2. "Where do we stand?"** (M1). Supports D2. One tab with four parts, top to bottom: header, roadmap, key metrics, teams.
+* Header: committed milestones slipped x of y in the two quarter outlook and the overdue count.
+* Roadmap: milestones in time, one bar per milestone, grouped by rock. A horizon selector (1Q, 2Q, 3Q, 4Q, default 2Q) shows milestones whose QuarterAhead is 1 up to the chosen number. The bar runs from start date to planned date in grey; a later forecast extends it in a tint (crimson for a Major slip, amber for a Minor one, from SlipSeverity); a tick coloured by status marks the adjusted date; a Completed milestone ends at its actual date; a milestone without a start date is a single marker; undated milestones are listed as "Not dated yet". Each milestone opens the pop up.
+* Key metrics: six tiles with one spotlight (rocks needing attention): state per rock, roadmap slipped x of y, on plan, open high risks, resourcing (actual of budgeted positions and fill %), freshness.
+* Teams: team, team lead, budgeted, actual and fill % per team, with totals.
 
-**Tab 3. "What ships this MC quarter and next?"** (M1). Supports D3.
-* Outlook timeline of the current and the next MC quarter per rock showing Committed, Choice point and Not committed, with planned vs forecast. Completed milestones in the past drop out; milestones not completed whose date has passed stay visible as overdue; milestones without a date sit in a "Not dated yet" list.
-* Filter on MC quarter (default: current and next).
-* Each milestone is clickable and opens a pop up: owner, description, start, planned and forecast date, status and the three detail bullets, plus a link to ADO when the ADO link is filled in.
-* Spotlight: committed milestones on plan (x of y).
-* **3.1 "Which choices are open?"** Choice points only: what the choice is, options, decide by date, rock. Spotlight: choice points due by the next steerco.
+**Tab 3. "What are we delivering?"** (M1). Supports D3. The full list of deliveries (milestones), one card per milestone grouped by rock, including the description, up to three detail bullets, the facts (owner, commitment, dates, key result link), a progress bar and the ADO link when filled.
+* Same horizon selector as tab 2 (the choice carries over) and a filter on MC quarter; overdue milestones from an earlier quarter and undated ones show under All.
+* Each milestone is clickable and opens a pop up: owner, description, start, planned and forecast date, status, progress, the three detail bullets, plus a link to ADO when the ADO link is filled in.
+* Completed milestones in the past drop out (Visible in the workbook); milestones not completed whose date has passed stay visible as overdue.
+
+**Tab 3.1 "Which choices are open?"** (M1). Supports D4. Choice points only: what the choice is, options, decide by date, rock. Spotlight: choice points due by the next steerco.
 
 **Tab 4. "What could stop us?"** (M1). Supports D5.
 * 3 by 3 risk matrix with counts per cell, then the risk list with key action and owner.
@@ -114,7 +117,7 @@ Aligned to change request 1 by the architect (14 Oct 2026). The portal reads in 
 **Tab 5. "What did steerco decide?"** (M1). Supports D6. Decision log from previous steercos.
 * Each decision: steerco date, rock, decision, outcome, owner, follow up status.
 * Spotlight: decisions with an open follow up.
-* The log is the same table as the decisions requested on tab 1: the lead raises the request as one line in the decisions section of the rock tab, section 1 and tab 1 show the first 5 open ones, and after steerco the outcome is filled in on the same row. Nothing is typed twice (DECISIONS 0012).
+* The log is the same table as the decisions requested on tab 1: the lead raises the request as one line in the decisions section of the rock tab, tab 1 shows the first 5 open ones, and after steerco the outcome is filled in on the same row. Nothing is typed twice (DECISIONS 0012).
 
 ## Only essential information
 

@@ -238,4 +238,7 @@ tests/                       the test system
 Project level lessons. One line each, newest first: `date: lesson (where it bit us)`.
 `/retro` decides which of these should move into the template itself.
 
-* (none yet)
+* 2026-10-14: rock state and milestone status colours must follow the user's existing reports, not our own palette (the first brief used colours the user did not recognise).
+* 2026-10-14: LibreOffice cannot evaluate VSTACK, FILTER or CHOOSECOLS, so the consolidated sheets are only proven in Excel; ship the one rock fallback brief and list the Excel check (T05, TD14, TD29) early.
+* 2026-10-14: parallel developers editing `docs/TECH_DEBT.md` and `docs/PLAN.md` caused merge noise and a duplicate id (TD31); batch debt and plan changes through the operator.
+* 2026-10-14: user feedback after seeing a real artifact changed the model twice (change requests 1 and 2), so ship a testable sample workbook and preview early and keep the schema, sample and rule mirror cheap to change together.

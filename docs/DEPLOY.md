@@ -19,11 +19,15 @@ step by step instructions for the product owner; this file is the record on the 
 5. Enter or paste the first real data, then open the About sheet and check the row counts.
 
 ## 3. Build the portal in Copilot Cowork
-1. Open Copilot Cowork and point it at the deployed workbook (not a local copy).
-2. Attach `PORTAL_BUILD.md` and `preview.html` from the package and ask Cowork to
-   build the portal described in PORTAL_BUILD.md.
-3. Compare with `preview.html` and walk the checklist in section 6 of `PORTAL_BUILD.md`.
-4. Note anything Cowork could not do in `docs/TECH_DEBT.md` and in "Lessons learned".
+The full portal brief is `portal/COWORK_PORTAL.md` (schema 2.3.0, all six tabs, filters, roadmap bars, light and dark mode).
+1. Open the deployed workbook once in Excel for the web, so it calculates and saves its values. A freshly generated file has no stored results and Cowork would find the calculated columns empty.
+2. In Copilot Cowork link the workbook from SharePoint (not a local copy).
+3. Open `portal/COWORK_PORTAL.md`. Paste everything below the first line (the `---` under the intro) and above the "For you (not for Cowork)" heading into Cowork, and leave the "For you" section out.
+4. When Cowork has built the portal, check it against the values in the "For you" section (what the sample workbook should show) and the checklist at the end of the brief. With real data the numbers differ; the layout and the rules must match.
+5. Fallback: if the six summary sheets (Rocks, Milestones, Risks, CallOuts, Decisions, Teams) show errors in Excel, the Excel check T05 has failed. Use `portal/COWORK_ROCK_TEST.md`, which reads one rock tab, until that is fixed. It has the older tab layout (TECH_DEBT TD33).
+6. Note anything Cowork could not do in `docs/TECH_DEBT.md` and in "Lessons learned".
+
+Once T14 to T18 land, the handoff package carries the same instructions as `PORTAL_BUILD.md` and `preview.html`.
 
 ## 4. Changing the structure later
 The live workbook holds real data, so never replace it with a fresh build.
@@ -34,7 +38,7 @@ The live workbook holds real data, so never replace it with a fresh build.
 4. Upload the migrated file as a new version of the same file, at a quiet moment.
 5. Regenerate the portal in Copilot Cowork if tabs, KPIs or columns changed.
 
-## 6. Weekly snapshot (history): setup for the director, one time, about 10 minutes
+## 5. Weekly snapshot (history): setup for the director, one time, about 10 minutes
 The snapshot script `scripts/office/snapshot.ts` appends one row per active rock to `RockSnapshots` and one row per milestone of an active rock to `MilestoneSnapshots` (DECISIONS 0007). Running it twice on the same day adds nothing the second time.
 
 Prerequisite: the tenant allows Office Scripts and Power Automate. If not, use the button route below only.

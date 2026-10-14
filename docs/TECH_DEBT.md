@@ -2,7 +2,7 @@
 
 Owner: `developer`. Updated after every task. Entries TD01 to TD08 recorded by the architect at design time (review round 1, 14 Oct 2026).
 
-Open: 29 (high 1, medium 7, low 21). Resolved: 4.
+Open: 30 (high 1, medium 7, low 22). Resolved: 4.
 
 ## Open
 
@@ -17,7 +17,7 @@ Open: 29 (high 1, medium 7, low 21). Resolved: 4.
 | TD06 | Sheet protection has no password: it is a guard rail against inserted rows, not security; any editor can change any rock tab | medium | none in Excel | SharePoint permissions limit editors to leads, GPMs, owner and director; version history as backstop (ARCHITECTURE Permissions) | 14 Oct 2026 |
 | TD07 | Slot based keys: a lead who reuses a milestone slot for a different milestone mixes two milestones in MilestoneSnapshots history (titles are kept) | low | small | Guide rule "a slot is one milestone for life"; M3 look back groups by key and title | 14 Oct 2026 |
 | TD08 | Excel formulas and the Python mirror (`rock_model.py`) can drift; consolidation cells cannot be recalculated outside Excel | low | small | T09 LibreOffice comparison for all rock tab formulas; one manual Excel check per release in DEPLOY | 14 Oct 2026 |
-| TD10 | `snapshot.ts` is verified only by `tsc` against a minimal declaration file and by the Python mirror; the Office Scripts runtime (addRows, protect/unprotect, used range of the spills, serial dates) is untested | low | small | One manual run in the real workbook per release (DEPLOY section 6, steps A3 and B5); run the script inside the deploy test run | 14 Oct 2026 |
+| TD10 | `snapshot.ts` is verified only by `tsc` against a minimal declaration file and by the Python mirror; the Office Scripts runtime (addRows, protect/unprotect, used range of the spills, serial dates) is untested | low | small | One manual run in the real workbook per release (DEPLOY section 5, steps A3 and B5); run the script inside the deploy test run | 14 Oct 2026 |
 | TD11 | `data/sample.json` is hand generated and snapshot rows are computed with a small status function that duplicates the schema rules. The T07 builder now reads the new shape (rocks with block lists, lookups, snapshots) | low | S | T08 `rock_model.py` recomputes snapshot rows and a test compares them with the stored ones | 14 Oct 2026 |
 | TD13 | `rock_model.py` raises on a Likelihood, Impact or State value outside the lookups where Excel would show an error value; dropdowns prevent it in the workbook | low | S | Decide in review whether the mirror should return "" instead | 14 Oct 2026 |
 | TD14 | Excel only behaviour that nothing here can check: ANCHORARRAY (`Rocks!$A$2#`) inside the duplicate Rock ID conditional format, defined names as dropdown sources written without a leading equals sign, the warning style steerco dropdown, 3D `VSTACK` itself (TD01), pink conditional formats using `start_color` and `end_color`, protection options on rock tabs after Duplicate | medium | S | Part of the user spike and deploy test run: open the deployment file in Excel for the web, duplicate RockTemplate, type a duplicate Rock ID, pick an unlisted steerco date, press Save snapshot; add results to DEPLOY | 14 Oct 2026 |
@@ -36,7 +36,8 @@ Open: 29 (high 1, medium 7, low 21). Resolved: 4.
 | TD27 | T40: `is_v1` detection of a v1 live copy is a heuristic (sheet names Epics or EpicSnapshots, or a v1 rock tab cell layout) | low | S | Stamp the schema version in a defined name on every build and read it first | 14 Oct 2026 |
 | TD28 | T40: v1 to 2.1.0 migration is tested only on a synthetic v1 fixture, never on a real live copy | low | S | Run `--deploy --from` on the real v1 file once and compare typed values before go live | 14 Oct 2026 |
 | TD29 | T46: LibreOffice 24.2 cannot evaluate the consolidated sheets (VSTACK, FILTER, CHOOSECOLS, LET with SEQUENCE), so the Teams column guard `IF((f=0)*(c<>4)*(c<>5)*(c<>6),"",f)` (DECISIONS 0018) is tested as formula text and on the mirror only; the Excel result is unverified. An empty Budgeted or Actual cell now shows 0 on the Teams sheet | medium | S | Add to the Excel for the web deploy test run (TD14): a team with Actual 0 must show 0, an empty Budgeted must show 0 and FillPct blank | 14 Oct 2026 |
-| TD32 | Change request 2 item 1: a milestone dated in a past quarter that is not Overdue (Not committed or On hold) now has a blank QuarterAhead and is hidden (Visible No); before it showed as overdue | low | S | Confirm with the product owner that this is wanted; otherwise let Visible show any past dated, not Completed milestone | 14 Oct 2026 |
+| TD32 | Open question to the product owner: is it wanted that a milestone dated in a past quarter that is not Overdue (Not committed or On hold) has a blank QuarterAhead and is hidden (Visible No, DECISIONS 0020)? Before change request 2 it showed as overdue | low | S | Ask the product owner; if not wanted, let Visible show any past dated, not Completed milestone (schema change by the architect) | 14 Oct 2026 |
+| TD33 | `portal/COWORK_ROCK_TEST.md` still has the pre change request 2 tab layout (tab 2 resourcing only, tab 3 roadmap list, no horizon selector, no roadmap bars, no UPDATED) and schema 2.1.0 columns; it is only the fallback while T05 is open | low | S | Update it to the layout of `portal/COWORK_PORTAL.md` for one rock, or delete it once T05 passes | 14 Oct 2026 |
 
 ## Resolved
 
@@ -45,4 +46,4 @@ Open: 29 (high 1, medium 7, low 21). Resolved: 4.
 | TD12 | `rock_model.py` loader `rocks_from_workbook` was tested only on a minimal workbook | 14 Oct 2026 | T07: the `rows` fixture in `tests/conftest.py` now loads the generated sample workbook with it and `tests/test_workbook.py` checks the result against the schema |
 | TD15 | About sheet was minimal | 14 Oct 2026 | T11: `build_about` now writes checks, update guide, add and close rock steps, rules and definitions from `about` in the schema, in both the sample and deployment workbook; `tests/test_about.py` |
 | TD30 | A real 0 in Teams Budgeted, Actual or FillPct showed blank on the consolidated sheet (zero to blank wrap) | 14 Oct 2026 | T46, DECISIONS 0018: `keep_zero_columns` in the schema, column aware wrap in `consolidation_formula()`, mirror `zero_wrap` aligned, test exemption removed, mirror and anchor formula tests |
-| TD31 | `rock_model` accepted `Epics` as an alias of `Milestones` | 14 Oct 2026 | T46: alias and its test removed; nothing used it |
+| TD34 | `rock_model` accepted (was a second TD31, renumbered) `Epics` as an alias of `Milestones` | 14 Oct 2026 | T46: alias and its test removed; nothing used it |
