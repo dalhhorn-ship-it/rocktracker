@@ -139,6 +139,15 @@ Each rock has its own Excel tab that holds all of its key information: profile, 
 6. Two leads updating different rocks at the same time on SharePoint do not overwrite each other.
 7. A blank or half filled row never breaks the portal or the email.
 
+## History (decided by the user: automatic snapshot log)
+
+* A History area holds one row per rock per snapshot (date, state, headline, epics slipped x of y, epics delivered, positions filled x of y, open high risks) and one row per epic per snapshot (forecast date, status, commitment).
+* Snapshots are taken automatically by an Office Script run on a schedule by Power Automate, so nobody has to remember. Default schedule: every Monday morning, which covers both weekly and fortnightly update rhythms.
+* Fallback if the tenant blocks Power Automate: the same script behind a "Save snapshot" button, pressed by the GPM before each steerco.
+* SharePoint version history stays on as a free backstop. Planned (baseline) dates on epics show slip in the current data without history.
+* Size stays small: about 400 rock rows and 2,000 epic rows a year at 15 rocks.
+* M1 ships the History tables and the snapshot script so history accumulates from the first steerco; the look back tab comes in M3.
+
 ## Scope
 
 ### Milestone 1: Steerco slice (factory ready Fri 16 Oct 2026, steerco week of 19 Oct)
@@ -149,16 +158,7 @@ Each rock has its own Excel tab that holds all of its key information: profile, 
 * Portal spec and preview for tabs 1 to 5, including the six month timeline and the 3 by 3 risk matrix.
 * Handoff package (`dist/`) and `docs/DEPLOY.md`, so the director can deploy on SharePoint on Friday, leads can load their rocks over Friday and Monday, and the director can build the portal in Cowork before the steerco.
 
-## History (decided by the user: automatic snapshot log)
-
-* A History area holds one row per rock per snapshot (date, state, headline, epics slipped x of y, epics delivered, positions filled x of y, open high risks) and one row per epic per snapshot (forecast date, status, commitment).
-* Snapshots are taken automatically by an Office Script run on a schedule by Power Automate, so nobody has to remember. Default schedule: every Monday morning, which covers both weekly and fortnightly update rhythms.
-* Fallback if the tenant blocks Power Automate: the same script behind a "Save snapshot" button, pressed by the GPM before each steerco.
-* SharePoint version history stays on as a free backstop. Planned (baseline) dates on epics show slip in the current data without history.
-* Size stays small: about 400 rock rows and 2,000 epic rows a year at 15 rocks.
-* M1 ships the History tables and the snapshot script so history accumulates from the first steerco; the look back tab comes in M3.
-
- (target Fri 30 Oct 2026)
+### Milestone 2: Email and trust (target Fri 30 Oct 2026)
 * Email update for a GPM portfolio, a single rock or all rocks, following the required structure, with a reference rendering and tests.
 * Data based state signal next to the lead's call, and a "check the call" flag when the lead's state is greener than the data (watermelon guard).
 * Upkeep minutes and freshness made visible (G1, G3).
@@ -226,7 +226,7 @@ The cap is 15 minutes per person per week. If G3 shows a role above budget for t
 | Commitment semantics misunderstood | Medium | Definitions on the About sheet and on tab 2 |
 | Sensitive content on a SharePoint site shared across stakeholders (risks, vacancies, choices) | Medium | Counts only for staffing, people at role level, no HR detail; director confirms the audience (Q4) |
 | Cowork cannot render the six month timeline or the 3 by 3 matrix well | Medium | Spec simple fallbacks (table grouped by month, 3 by 3 count table); preview them early |
-| History of derived counts: formulas recalculate, so past slip counts are not frozen by themselves | Medium | Architect decides what the update row snapshots (M1 must at least keep state, summary and positions per update) |
+| History of derived counts: formulas recalculate, so past slip counts are not frozen by themselves | Medium | Resolved by the automatic snapshot log (see History) |
 | Email reads robotic | Low to medium | Fixed sentences around the lead's own summary and comments |
 | Freshness decays after launch | Medium | Update age on tab 1, stale rocks as an exception tile |
 
