@@ -1,107 +1,532 @@
 {
-  "title": "Product portfolio hub",
-  "version": "0.1.0",
+  "title": "Rock Tracker",
+  "version": "1.0.0",
+  "schema_format": 2,
   "workbook": "data/workbook.xlsx",
-  "deploy_file": "dist/Product portfolio hub/Product portfolio hub.xlsx",
-  "description": "Example contract. The architect replaces these sheets per project; keep the format. 'seed' rows ship in the deployed workbook (lookups); sample rows live in data/sample.json.",
+  "deploy_file": "dist/Rock Tracker/Rock Tracker.xlsx",
+  "deploy_location": "the steerco SharePoint site (document library)",
+  "description": "Contract for the Rock Tracker workbook. Leads type only on rock tabs (one per rock, laid out by rock_tab). Consolidated sheets (kind consolidated) stack every rock tab with one Excel 365 dynamic array formula each and are what the portal and the email read. History sheets (kind history) are Excel Tables appended by scripts/office/snapshot.ts. Lookup sheets (kind lookup) are Excel Tables seeded from 'seed'. Sample rows live in data/sample.json. See docs/ARCHITECTURE.md and docs/DECISIONS.md 0002.",
+
+  "params": [
+    {"name": "HighRiskMin", "formula": "6", "meaning": "A risk is High when likelihood score times impact score is 6 or more (6 or 9 on the 3 by 3 grid)."},
+    {"name": "StaleDays", "formula": "14", "meaning": "A rock is stale when its update date is more than 14 days old (G1)."},
+    {"name": "QuarterStart", "formula": "DATE(YEAR(TODAY()),INT((MONTH(TODAY())-1)/3)*3+1,1)", "meaning": "First day of the current calendar quarter."},
+    {"name": "QuarterEnd", "formula": "EDATE(QuarterStart,3)-1", "meaning": "Last day of the current calendar quarter."},
+    {"name": "WindowStart", "formula": "QuarterStart", "meaning": "Start of the six month window: first day of the current quarter."},
+    {"name": "WindowEnd", "formula": "EDATE(QuarterStart,6)-1", "meaning": "End of the six month window: last day of the next quarter."},
+    {"name": "NextSteerco", "formula": "MINIFS(lkp_Steercos!$A$2:$A$200,lkp_Steercos!$A$2:$A$200,\">=\"&TODAY())", "meaning": "Earliest steerco date in lkp_Steercos on or after today; 0 when none is listed."}
+  ],
+
+  "about": {
+    "update_guide": [
+      "Your update, top to bottom on your rock tab only. Aim for 7 minutes per rock.",
+      "1. Update: set Update date to today, check State, rewrite Main message only if it changed, fix positions if they changed.",
+      "2. Look at Signals (grey, calculated). If the data signal is worse than your State, either fix the data or say why in the main message.",
+      "3. Epics: change Forecast date and Comment only where they moved. Set Lead status to Delivered, On hold or On watch when it applies; leave it empty otherwise.",
+      "4. Risks: change only risks that changed. Closed risks: set Status to Closed. Mark at most 3 as Top risk.",
+      "5. Call outs: add new ones, set Status to Closed when done.",
+      "6. Decisions: add a row for each decision you need from steerco. After steerco, fill in Outcome, Owner and Follow up on the same row, and set commitment levels on your epics.",
+      "Everything else carries over: values stay in place until you change them. Grey cells are calculated; never type in them."
+    ],
+    "add_rock": [
+      "Add a rock (workbook owner, about 10 minutes):",
+      "1. Make sure the lead, the GPM and the value chain exist in lkp_People and lkp_ValueChains.",
+      "2. Right click the RockTemplate tab, Duplicate. Check the copy sits between RockTemplate and RocksEnd.",
+      "3. Rename the copy to a short name, for example R07 Checkout.",
+      "4. In section 7 Rock profile, fill in a new Rock ID (R plus two digits, never reused), name, value chain, lead, GPM, purpose, goals, what it delivers. Active is Yes.",
+      "5. Ask the lead to fill in sections 1 and 3 to 6. The portal shows the rock after its next refresh; nothing changes in the portal."
+    ],
+    "close_rock": [
+      "Close a rock: set Active to No in section 7. Its epics, risks and call outs leave the portal; its decisions stay in the decision log. Never delete the tab."
+    ],
+    "rules": [
+      "Type only on rock tabs, in the white cells. Grey cells are calculated. Never type on Rocks, Epics, Risks, CallOuts, Decisions or the snapshot sheets.",
+      "Never insert or delete rows or columns on a rock tab, and never move a rock tab outside RockTemplate and RocksEnd.",
+      "Never reuse a Rock ID. Never rename RockTemplate, RocksEnd or any sheet other than a rock tab.",
+      "Pink cells are required and still empty.",
+      "Structure changes go through the factory repository (schema change, rebuild, migrate)."
+    ],
+    "definitions": [
+      {"term": "On track", "group": "Rock state", "meaning": "All committed epics are forecast on or before their planned date and no High risk is without an action", "exit": "Moves to At risk as soon as one of those stops being true"},
+      {"term": "At risk", "group": "Rock state", "meaning": "At least one committed epic is slipping or a High risk is open, and the lead believes it is recoverable this quarter", "exit": "Back to On track when forecasts are back on plan; to Off track when not recoverable without a steerco decision"},
+      {"term": "Off track", "group": "Rock state", "meaning": "Commitments for this quarter will be missed without a steerco decision (scope, date or people)", "exit": "Leaves only after steerco has decided and the plan is re baselined"},
+      {"term": "Delivered", "group": "Epic status", "meaning": "Shipped. Set by the lead (Lead status). Set Forecast date to the ship date.", "exit": ""},
+      {"term": "On hold", "group": "Epic status", "meaning": "Paused by decision. Set by the lead (Lead status).", "exit": ""},
+      {"term": "Not committed", "group": "Epic status", "meaning": "Calculated: commitment is Choice point or Not committed (or empty), and not Delivered or On hold.", "exit": ""},
+      {"term": "Slipped", "group": "Epic status", "meaning": "Calculated: committed, and forecast date later than planned date.", "exit": ""},
+      {"term": "On watch", "group": "Epic status", "meaning": "Committed, forecast still on plan, but the lead flags a concern (Lead status On watch).", "exit": ""},
+      {"term": "On plan", "group": "Epic status", "meaning": "Calculated default: committed, forecast on or before planned date (or no forecast yet), no flag.", "exit": ""},
+      {"term": "Planned date", "group": "Dates", "meaning": "The date steerco committed to. Changes only when steerco re baselines.", "exit": ""},
+      {"term": "Forecast date", "group": "Dates", "meaning": "The lead's current best estimate; the date leads update. Empty means on the planned date.", "exit": ""},
+      {"term": "Committed", "group": "Commitment", "meaning": "Steerco has agreed to deliver this epic by its planned date.", "exit": ""},
+      {"term": "Choice point", "group": "Commitment", "meaning": "A decision (scope, date, funding or people) is needed before it can be committed. Raise it as a decision with a decide by date.", "exit": ""},
+      {"term": "Not committed", "group": "Commitment", "meaning": "A known future need on the horizon, with no promise of date or scope.", "exit": ""},
+      {"term": "High risk", "group": "Risk", "meaning": "Very likely to impact the timeline: likelihood score times impact score is 6 or 9 (Low 1, Medium 2, High 3).", "exit": ""},
+      {"term": "Six month window", "group": "Counts", "meaning": "The current calendar quarter plus the next one. Epics slipped x of y counts committed epics with a planned or forecast date in the window.", "exit": ""},
+      {"term": "Data signal", "group": "Signals", "meaning": "Off track when a committed epic planned this quarter is forecast after quarter end; At risk when a committed epic in the window slipped or a High risk has no key action or owner; otherwise On track. Shown next to the lead's State; the lead's State is what counts.", "exit": ""}
+    ]
+  },
+
+  "rock_tab": {
+    "template_sheet": "RockTemplate",
+    "end_sheet": "RocksEnd",
+    "end_sheet_note": "Rock tabs live between RockTemplate and RocksEnd. Do not move, rename or delete this tab.",
+    "protect": "Rock tabs, consolidated sheets and snapshot sheets are protected without a password: entry cells unlocked, no row or column insert or delete. Protection is a guard rail, not security.",
+    "title_formula": "=IF({RockID}=\"\",\"New rock: fill in section 7 Rock profile first\",{RockID}&\" · \"&{RockName})",
+    "strip_row": 2,
+    "strip_hidden": true,
+    "guide_cell": "A3",
+    "guide_text": "Update top to bottom in about 7 minutes: 1 Update, 2 check Signals, 3 Epics that moved, 4 Risks that changed, 5 Call outs, 6 Decisions. White cells are yours; grey cells are calculated.",
+    "formula_syntax": {
+      "[Column]": "the cell of that column in the same block, same row (relative)",
+      "{Field}": "the absolute address of a single rock tab field (sections Update, Signals, Profile)",
+      "{Block.Column}": "the absolute range of that block column over all its slot rows",
+      "{slot}": "the 1 based slot number of the row inside its block",
+      "names": "params (HighRiskMin, StaleDays, QuarterStart, QuarterEnd, WindowStart, WindowEnd, NextSteerco) and lookup lists lst_lkp_<sheet>_<column> are workbook defined names"
+    },
+    "consolidation_formula": {
+      "lists": "=LET(d,VSTACK({span}!{range}),k,CHOOSECOLS(d,1),f,FILTER(d,ISTEXT(k)*(k<>\"\"),\"\"),IF(f=0,\"\",f))",
+      "rocks": "=LET(d,VSTACK({span}!{range}),k,CHOOSECOLS(d,1),FILTER(d,ISTEXT(k)*(k<>\"\"),\"\"))",
+      "span": "RockTemplate:RocksEnd",
+      "anchor": "A2",
+      "note": "Header row 1 is static text; the formula in A2 spills all rows. Empty cells arrive as 0 through VSTACK, hence ISTEXT on the key and the zero to blank wrap on list blocks (no list column can hold a real 0). The Rocks strip already returns \"\" for blanks and holds real zero counts, so it is not wrapped."
+    },
+    "label_column": "B",
+    "value_column": "C",
+    "sections": [
+      {
+        "id": 1, "title": "1  Update (lead, every one or two weeks)", "header_row": 5, "kind": "fields",
+        "fields": [
+          {"name": "UpdateDate", "label": "Update date", "row": 6, "type": "date", "required": true, "owner": "lead"},
+          {"name": "State", "label": "State", "row": 7, "type": "string", "required": true, "lookup": "lkp_State.Value", "owner": "lead"},
+          {"name": "MainMessage", "label": "Main message (one or two lines)", "row": 8, "type": "string", "required": true, "owner": "lead"},
+          {"name": "PositionsPlanned", "label": "Positions planned", "row": 9, "type": "integer", "required": true, "owner": "lead"},
+          {"name": "PositionsFilled", "label": "Positions filled", "row": 10, "type": "integer", "required": true, "owner": "lead"}
+        ]
+      },
+      {
+        "id": 2, "title": "2  Signals (calculated, read only)", "header_row": 12, "kind": "fields",
+        "fields": [
+          {"name": "UpdateAgeDays", "label": "Days since update", "row": 13, "type": "integer", "formula": true,
+           "excel": "=IF({UpdateDate}=\"\",\"\",TODAY()-{UpdateDate})",
+           "rule": "Today minus Update date, in days; empty when there is no update date."},
+          {"name": "DataSignal", "label": "Data signal", "row": 14, "type": "string", "formula": true, "lookup": "lkp_State.Value",
+           "excel": "=IF({RockID}=\"\",\"\",IF(COUNTIFS({Epics.Status},\"Slipped\",{Epics.PlannedDate},\">=\"&QuarterStart,{Epics.PlannedDate},\"<=\"&QuarterEnd,{Epics.ForecastDate},\">\"&QuarterEnd)>0,\"Off track\",IF({EpicsSlipped}+{HighRisksNoAction}>0,\"At risk\",\"On track\")))",
+           "rule": "Off track if any Slipped epic has its planned date in the current quarter and its forecast after quarter end; else At risk if EpicsSlipped > 0 or HighRisksNoAction > 0; else On track."},
+          {"name": "CheckCall", "label": "Check the call (data worse than State)", "row": 15, "type": "string", "formula": true, "lookup": "lkp_YesNo.Value",
+           "excel": "=IF(OR({State}=\"\",{DataSignal}=\"\"),\"\",IF(MATCH({DataSignal},lst_lkp_State_Value,0)>MATCH({State},lst_lkp_State_Value,0),\"Yes\",\"No\"))",
+           "rule": "Yes when the data signal is worse than the lead's State in the order On track, At risk, Off track (watermelon guard)."},
+          {"name": "EpicsCommitted", "label": "Committed epics in the six month window (y)", "row": 16, "type": "integer", "formula": true,
+           "excel": "=COUNTIFS({Epics.EpicKey},\"?*\",{Epics.Commitment},\"Committed\",{Epics.InWindow},\"Yes\")",
+           "rule": "Epics with Commitment Committed and InWindow Yes, any status."},
+          {"name": "EpicsSlipped", "label": "of which Slipped (x)", "row": 17, "type": "integer", "formula": true,
+           "excel": "=COUNTIFS({Epics.EpicKey},\"?*\",{Epics.Status},\"Slipped\",{Epics.InWindow},\"Yes\")",
+           "rule": "Epics with Status Slipped and InWindow Yes (Slipped implies Committed)."},
+          {"name": "EpicsOnPlan", "label": "of which On plan or On watch", "row": 18, "type": "integer", "formula": true,
+           "excel": "=SUM(COUNTIFS({Epics.EpicKey},\"?*\",{Epics.Commitment},\"Committed\",{Epics.InWindow},\"Yes\",{Epics.Status},{\"On plan\",\"On watch\"}))",
+           "rule": "Committed epics in the window with Status On plan or On watch."},
+          {"name": "EpicsDelivered", "label": "of which Delivered", "row": 19, "type": "integer", "formula": true,
+           "excel": "=COUNTIFS({Epics.EpicKey},\"?*\",{Epics.Commitment},\"Committed\",{Epics.InWindow},\"Yes\",{Epics.Status},\"Delivered\")",
+           "rule": "Committed epics in the window with Status Delivered."},
+          {"name": "OpenHighRisks", "label": "Open High risks", "row": 20, "type": "integer", "formula": true,
+           "excel": "=COUNTIFS({Risks.RiskKey},\"?*\",{Risks.High},\"Yes\",{Risks.RiskStatus},\"<>Closed\")",
+           "rule": "Risks with High Yes and RiskStatus not Closed (empty counts as Open)."},
+          {"name": "HighRisksNoAction", "label": "High risks without key action or owner", "row": 21, "type": "integer", "formula": true,
+           "excel": "=COUNTIFS({Risks.RiskKey},\"?*\",{Risks.NeedsAction},\"Yes\")",
+           "rule": "Risks with NeedsAction Yes."}
+        ]
+      },
+      {"id": 3, "title": "3  Epics (change only what moved)", "header_row": 23, "kind": "block", "block": "Epics", "column_header_row": 24, "first_row": 25, "capacity": 15},
+      {"id": 4, "title": "4  Risks (top 5 matter; change only what changed)", "header_row": 41, "kind": "block", "block": "Risks", "column_header_row": 42, "first_row": 43, "capacity": 10},
+      {"id": 5, "title": "5  Call outs (events and things steerco should know)", "header_row": 54, "kind": "block", "block": "CallOuts", "column_header_row": 55, "first_row": 56, "capacity": 8},
+      {"id": 6, "title": "6  Decisions (raise before steerco, record the outcome after)", "header_row": 65, "kind": "block", "block": "Decisions", "column_header_row": 66, "first_row": 67, "capacity": 25},
+      {
+        "id": 7, "title": "7  Rock profile (workbook owner; lead may edit)", "header_row": 93, "kind": "fields",
+        "fields": [
+          {"name": "RockID", "label": "Rock ID (R plus two digits, never reused)", "row": 94, "type": "string", "required": true, "owner": "workbook owner"},
+          {"name": "RockName", "label": "Rock name", "row": 95, "type": "string", "required": true, "owner": "workbook owner"},
+          {"name": "ValueChain", "label": "Value chain", "row": 96, "type": "string", "required": true, "lookup": "lkp_ValueChains.Value", "owner": "workbook owner"},
+          {"name": "Lead", "label": "Initiative lead", "row": 97, "type": "string", "required": true, "lookup": "lkp_People.Name", "owner": "workbook owner"},
+          {"name": "GPM", "label": "GPM", "row": 98, "type": "string", "required": true, "lookup": "lkp_People.Name", "owner": "workbook owner"},
+          {"name": "Active", "label": "Active", "row": 99, "type": "string", "required": true, "lookup": "lkp_YesNo.Value", "owner": "workbook owner", "template_value": "Yes"},
+          {"name": "Purpose", "label": "Purpose", "row": 100, "type": "string", "required": true, "owner": "workbook owner"},
+          {"name": "Goals", "label": "Goals", "row": 101, "type": "string", "required": false, "owner": "workbook owner"},
+          {"name": "Delivers", "label": "What it delivers", "row": 102, "type": "string", "required": false, "owner": "workbook owner"}
+        ]
+      }
+    ]
+  },
+
   "sheets": [
     {
-      "name": "lkp_Status",
-      "purpose": "Allowed status values",
+      "name": "Rocks",
+      "kind": "consolidated",
+      "source": "strip",
+      "purpose": "One row per rock tab: profile, latest update and signals. Read only, stacked from row 2 of every rock tab",
+      "owner": "formula (no one types here)",
+      "primary_key": "RockID",
+      "columns": [
+        {"name": "RockID", "type": "string", "required": true, "from": "RockID", "excel": "=IF({RockID}=\"\",\"\",{RockID})"},
+        {"name": "RockName", "type": "string", "required": true, "from": "RockName"},
+        {"name": "ValueChain", "type": "string", "required": true, "from": "ValueChain", "lookup": "lkp_ValueChains.Value"},
+        {"name": "Lead", "type": "string", "required": true, "from": "Lead", "lookup": "lkp_People.Name"},
+        {"name": "GPM", "type": "string", "required": true, "from": "GPM", "lookup": "lkp_People.Name"},
+        {"name": "Active", "type": "string", "required": true, "from": "Active", "lookup": "lkp_YesNo.Value"},
+        {"name": "Purpose", "type": "string", "required": true, "from": "Purpose"},
+        {"name": "Goals", "type": "string", "required": false, "from": "Goals"},
+        {"name": "Delivers", "type": "string", "required": false, "from": "Delivers"},
+        {"name": "UpdateDate", "type": "date", "required": true, "from": "UpdateDate"},
+        {"name": "State", "type": "string", "required": true, "from": "State", "lookup": "lkp_State.Value"},
+        {"name": "MainMessage", "type": "string", "required": true, "from": "MainMessage"},
+        {"name": "PositionsPlanned", "type": "integer", "required": true, "from": "PositionsPlanned"},
+        {"name": "PositionsFilled", "type": "integer", "required": true, "from": "PositionsFilled"},
+        {"name": "UpdateAgeDays", "type": "integer", "required": false, "formula": true, "from": "UpdateAgeDays"},
+        {"name": "Stale", "type": "string", "required": false, "formula": true, "lookup": "lkp_YesNo.Value",
+         "excel": "=IF({RockID}=\"\",\"\",IF(OR({UpdateDate}=\"\",N({UpdateAgeDays})>StaleDays),\"Yes\",\"No\"))",
+         "rule": "Yes when there is no update date or it is more than StaleDays (14) days old."},
+        {"name": "EpicsCommitted", "type": "integer", "required": false, "formula": true, "from": "EpicsCommitted"},
+        {"name": "EpicsSlipped", "type": "integer", "required": false, "formula": true, "from": "EpicsSlipped"},
+        {"name": "EpicsOnPlan", "type": "integer", "required": false, "formula": true, "from": "EpicsOnPlan"},
+        {"name": "EpicsDelivered", "type": "integer", "required": false, "formula": true, "from": "EpicsDelivered"},
+        {"name": "OpenHighRisks", "type": "integer", "required": false, "formula": true, "from": "OpenHighRisks"},
+        {"name": "HighRisksNoAction", "type": "integer", "required": false, "formula": true, "from": "HighRisksNoAction"},
+        {"name": "DataSignal", "type": "string", "required": false, "formula": true, "from": "DataSignal", "lookup": "lkp_State.Value"},
+        {"name": "CheckCall", "type": "string", "required": false, "formula": true, "from": "CheckCall", "lookup": "lkp_YesNo.Value"}
+      ],
+      "strip_default_excel": "=IF(OR({RockID}=\"\",{FROM}=\"\"),\"\",{FROM})"
+    },
+    {
+      "name": "Epics",
+      "kind": "consolidated",
+      "source": "block",
+      "purpose": "Every epic of every active rock: commitment, planned and forecast dates, derived status. Read only, stacked from section 3 of every rock tab",
+      "owner": "formula (no one types here)",
+      "primary_key": "EpicKey",
+      "foreign_keys": {"RockID": "Rocks.RockID"},
+      "columns": [
+        {"name": "EpicKey", "label": "Key", "type": "string", "required": true, "formula": true,
+         "excel": "=IF(OR([Title]=\"\",{RockID}=\"\",{Active}<>\"Yes\"),\"\",{RockID}&\"-E\"&TEXT({slot},\"00\"))",
+         "rule": "RockID-E plus the two digit slot number; empty when the row has no title, the rock has no ID or the rock is not active. A slot is one epic for life."},
+        {"name": "Title", "label": "Epic", "type": "string", "required": true},
+        {"name": "ADOId", "label": "ADO id", "type": "string", "required": false},
+        {"name": "Commitment", "label": "Commitment", "type": "string", "required": true, "lookup": "lkp_Commitment.Value"},
+        {"name": "PlannedDate", "label": "Planned date", "type": "date", "required": false, "required_when": "Commitment is Committed"},
+        {"name": "ForecastDate", "label": "Forecast date (empty = planned)", "type": "date", "required": false},
+        {"name": "LeadStatus", "label": "Lead status", "type": "string", "required": false, "lookup": "lkp_LeadStatus.Value"},
+        {"name": "Comment", "label": "Comment", "type": "string", "required": false},
+        {"name": "KRLink", "label": "Key result link", "type": "string", "required": false},
+        {"name": "Status", "label": "Status", "type": "string", "required": true, "formula": true, "lookup": "lkp_EpicStatus.Value",
+         "excel": "=IF([EpicKey]=\"\",\"\",IF([LeadStatus]=\"Delivered\",\"Delivered\",IF([LeadStatus]=\"On hold\",\"On hold\",IF([Commitment]<>\"Committed\",\"Not committed\",IF(AND(N([PlannedDate])>0,N([ForecastDate])>N([PlannedDate])),\"Slipped\",IF([LeadStatus]=\"On watch\",\"On watch\",\"On plan\"))))))",
+         "rule": "First match wins: Lead status Delivered; Lead status On hold; Commitment not Committed (or empty) gives Not committed; Forecast later than Planned gives Slipped; Lead status On watch; otherwise On plan. Slipped overrides On watch."},
+        {"name": "SlipWeeks", "label": "Slip (weeks)", "type": "number", "required": false, "formula": true,
+         "excel": "=IF([Status]=\"Slipped\",ROUND(([ForecastDate]-[PlannedDate])/7,1),\"\")",
+         "rule": "(Forecast minus Planned) / 7, one decimal, only when Slipped."},
+        {"name": "InWindow", "label": "In six month window", "type": "string", "required": true, "formula": true, "lookup": "lkp_YesNo.Value",
+         "excel": "=IF([EpicKey]=\"\",\"\",IF(OR(AND(N([PlannedDate])>=WindowStart,N([PlannedDate])<=WindowEnd),AND(N([ForecastDate])>=WindowStart,N([ForecastDate])<=WindowEnd)),\"Yes\",\"No\"))",
+         "rule": "Yes when the planned or the forecast date falls between WindowStart and WindowEnd."},
+        {"name": "Overdue", "label": "Forecast overdue", "type": "string", "required": true, "formula": true, "lookup": "lkp_YesNo.Value",
+         "excel": "=IF([EpicKey]=\"\",\"\",IF(AND([Commitment]=\"Committed\",[Status]<>\"Delivered\",[Status]<>\"On hold\",MAX(N([PlannedDate]),N([ForecastDate]))>0,IF(N([ForecastDate])>0,N([ForecastDate]),N([PlannedDate]))<TODAY()),\"Yes\",\"No\"))",
+         "rule": "Committed, not Delivered or On hold, and the forecast (or planned when no forecast) is before today."},
+        {"name": "RockID", "label": "Rock ID", "type": "string", "required": true, "formula": true, "references": "Rocks.RockID",
+         "excel": "=IF([EpicKey]=\"\",\"\",{RockID})", "rule": "Copied from the rock profile."},
+        {"name": "Rock", "label": "Rock", "type": "string", "required": true, "formula": true,
+         "excel": "=IF([EpicKey]=\"\",\"\",{RockName})", "rule": "Copied from the rock profile, for display and filtering."},
+        {"name": "GPM", "label": "GPM", "type": "string", "required": true, "formula": true,
+         "excel": "=IF([EpicKey]=\"\",\"\",{GPM})", "rule": "Copied from the rock profile, for the portfolio filter."}
+      ]
+    },
+    {
+      "name": "Risks",
+      "kind": "consolidated",
+      "source": "block",
+      "purpose": "Every risk of every active rock on the 3 by 3 grid, with its key action. Read only, stacked from section 4 of every rock tab",
+      "owner": "formula (no one types here)",
+      "primary_key": "RiskKey",
+      "foreign_keys": {"RockID": "Rocks.RockID"},
+      "columns": [
+        {"name": "RiskKey", "label": "Key", "type": "string", "required": true, "formula": true,
+         "excel": "=IF(OR([Title]=\"\",{RockID}=\"\",{Active}<>\"Yes\"),\"\",{RockID}&\"-R\"&TEXT({slot},\"00\"))",
+         "rule": "RockID-R plus the two digit slot number; empty when no title, no rock ID or rock not active."},
+        {"name": "Title", "label": "Risk", "type": "string", "required": true},
+        {"name": "Likelihood", "label": "Likelihood", "type": "string", "required": true, "lookup": "lkp_Level.Value"},
+        {"name": "Impact", "label": "Impact", "type": "string", "required": true, "lookup": "lkp_Level.Value"},
+        {"name": "KeyAction", "label": "Key action", "type": "string", "required": false},
+        {"name": "ActionOwner", "label": "Action owner", "type": "string", "required": false},
+        {"name": "RiskStatus", "label": "Status (empty = Open)", "type": "string", "required": false, "lookup": "lkp_OpenClosed.Value"},
+        {"name": "TopRisk", "label": "Top risk", "type": "string", "required": false, "lookup": "lkp_YesNo.Value"},
+        {"name": "Score", "label": "Score", "type": "integer", "required": false, "formula": true,
+         "excel": "=IF(OR([RiskKey]=\"\",[Likelihood]=\"\",[Impact]=\"\"),\"\",MATCH([Likelihood],lst_lkp_Level_Value,0)*MATCH([Impact],lst_lkp_Level_Value,0))",
+         "rule": "Likelihood score times impact score (Low 1, Medium 2, High 3); empty when either is missing."},
+        {"name": "High", "label": "High", "type": "string", "required": true, "formula": true, "lookup": "lkp_YesNo.Value",
+         "excel": "=IF([RiskKey]=\"\",\"\",IF(N([Score])>=HighRiskMin,\"Yes\",\"No\"))",
+         "rule": "Yes when Score is HighRiskMin (6) or more."},
+        {"name": "NeedsAction", "label": "Needs action", "type": "string", "required": true, "formula": true, "lookup": "lkp_YesNo.Value",
+         "excel": "=IF([RiskKey]=\"\",\"\",IF(AND([High]=\"Yes\",[RiskStatus]<>\"Closed\",OR([KeyAction]=\"\",[ActionOwner]=\"\")),\"Yes\",\"No\"))",
+         "rule": "Yes when High, not Closed, and key action or action owner is empty."},
+        {"name": "RockID", "label": "Rock ID", "type": "string", "required": true, "formula": true, "references": "Rocks.RockID",
+         "excel": "=IF([RiskKey]=\"\",\"\",{RockID})", "rule": "Copied from the rock profile."},
+        {"name": "Rock", "label": "Rock", "type": "string", "required": true, "formula": true,
+         "excel": "=IF([RiskKey]=\"\",\"\",{RockName})", "rule": "Copied from the rock profile."},
+        {"name": "GPM", "label": "GPM", "type": "string", "required": true, "formula": true,
+         "excel": "=IF([RiskKey]=\"\",\"\",{GPM})", "rule": "Copied from the rock profile."}
+      ]
+    },
+    {
+      "name": "CallOuts",
+      "kind": "consolidated",
+      "source": "block",
+      "purpose": "Call outs and upcoming events per active rock. Read only, stacked from section 5 of every rock tab",
+      "owner": "formula (no one types here)",
+      "primary_key": "CallOutKey",
+      "foreign_keys": {"RockID": "Rocks.RockID"},
+      "columns": [
+        {"name": "CallOutKey", "label": "Key", "type": "string", "required": true, "formula": true,
+         "excel": "=IF(OR([Text]=\"\",{RockID}=\"\",{Active}<>\"Yes\"),\"\",{RockID}&\"-C\"&TEXT({slot},\"00\"))",
+         "rule": "RockID-C plus the two digit slot number; empty when no text, no rock ID or rock not active."},
+        {"name": "Text", "label": "Call out", "type": "string", "required": true},
+        {"name": "Date", "label": "Date (event or raised)", "type": "date", "required": false},
+        {"name": "CallOutStatus", "label": "Status (empty = Open)", "type": "string", "required": false, "lookup": "lkp_OpenClosed.Value"},
+        {"name": "RockID", "label": "Rock ID", "type": "string", "required": true, "formula": true, "references": "Rocks.RockID",
+         "excel": "=IF([CallOutKey]=\"\",\"\",{RockID})", "rule": "Copied from the rock profile."},
+        {"name": "Rock", "label": "Rock", "type": "string", "required": true, "formula": true,
+         "excel": "=IF([CallOutKey]=\"\",\"\",{RockName})", "rule": "Copied from the rock profile."},
+        {"name": "GPM", "label": "GPM", "type": "string", "required": true, "formula": true,
+         "excel": "=IF([CallOutKey]=\"\",\"\",{GPM})", "rule": "Copied from the rock profile."}
+      ]
+    },
+    {
+      "name": "Decisions",
+      "kind": "consolidated",
+      "source": "block",
+      "purpose": "Decisions requested and the decision log in one table: raised by the lead before steerco, outcome filled in on the same row after. Read only, stacked from section 6 of every rock tab",
+      "owner": "formula (no one types here)",
+      "primary_key": "DecisionKey",
+      "foreign_keys": {"RockID": "Rocks.RockID"},
+      "columns": [
+        {"name": "DecisionKey", "label": "Key", "type": "string", "required": true, "formula": true,
+         "excel": "=IF(OR([Decision]=\"\",{RockID}=\"\"),\"\",{RockID}&\"-D\"&TEXT({slot},\"00\"))",
+         "rule": "RockID-D plus the two digit slot number; empty when no decision text or no rock ID. Kept after the rock closes, so the log stays complete."},
+        {"name": "Decision", "label": "Decision requested", "type": "string", "required": true},
+        {"name": "SteercoDate", "label": "Steerco", "type": "date", "required": true, "lookup": "lkp_Steercos.Date"},
+        {"name": "DecideBy", "label": "Decide by", "type": "date", "required": false},
+        {"name": "ChoicePoint", "label": "Choice point", "type": "string", "required": false, "lookup": "lkp_YesNo.Value"},
+        {"name": "Options", "label": "Options (choice points)", "type": "string", "required": false},
+        {"name": "Outcome", "label": "Outcome (after steerco)", "type": "string", "required": false},
+        {"name": "Owner", "label": "Follow up owner", "type": "string", "required": false},
+        {"name": "FollowUp", "label": "Follow up", "type": "string", "required": false, "lookup": "lkp_OpenClosed.Value"},
+        {"name": "DecisionState", "label": "State", "type": "string", "required": true, "formula": true, "lookup": "lkp_DecisionState.Value",
+         "excel": "=IF([DecisionKey]=\"\",\"\",IF([Outcome]=\"\",\"Requested\",\"Decided\"))",
+         "rule": "Requested while Outcome is empty, Decided once it is filled in."},
+        {"name": "DueNextSteerco", "label": "Due at next steerco", "type": "string", "required": true, "formula": true, "lookup": "lkp_YesNo.Value",
+         "excel": "=IF([DecisionKey]=\"\",\"\",IF(AND([DecisionState]=\"Requested\",NextSteerco>0,OR(N([SteercoDate])=NextSteerco,AND(N([DecideBy])>0,N([DecideBy])<=NextSteerco))),\"Yes\",\"No\"))",
+         "rule": "Yes when Requested and either raised for the next steerco or due (decide by) on or before it."},
+        {"name": "RockID", "label": "Rock ID", "type": "string", "required": true, "formula": true, "references": "Rocks.RockID",
+         "excel": "=IF([DecisionKey]=\"\",\"\",{RockID})", "rule": "Copied from the rock profile."},
+        {"name": "Rock", "label": "Rock", "type": "string", "required": true, "formula": true,
+         "excel": "=IF([DecisionKey]=\"\",\"\",{RockName})", "rule": "Copied from the rock profile."},
+        {"name": "GPM", "label": "GPM", "type": "string", "required": true, "formula": true,
+         "excel": "=IF([DecisionKey]=\"\",\"\",{GPM})", "rule": "Copied from the rock profile."}
+      ]
+    },
+    {
+      "name": "RockSnapshots",
+      "kind": "history",
+      "purpose": "One row per active rock per snapshot, appended by the snapshot Office Script (Monday schedule or button)",
+      "owner": "Office Script snapshot.ts (no one types here)",
+      "primary_key": "SnapshotID",
+      "foreign_keys": {"RockID": "Rocks.RockID"},
+      "columns": [
+        {"name": "SnapshotID", "type": "string", "required": true, "rule": "yyyy-mm-dd|RockID; one per rock per day, a second run on the same day is skipped"},
+        {"name": "SnapshotDate", "type": "date", "required": true},
+        {"name": "RockID", "type": "string", "required": true},
+        {"name": "Rock", "type": "string", "required": true},
+        {"name": "GPM", "type": "string", "required": true},
+        {"name": "UpdateDate", "type": "date", "required": false},
+        {"name": "State", "type": "string", "required": false},
+        {"name": "MainMessage", "type": "string", "required": false},
+        {"name": "EpicsCommitted", "type": "integer", "required": true},
+        {"name": "EpicsSlipped", "type": "integer", "required": true},
+        {"name": "EpicsDelivered", "type": "integer", "required": true},
+        {"name": "PositionsPlanned", "type": "integer", "required": false},
+        {"name": "PositionsFilled", "type": "integer", "required": false},
+        {"name": "OpenHighRisks", "type": "integer", "required": true}
+      ]
+    },
+    {
+      "name": "EpicSnapshots",
+      "kind": "history",
+      "purpose": "One row per epic of an active rock per snapshot, appended by the snapshot Office Script",
+      "owner": "Office Script snapshot.ts (no one types here)",
+      "primary_key": "SnapshotID",
+      "foreign_keys": {"RockID": "Rocks.RockID"},
+      "columns": [
+        {"name": "SnapshotID", "type": "string", "required": true, "rule": "yyyy-mm-dd|EpicKey"},
+        {"name": "SnapshotDate", "type": "date", "required": true},
+        {"name": "EpicKey", "type": "string", "required": true},
+        {"name": "RockID", "type": "string", "required": true},
+        {"name": "Title", "type": "string", "required": true},
+        {"name": "Commitment", "type": "string", "required": false},
+        {"name": "PlannedDate", "type": "date", "required": false},
+        {"name": "ForecastDate", "type": "date", "required": false},
+        {"name": "Status", "type": "string", "required": true}
+      ]
+    },
+    {
+      "name": "lkp_People",
+      "kind": "lookup",
+      "purpose": "People at work role level: leads, GPMs. Dropdown for Lead and GPM",
+      "owner": "workbook owner",
+      "primary_key": "Name",
+      "columns": [
+        {"name": "Name", "type": "string", "required": true},
+        {"name": "Role", "type": "string", "required": true}
+      ],
+      "seed": []
+    },
+    {
+      "name": "lkp_ValueChains",
+      "kind": "lookup",
+      "purpose": "Value chains or verticals a rock belongs to",
+      "owner": "workbook owner",
+      "primary_key": "Value",
+      "columns": [
+        {"name": "Value", "type": "string", "required": true}
+      ],
+      "seed": []
+    },
+    {
+      "name": "lkp_Steercos",
+      "kind": "lookup",
+      "purpose": "Steerco dates, entered once per quarter. Dropdown for Decisions.SteercoDate and source of NextSteerco",
+      "owner": "workbook owner",
+      "primary_key": "Date",
+      "columns": [
+        {"name": "Date", "type": "date", "required": true},
+        {"name": "Note", "type": "string", "required": false}
+      ],
+      "seed": [
+        ["2026-10-21", "First steerco from the portal (assumed date, confirm)"]
+      ]
+    },
+    {
+      "name": "lkp_State",
+      "kind": "lookup",
+      "purpose": "Rock states in order from best to worst (order is used by CheckCall)",
       "owner": "architect",
       "primary_key": "Value",
       "columns": [
-        {
-          "name": "Value",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "Meaning",
-          "type": "string",
-          "required": true
-        }
+        {"name": "Value", "type": "string", "required": true},
+        {"name": "Meaning", "type": "string", "required": true}
       ],
       "seed": [
-        [
-          "Not started",
-          "Agreed but no work yet"
-        ],
-        [
-          "On track",
-          "Progressing to plan"
-        ],
-        [
-          "At risk",
-          "Needs attention this week"
-        ],
-        [
-          "Done",
-          "Outcome delivered"
-        ]
+        ["On track", "All committed epics are forecast on or before their planned date and no High risk is without an action"],
+        ["At risk", "At least one committed epic is slipping or a High risk is open, and the lead believes it is recoverable this quarter"],
+        ["Off track", "Commitments for this quarter will be missed without a steerco decision (scope, date or people)"]
       ]
     },
     {
-      "name": "Goals",
-      "purpose": "Strategic goals the team commits to",
-      "owner": "Head of Product",
-      "primary_key": "ID",
+      "name": "lkp_EpicStatus",
+      "kind": "lookup",
+      "purpose": "The six epic statuses (portal colours and email counts)",
+      "owner": "architect",
+      "primary_key": "Value",
       "columns": [
-        {
-          "name": "ID",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "Title",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "Owner",
-          "type": "string",
-          "required": true
-        }
+        {"name": "Value", "type": "string", "required": true},
+        {"name": "Rule", "type": "string", "required": true},
+        {"name": "SetBy", "type": "string", "required": true}
+      ],
+      "seed": [
+        ["Delivered", "Shipped", "Lead"],
+        ["On plan", "Committed, forecast on or before planned date, no flag", "Calculated"],
+        ["On watch", "Committed, forecast on plan, lead flags a concern", "Lead"],
+        ["Slipped", "Committed, forecast later than planned date", "Calculated"],
+        ["On hold", "Paused by decision", "Lead"],
+        ["Not committed", "Commitment is Choice point or Not committed", "Calculated"]
       ]
     },
     {
-      "name": "Initiatives",
-      "purpose": "Work that delivers a goal",
-      "owner": "Product Managers",
-      "primary_key": "ID",
+      "name": "lkp_LeadStatus",
+      "kind": "lookup",
+      "purpose": "The only epic statuses a lead sets by hand (Epics.LeadStatus); the rest are calculated",
+      "owner": "architect",
+      "primary_key": "Value",
       "columns": [
-        {
-          "name": "ID",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "GoalID",
-          "type": "string",
-          "required": true,
-          "references": "Goals.ID"
-        },
-        {
-          "name": "Title",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "Owner",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "Status",
-          "type": "string",
-          "required": true,
-          "lookup": "lkp_Status.Value"
-        },
-        {
-          "name": "TargetDate",
-          "type": "date",
-          "required": false
-        }
+        {"name": "Value", "type": "string", "required": true},
+        {"name": "Meaning", "type": "string", "required": true}
+      ],
+      "seed": [
+        ["Delivered", "Shipped; set Forecast date to the ship date"],
+        ["On hold", "Paused by decision"],
+        ["On watch", "Forecast still on plan but you have a concern"]
+      ]
+    },
+    {
+      "name": "lkp_Commitment",
+      "kind": "lookup",
+      "purpose": "Roadmap commitment levels, set by hand from the steerco outcome",
+      "owner": "architect",
+      "primary_key": "Value",
+      "columns": [
+        {"name": "Value", "type": "string", "required": true},
+        {"name": "Meaning", "type": "string", "required": true}
+      ],
+      "seed": [
+        ["Committed", "Steerco has agreed to deliver this epic by its planned date"],
+        ["Choice point", "A decision (scope, date, funding or people) is needed before it can be committed"],
+        ["Not committed", "A known future need on the horizon, with no promise of date or scope"]
+      ]
+    },
+    {
+      "name": "lkp_Level",
+      "kind": "lookup",
+      "purpose": "Likelihood and impact levels of the 3 by 3 risk grid, in score order",
+      "owner": "architect",
+      "primary_key": "Value",
+      "columns": [
+        {"name": "Value", "type": "string", "required": true},
+        {"name": "Score", "type": "integer", "required": true}
+      ],
+      "seed": [
+        ["Low", 1],
+        ["Medium", 2],
+        ["High", 3]
+      ]
+    },
+    {
+      "name": "lkp_OpenClosed",
+      "kind": "lookup",
+      "purpose": "Open or Closed for risks, call outs and decision follow ups",
+      "owner": "architect",
+      "primary_key": "Value",
+      "columns": [
+        {"name": "Value", "type": "string", "required": true}
+      ],
+      "seed": [["Open"], ["Closed"]]
+    },
+    {
+      "name": "lkp_YesNo",
+      "kind": "lookup",
+      "purpose": "Yes or No for flags",
+      "owner": "architect",
+      "primary_key": "Value",
+      "columns": [
+        {"name": "Value", "type": "string", "required": true}
+      ],
+      "seed": [["Yes"], ["No"]]
+    },
+    {
+      "name": "lkp_DecisionState",
+      "kind": "lookup",
+      "purpose": "Decision row states (calculated)",
+      "owner": "architect",
+      "primary_key": "Value",
+      "columns": [
+        {"name": "Value", "type": "string", "required": true},
+        {"name": "Meaning", "type": "string", "required": true}
+      ],
+      "seed": [
+        ["Requested", "Raised for steerco, no outcome yet"],
+        ["Decided", "Outcome recorded after steerco"]
       ]
     }
   ]
