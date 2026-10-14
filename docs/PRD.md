@@ -47,9 +47,9 @@ These go verbatim on the About sheet and in the portal, so nobody has to guess.
 
 | Status | Rule | Set by |
 | :--- | :--- | :--- |
-| Delivered | Shipped | Lead (by hand) |
+| Completed | Done (change request 1: the user's word; was Delivered) | Lead (by hand) |
 | On hold | Paused by decision | Lead (by hand) |
-| Not committed | Commitment level is Choice point or Not committed, and not Delivered | Derived |
+| Not committed | Commitment level is Choice point or Not committed, and not Completed | Derived |
 | Slipped | Committed, and forecast date later than planned date | Derived |
 | On watch | Committed, forecast still on plan, but the lead flags a concern | Lead (one flag) |
 | On plan | Committed, forecast on or before planned date, no flag | Derived (default) |
@@ -89,7 +89,7 @@ Aligned to change request 1 by the architect (14 Oct 2026). The portal reads in 
 * Spotlight: rocks At risk or Off track.
 
 **Tab 3. "What ships this MC quarter and next?"** (M1). Supports D3.
-* Outlook timeline of the current and the next MC quarter per rock showing Committed, Choice point and Not committed, with planned vs forecast. Delivered milestones in the past drop out; milestones not delivered whose date has passed stay visible as overdue; milestones without a date sit in a "Not dated yet" list.
+* Outlook timeline of the current and the next MC quarter per rock showing Committed, Choice point and Not committed, with planned vs forecast. Completed milestones in the past drop out; milestones not completed whose date has passed stay visible as overdue; milestones without a date sit in a "Not dated yet" list.
 * Filter on MC quarter (default: current and next).
 * Each milestone is clickable and opens a pop up: owner, description, start, planned and forecast date, status and the three detail bullets, plus a link to ADO when the ADO link is filled in.
 * Spotlight: committed milestones on plan (x of y).
@@ -115,13 +115,13 @@ Generated from the same data for one GPM portfolio (or one rock, or all rocks). 
 1. **Header:** week of, rocks in the portfolio, prepared by (name, role).
 2. **Portfolio table:** rock, state, epics slipped (x of y), positions filled (x of y), one line summary.
 3. **Key call outs:** decisions needed with a date, overdue forecasts, upcoming events.
-4. **Development update:** count of epics per status (Delivered, On plan, On watch, Slipped, On hold, Not committed), releases this period, average slip in weeks.
+4. **Development update:** count of milestones per status (Completed, On plan, On watch, Slipped, On hold, Not committed), releases this period, average slip in weeks.
 5. **Key risks and issues:** short bullets from the top risks.
 6. **Per rock section:** state, resourcing, headline, then the epic table (epic, ADO id, planned date, forecast date, status, comment, contribution to key results such as "60% of KR 1.1").
 
 Requirements: no value is typed for the email that is not already in the workbook; the sender only picks the portfolio and the date; a sendable text is ready in under 5 minutes (G5). The mechanism (Cowork prompt, workbook generated text, or both) is the architect's call. The factory must ship a reference rendering on sample data that tests can check section by section.
 
-Assumed derivations, to be confirmed by the architect: "this period" is the 14 days ending on the update date; "releases this period" is epics marked Delivered in that window; "average slip" is the mean of forecast minus planned, in weeks, over slipped committed epics; "epics slipped x of y" counts committed epics in the six month window.
+Assumed derivations, to be confirmed by the architect: "this period" is the 14 days ending on the update date; "releases this period" is milestones marked Completed with an actual date in that window; "average slip" is the mean of forecast minus planned, in weeks, over slipped committed epics; "epics slipped x of y" counts committed epics in the six month window.
 
 ## What the workbook must hold (what, not how)
 
@@ -129,7 +129,7 @@ Assumed derivations, to be confirmed by the architect: "this period" is the 14 d
 | :--- | :--- | :--- | :--- |
 | Rock profile: name, purpose, goals, what it delivers, value chain, initiative lead, GPM, active flag | Workbook owner, lead may edit | Quarterly | Name, lead and GPM: rock and portfolio filter on every tab, email header. Purpose, goals, what it delivers and value chain: rock header on tab 1 and the per rock section of the email (from the brief) |
 | Teams (up to 5 per rock): team name, team lead, budgeted positions, actual positions; fill % calculated; rock totals are the sums | Lead | When it changes | Tab 2 resourcing, email portfolio table and per rock resourcing |
-| Milestones: title, description, up to three detail bullets, owner, ADO id, ADO link (optional URL), commitment, start date, planned date, forecast date, actual delivery date, lead status (On hold, On watch only; Delivered follows from the actual date), comment, key result link as short text | Lead | Forecast, actual date and comment when they move; the rest when the milestone is set up | Tabs 2 and 3 (timeline, MC quarter filter, pop up), email |
+| Milestones: title, description, up to three detail bullets, owner, ADO id, ADO link (optional URL), commitment, start date, planned date, forecast date, actual delivery date (recorded, optional), lead status (Completed, On hold, On watch; Completed is the done state), comment, key result link as short text | Lead | Forecast, comment and lead status when they move, actual date on completion; the rest when the milestone is set up | Tabs 2 and 3 (timeline, MC quarter filter, pop up), email |
 | Risks: title, likelihood, impact, key action, action owner, open or closed | Lead | Only when they change | Tab 4, email |
 | Key risks or attention points: up to 3 one line texts in the update section | Lead | When they change | Tab 1, email key risks |
 | Call outs: text, date, open or closed | Lead | When raised or closed | Tab 1, email |

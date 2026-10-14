@@ -2,6 +2,13 @@
 
 Owner: `architect`. Newest first.
 
+## 0017 User answers to change request 1: Completed is a lead status; decision log design accepted; Teams on tab 2 (14 Oct 2026)
+* Context: the three open questions after 0010 to 0016, answered by the user.
+* Decision 1: the user accepted 0012. Decision requests are typed only on the rock tab, once, in section 6; section 1 and tab 1 show the first 5 open ones; the log is live. No DecisionLog table.
+* Decision 2 (amends 0011): a milestone is done when its state is Completed, not when a date is typed. `Completed` is back as a hand set value in `lkp_LeadStatus` (with On hold and On watch), and the derived status Delivered is renamed Completed everywhere (lkp_MilestoneStatus, MilestonesCompleted on the rock tab, Rocks and RockSnapshots, labels, portal colour notes, email notes). Status rule: Lead status Completed first, then On hold, Not committed, Slipped, On watch, On plan. ActualDate stays optional and recorded; when filled it is the TimelineDate and so sets the MC quarter. Visible hides a Completed milestone whose ActualDate, or when empty its PlannedDate, is before today; the start date clause is dropped. An About check warns (does not stop) on Completed without an ActualDate.
+* Decision 3: Teams stay inside tab 2, as designed in 0016.
+* Consequences: schema 2.1.0. A future actual date no longer means done, so no TECH_DEBT item for it. One extra dropdown pick per completed milestone, the same effort as typing the date. Completed uses the done stage colour.
+
 ## 0016 Portal for change request 1: tab per section, milestone pop up, MC quarter filter, dark mode (14 Oct 2026)
 * Context: PRD change request 1 item 6. `design/DESIGN_SYSTEM.md` and `design/tokens.css` have no dark mode tokens.
 * Decision: the portal has one tab per section in steerco order (1, 2, 3, 3.1, 4, 5, full list). Tab 3 reads Milestones where Visible is Yes, offers a filter on MCQuarter (default CurrentMCQuarter and NextMCQuarter from Rocks) and opens a pop up per milestone (Owner, Description, StartDate, PlannedDate, ForecastDate, Status, Detail1 to Detail3, ADOLink as a link only when it starts with https://). Teams show on tab 2 under the resourcing lens, not as a tab of their own. Dark mode is a second token set under `[data-theme="dark"]` and `prefers-color-scheme: dark`, same names, same hues: crimson stays the only emphasis (lightened to `#E06A93` for contrast), stage colours keep their meaning. Full palette in PLAN T44.
@@ -24,6 +31,7 @@ Owner: `architect`. Newest first.
 * Consequences: one fewer column per risk; tab 1 and the email key risks read Rocks.Attention1 to 3. `--from` v1 copies the titles of up to 3 open top risks into these lines.
 
 ## 0012 Decision log with 5 one line requests: one Decisions table, section 1 shows the first 5 open requests (14 Oct 2026)
+* Accepted by the user on 14 Oct 2026 (0017).
 * Context: PRD change request 1 item 4: section 1 holds up to 5 one line decision requests, and the decision log (tab 5) and choice points (tab 3.1) must keep working with nothing typed twice.
 * Options considered:
   1. Five typed request lines in section 1, each with Outcome and Follow up cells; the weekly snapshot script appends decided lines to a `DecisionLog` history table and the lead then clears the line. Cost: the log lags up to a week; it depends on Power Automate running (a failed flow plus a cleared line loses a decision); a follow up closed after the line is cleared can never be closed in the log, so the tab 5 spotlight goes stale; keys must survive slot reuse; leads must remember a clear rule.
@@ -33,6 +41,7 @@ Owner: `architect`. Newest first.
 * Consequences: the lead types a request in section 6, one screen below section 1, and sees it appear in section 1 at once. The 25 slot limit per rock remains (TD02, M3 archive). If the user insists on typing in section 1 itself, option 1 is the fallback and needs a `DecisionLog` table and snapshot script work.
 
 ## 0011 MC quarters, outlook of two quarters, Delivered from the actual date (14 Oct 2026)
+* Amended by 0017: Completed (hand set Lead status) replaces Delivered from ActualDate; Visible for Completed uses actual, else planned date.
 * Context: PRD change request 1 items 1 to 3; the user confirmed the outlook is the current plus the next MC quarter and undelivered milestones past their date stay visible as overdue.
 * Decision: params `MCQuarterStart`, `MCQuarterEnd`, `OutlookEnd`, `CurrentMCQuarter`, `NextMCQuarter` replace QuarterStart, QuarterEnd, WindowStart and WindowEnd. MC quarters start on calendar quarter days; only the label shifts. Milestones gain calculated columns: `TimelineDate` (actual, else forecast, else planned), `MCQuarter` (`"MC"&RIGHT(YEAR(EDATE(d,-3)),2)&"Q"&INT((MONTH(EDATE(d,-3))+2)/3)`; no `TEXT(…,"yy")` because format codes change with the Excel language), `InOutlook` (planned or timeline date in the outlook; drives the x of y counts and the data signal, so delivering in the quarter never lowers a ratio) and `Visible` (what the roadmap shows: PRD item 3 rule, plus undated milestones for the "Not dated yet" list). Status Delivered now follows from ActualDate only; Delivered leaves `lkp_LeadStatus`, so there is one way to say it. The data signal also turns At risk on an overdue committed milestone (new MilestonesOverdue count). Rocks carries CurrentMCQuarter and NextMCQuarter so the portal needs no date logic.
 * Consequences: the six month window language goes everywhere; MilestoneSnapshots adds ActualDate and MCQuarter so the M3 look back groups by MC quarter. A future dated actual date counts as Delivered (guide says type it on delivery).

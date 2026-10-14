@@ -1,6 +1,6 @@
 # Architecture
 
-Owner: `architect`. Status: v2 for change request 1, 14 Oct 2026. Contract: `schema/workbook.schema.json` (version 2.0.0, schema format 2; v1.0.0 kept in `schema/history/`). Decisions: `docs/DECISIONS.md` 0002 to 0016.
+Owner: `architect`. Status: v2 for change request 1, 14 Oct 2026. Contract: `schema/workbook.schema.json` (version 2.1.0, schema format 2; v1.0.0 kept in `schema/history/`). Decisions: `docs/DECISIONS.md` 0002 to 0017.
 
 ## In one paragraph
 
@@ -88,16 +88,16 @@ All in the schema (`excel` plus `rule`), mirrored in `scripts/rock_model.py`. Na
 | Rule | Definition |
 | :--- | :--- |
 | MC quarter label | shift the date back 3 months, then `"MC"&RIGHT(YEAR(d),2)&"Q"&INT((MONTH(d)+2)/3)`: Oct 2026 MC26Q3, Jan 2027 MC26Q4, Apr 2027 MC27Q1. Locale safe (no TEXT year codes) |
-| Milestone Status | first match: Actual date filled gives Delivered; Lead status On hold; commitment not Committed gives Not committed; forecast later than planned gives Slipped; Lead status On watch; else On plan. Empty forecast means on the planned date |
+| Milestone Status | first match: Lead status Completed gives Completed; Lead status On hold; commitment not Committed gives Not committed; forecast later than planned gives Slipped; Lead status On watch; else On plan. Empty forecast means on the planned date |
 | SlipWeeks | (forecast minus planned) / 7, one decimal, Slipped only |
-| TimelineDate | actual, else forecast, else planned; empty when none |
+| TimelineDate | actual, else forecast, else planned; empty when none. ActualDate is recorded, optional, and does not set the status |
 | MCQuarter | MC quarter of TimelineDate; empty when no date |
 | InOutlook | planned or timeline date between MCQuarterStart and OutlookEnd (counts and data signal) |
-| Visible | Delivered: hidden when actual before today or start and planned both before today, else InOutlook. Not delivered: shown when InOutlook, undated, or date passed (overdue). Roadmap reads Visible Yes |
-| Overdue | committed, not Delivered or On hold, timeline date before today |
+| Visible | Completed: hidden when the actual date (or, when empty, the planned date) is before today, else InOutlook. Not Completed: shown when InOutlook, undated, or date passed (overdue). Roadmap reads Visible Yes |
+| Overdue | committed, not Completed or On hold, timeline date before today |
 | Risk Score, High | likelihood times impact (1 to 3 each); High when 6 or more |
 | NeedsAction | High, not Closed, key action or action owner empty |
-| Milestones x of y | y MilestonesCommitted = committed and InOutlook; x MilestonesSlipped = Slipped and InOutlook; MilestonesOnPlan = On plan, On watch or Delivered; MilestonesDelivered; MilestonesOverdue = Overdue, any quarter |
+| Milestones x of y | y MilestonesCommitted = committed and InOutlook; x MilestonesSlipped = Slipped and InOutlook; MilestonesOnPlan = On plan, On watch or Completed; MilestonesCompleted; MilestonesOverdue = Overdue, any quarter |
 | Positions | PositionsBudgeted and PositionsActual = sums over keyed Teams rows; FillPct = actual / budgeted, empty when budgeted is 0; per team FillPct the same |
 | Update age, Stale | today minus update date; Stale when empty or over 14 days |
 | Data signal | Off track: a Slipped milestone planned this MC quarter is forecast after its end; At risk: slipped x, overdue or High risks without action above 0; else On track |
@@ -109,7 +109,7 @@ All in the schema (`excel` plus `rule`), mirrored in `scripts/rock_model.py`. Na
 
 Blank safety: every calculated cell returns "" when its row has no key, wraps dates in `N()` so an empty date is 0, and never divides by an empty value. Empty Status on risks and call outs, and empty FollowUp on decided decisions, counts as Open. Rock tab formulas avoid LET, FILTER and other functions LibreOffice 24.2 lacks (RequestNo uses SUMPRODUCT, the section 1 lines INDEX and MATCH), so the recalc test covers them.
 
-About sheet checks (schema `about.checks`): rock tabs found, duplicate rock IDs, next steerco date missing, choice point mismatches in both directions, open requests beyond the 5 the portal shows.
+About sheet checks (schema `about.checks`): rock tabs found, duplicate rock IDs, next steerco date missing, choice point mismatches in both directions, Completed milestones without an Actual date (warning), open requests beyond the 5 the portal shows.
 
 ## Decision log (DECISIONS 0012)
 
@@ -117,23 +117,23 @@ One table does request, outcome and log. The lead types a request once, as one l
 
 ## History
 
-`scripts/office/snapshot.ts`: reads the Rocks and Milestones spills, keeps active rocks, appends to `tbl_RockSnapshots` and `tbl_MilestoneSnapshots`, skips keys already present for today (pressing twice is harmless), unprotects and reprotects the two sheets. Copies MilestonesCommitted, MilestonesSlipped, MilestonesDelivered, PositionsBudgeted, PositionsActual for rocks; ActualDate and MCQuarter for milestones. Scheduled by a Power Automate flow (Recurrence, Monday 06:00), owned by the director; fallback a "Save snapshot" button. Volume at 15 rocks: about 800 rock rows and 6,000 milestone rows a year.
+`scripts/office/snapshot.ts`: reads the Rocks and Milestones spills, keeps active rocks, appends to `tbl_RockSnapshots` and `tbl_MilestoneSnapshots`, skips keys already present for today (pressing twice is harmless), unprotects and reprotects the two sheets. Copies MilestonesCommitted, MilestonesSlipped, MilestonesCompleted, PositionsBudgeted, PositionsActual for rocks; ActualDate and MCQuarter for milestones. Scheduled by a Power Automate flow (Recurrence, Monday 06:00), owned by the director; fallback a "Save snapshot" button. Volume at 15 rocks: about 800 rock rows and 6,000 milestone rows a year.
 
 ## How the portal and the email consume the data (brief)
 
 * The portal reads only Rocks, Milestones, Risks, CallOuts, Decisions, Teams and the lookups, never rock tabs. One tab per section in steerco order: 1, 2, 3, 3.1, 4, 5, full list. Every tab filters on Rocks.Active = Yes and can filter on RockID or GPM, present on every row. Light and dark mode from the same tokens (DECISIONS 0016).
   * Tab 1: rock header (RockName, Lead, GPM, ValueChain, Purpose, Goals, Delivers) when filtered to one rock; Rocks.MainMessage; Rocks.Attention1 to 3; Decisions Requested with RequestNo 1 to 5 (DueNextSteerco first); CallOuts open.
   * Tab 2: Rocks State, DataSignal, CheckCall, Milestones x of y, MilestonesOverdue, OpenHighRisks, PositionsActual of PositionsBudgeted and FillPct; Teams list per rock.
-  * Tab 3: Milestones with Visible Yes; filter on MCQuarter, default Rocks.CurrentMCQuarter and NextMCQuarter; timeline at TimelineDate with planned to forecast slip lines; undated in "Not dated yet"; Overdue marked; pop up with Owner, Description, StartDate, PlannedDate, ForecastDate, Status, Detail1 to 3 and ADOLink when present.
+  * Tab 3: Milestones with Visible Yes; filter on MCQuarter, default Rocks.CurrentMCQuarter and NextMCQuarter; timeline at TimelineDate with planned to forecast slip lines; undated in "Not dated yet"; Overdue marked; pop up with Owner, Description, StartDate, PlannedDate, ForecastDate, Status (Completed in the done stage colour), Detail1 to 3 and ADOLink when present.
   * Tab 3.1: Decisions with ChoicePoint Yes and Requested. Tab 4: Risks by Likelihood and Impact. Tab 5: Decisions Decided.
   * Spotlights rely on precomputed flags (DueNextSteerco, NeedsAction, OpenFollowUp, State, MilestonesOnPlan of MilestonesCommitted) so Cowork needs no date logic.
-* The email (M2) reads the same six sheets: header from Rocks and lkp_People.Role; portfolio table from Rocks (milestones slipped x of y, positions actual of budgeted); call outs from Decisions Requested, Milestones Overdue, CallOuts open; development update from Milestones Status counts, releases = ActualDate in the last 14 days, mean SlipWeeks; key risks from Rocks.Attention1 to 3 and High risks; per rock section with Teams and the milestone table. Mechanism decided in T21.
+* The email (M2) reads the same six sheets: header from Rocks and lkp_People.Role; portfolio table from Rocks (milestones slipped x of y, positions actual of budgeted); call outs from Decisions Requested, Milestones Overdue, CallOuts open; development update from Milestones Status counts, releases = Completed milestones with ActualDate in the last 14 days, mean SlipWeeks; key risks from Rocks.Attention1 to 3 and High risks; per rock section with Teams and the milestone table. Mechanism decided in T21.
 
 ## Upkeep per role mapped to fields
 
 | Role | Fields they touch | When |
 | :--- | :--- | :--- |
-| Lead | Section 1 (UpdateDate, State, MainMessage, Attention1 to 3); Milestones ForecastDate, ActualDate, Comment, LeadStatus where they moved; Risks rows that changed; CallOuts; Decisions (raise; after steerco Outcome, Owner, FollowUp, and Commitment and PlannedDate on milestones); Teams when positions change | every one or two weeks, 7 minutes |
+| Lead | Section 1 (UpdateDate, State, MainMessage, Attention1 to 3); Milestones ForecastDate, Comment, LeadStatus (Completed, On hold, On watch) and ActualDate where they moved; Risks rows that changed; CallOuts; Decisions (raise; after steerco Outcome, Owner, FollowUp, and Commitment and PlannedDate on milestones); Teams when positions change | every one or two weeks, 7 minutes |
 | Lead (one off per milestone) | Owner, StartDate, Description, Detail1 to 3, ADO id and link | when a milestone is added; part of the first load |
 | GPM | none in steady state; presses Save snapshot only if the flow is off | before steerco |
 | Workbook owner | Section 7 profile of new rocks, Active = No to close, lkp_People, lkp_ValueChains, lkp_Steercos | quarterly |
