@@ -1,6 +1,6 @@
 """Layer 2: the sample workbook matches the schema.
 
-Rock tabs hold the typed cells; the five consolidated sheets hold one formula each. Nothing
+Rock tabs hold the typed cells; the six consolidated sheets hold one formula each. Nothing
 outside Excel calculates those formulas, so data level checks run on the rows the Python mirror
 derives from the rock tabs of the workbook (see the `rows` fixture in conftest.py)."""
 import datetime as dt
@@ -82,6 +82,8 @@ def test_required_and_types(rows, schema):
             for col in sheet["columns"]:
                 value = row.get(col["name"])
                 if value in (None, ""):
+                    if sheet["kind"] == "consolidated" and col["type"] == "integer" and not col.get("formula"):
+                        continue  # a real 0 in a list block shows blank on the consolidated sheet (DECISIONS 0014)
                     if col.get("required") and (sheet["kind"] != "consolidated" or col.get("formula")):
                         errors.append(f"{sheet['name']}!row {i} {col['name']} is empty")
                     elif col.get("required") and row.get("RockID") != HALF_FILLED:
@@ -125,4 +127,4 @@ def test_every_rock_in_the_sample_is_on_a_tab(workbook, schema, rows):
 
 
 def test_snapshot_history_rows_in_workbook(rows, schema):
-    assert rows["RockSnapshots"] and rows["EpicSnapshots"]
+    assert rows["RockSnapshots"] and rows["MilestoneSnapshots"]

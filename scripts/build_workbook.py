@@ -189,6 +189,89 @@ def read_rock_tabs(path, schema):
 
 
 # ---------------------------------------------------------------------------
+# Migration from schema 1.0.0 (schema `migration`, DECISIONS 0010 to 0017)
+# ---------------------------------------------------------------------------
+V1_SCHEMA = "schema/history/workbook.schema.v1.0.0.json"
+V1_COPIED_LOOKUPS = ("lkp_People", "lkp_ValueChains", "lkp_Steercos")  # the rest are seeds, nothing typed
+
+
+def is_v1(path, schema):
+    """True when the file has the v1 structure: a sheet Epics or EpicSnapshots, or a rock tab
+    template without the consolidated sheet Milestones."""
+    names = load_workbook(path, read_only=True).sheetnames
+    if "Epics" in names or "EpicSnapshots" in names:
+        return True
+    return "Milestones" not in names and schema["rock_tab"]["template_sheet"] in names
+
+
+def mc_quarter(d):
+    """MC quarter label of a date, the same rule as the MCQuarter column (EDATE(d,-3))."""
+    if isinstance(d, dt.datetime):
+        d = d.date()
+    month0 = d.month - 1 - 3
+    year = d.year + month0 // 12
+    month = month0 % 12 + 1
+    return f"MC{str(year)[-2:]}Q{(month + 2) // 3}"
+
+
+def migrate_rock_v1(old, schema):
+    """One v1 rock dict (typed cells by v1 schema names) to a v2 rock dict."""
+    sheets = {s["name"]: s for s in schema["sheets"]}
+    field_names = {f["name"] for sec in schema["rock_tab"]["sections"] for f in sec.get("fields", []) if not f.get("formula")}
+    typed = {n: [c["name"] for c in s["columns"] if not c.get("formula")] for n, s in sheets.items()}
+    rock = {k: v for k, v in old.items() if k in field_names or k == "RockTab"}
+    # Epics to Milestones, same slot
+    miles = []
+    for e in old.get("Epics", []):
+        m = {k: v for k, v in e.items() if k in typed["Milestones"]}
+        if m.get("LeadStatus") == "Delivered":
+            m["LeadStatus"] = "Completed"
+            if m.get("ForecastDate"):
+                m["ActualDate"] = m["ForecastDate"]
+        miles.append(m)
+    rock["Milestones"] = miles
+    # Risks: TopRisk dropped, up to 3 open top risks become attention points
+    risks = old.get("Risks", [])
+    rock["Risks"] = [{k: v for k, v in r.items() if k in typed["Risks"]} for r in risks]
+    top = [r["Title"] for r in risks if r.get("TopRisk") == "Yes" and r.get("RiskStatus") == "Open" and r.get("Title")]
+    for i, title in enumerate(top[:3], start=1):
+        rock[f"Attention{i}"] = title
+    for block in ("CallOuts", "Decisions"):
+        rock[block] = [{k: v for k, v in r.items() if k in typed[block]} for r in old.get(block, [])]
+    # positions to Teams slot 1
+    if old.get("PositionsPlanned") is not None or old.get("PositionsFilled") is not None:
+        team = {"TeamName": "Team (migrated)"}
+        if old.get("PositionsPlanned") is not None:
+            team["Budgeted"] = old["PositionsPlanned"]
+        if old.get("PositionsFilled") is not None:
+            team["Actual"] = old["PositionsFilled"]
+        rock["Teams"] = [team]
+    return rock
+
+
+def migrate_history_v1(existing, schema):
+    """History rows of a v1 file as v2 rows (dicts by v2 column names)."""
+    out = {"RockSnapshots": [], "MilestoneSnapshots": []}
+    renames = {"EpicsCommitted": "MilestonesCommitted", "EpicsSlipped": "MilestonesSlipped",
+               "EpicsDelivered": "MilestonesCompleted", "PositionsPlanned": "PositionsBudgeted",
+               "PositionsFilled": "PositionsActual"}
+    for r in existing.get("RockSnapshots", []):
+        out["RockSnapshots"].append({renames.get(k, k): v for k, v in r.items()})
+    for r in existing.get("EpicSnapshots", []):
+        m = {("MilestoneKey" if k == "EpicKey" else k): v for k, v in r.items()}
+        for k in ("MilestoneKey", "SnapshotID"):
+            if isinstance(m.get(k), str):
+                m[k] = m[k].replace("-E", "-M")
+        if m.get("Status") == "Delivered":
+            m["Status"] = "Completed"
+        d = m.get("ForecastDate") or m.get("PlannedDate")
+        if d:
+            m["MCQuarter"] = mc_quarter(d)
+        out["MilestoneSnapshots"].append(m)
+    return out
+
+
+# ---------------------------------------------------------------------------
 # Builder
 # ---------------------------------------------------------------------------
 def solid(color):
@@ -661,7 +744,22 @@ def main(argv=None):
     schema = load_schema()
     table_sheets = [s for s in schema["sheets"] if s["kind"] != "consolidated"]
 
-    if args.source:
+    if args.source and is_v1(args.source, schema):
+        v1 = json.loads((ROOT / V1_SCHEMA).read_text())
+        existing = read_existing(args.source)
+        history = migrate_history_v1(existing, schema)
+        rows = {}
+        for s in table_sheets:
+            if s["name"] in history:
+                rows[s["name"]] = history[s["name"]]
+            elif s["name"] in V1_COPIED_LOOKUPS:
+                rows[s["name"]] = existing.get(s["name"], []) or [list(r) for r in s.get("seed", [])]
+            else:
+                rows[s["name"]] = [list(r) for r in s.get("seed", [])]
+        rocks = [migrate_rock_v1(r, schema) for r in read_rock_tabs(args.source, v1)]
+        data = {"rocks": rocks, "rows": rows}
+        print(f"migrated from schema {v1['version']}: {len(rocks)} rock tabs (see schema `migration`)")
+    elif args.source:
         existing = read_existing(args.source)
         rows, dropped = {}, []
         for s in table_sheets:

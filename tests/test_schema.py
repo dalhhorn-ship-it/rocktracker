@@ -100,7 +100,7 @@ def test_placeholders_resolve(schema):
 
 def test_params_and_lists_are_defined_names_in_formulas(schema):
     names = {p["name"] for p in schema["params"]}
-    assert {"HighRiskMin", "StaleDays", "QuarterStart", "QuarterEnd", "WindowStart", "WindowEnd", "NextSteerco"} <= names
+    assert {"HighRiskMin", "StaleDays", "MCQuarterStart", "MCQuarterEnd", "OutlookEnd", "CurrentMCQuarter", "NextMCQuarter", "NextSteerco"} <= names
     for s in schema["rock_tab"]["sections"]:
         for f in s.get("fields", []):
             for m in re.findall(r"lst_lkp_\w+", f.get("excel", "")):
