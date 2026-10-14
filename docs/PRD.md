@@ -18,7 +18,7 @@ Each rock (strategic initiative) is reported today through hand built steerco de
 | Executives / steerco | Each steerco, occasionally between | See roadmap commitments, top risks and choice points; take decisions; never be confused about state | Reader only, zero upkeep |
 | Initiative lead (PM, 1 or at most 2 rocks) | Every one or two weeks | Record the rock's state, one line summary, epic forecast changes, risks and call outs that changed. Nothing else, no deck | Main data entry |
 | GPM (portfolio of 1 to 5 rocks) | Every one or two weeks, and on request | Check the leads' updates, add portfolio level decisions needed and events, send the portfolio email update | Light review, email sender |
-| Workbook owner (director or PMO) | Quarterly | Add or close rocks, set key results, maintain lookups (people, value chains) | Structural upkeep |
+| Workbook owner (director or PMO) | Quarterly | Add or close rocks, maintain lookups (people, value chains) | Structural upkeep |
 
 ## Vocabulary and definitions
 
@@ -57,45 +57,43 @@ These go verbatim on the About sheet and in the portal, so nobody has to guess.
 
 | # | Decision | Who | When | Where in the tool |
 | :--- | :--- | :--- | :--- | :--- |
-| D1 | Which rocks need my attention or an escalation this week? | Director | Weekly | Tab 1 |
-| D2 | Do we confirm, change or re baseline the six month commitments? | Steerco | Each steerco | Tab 2 |
-| D3 | What do we decide today, and what can wait until a date? | Steerco | Each steerco | Tab 3 |
-| D4 | Which risks need help, an owner or an escalation? | Director, steerco | Weekly, each steerco | Tab 4 |
-| D5 | Is this rock healthy, and what does its lead need from us? | Director, steerco | 1:1s, steerco deep dive | Tab 5 |
-| D6 | What do I tell my stakeholders this week? | GPM, director | Every one or two weeks, on request | Email update |
-| D7 | Are we keeping our quarterly promises, and what do we reset next quarter? | Director, steerco | Quarter end | Tab 6 (M3) |
+| D1 | What must steerco hear and decide today? | Steerco | Each steerco | Tab 1 |
+| D2 | Which rocks need attention: roadmap, risk or resourcing? | Director, steerco | Weekly, each steerco | Tab 2 |
+| D3 | Do we confirm, change or re baseline the six month commitments? | Steerco | Each steerco | Tab 3 |
+| D4 | Which choice points do we close, and which way? | Steerco | Each steerco | Tab 3.1 |
+| D5 | Which risks need help, an owner or an escalation? | Director, steerco | Each steerco | Tab 4 |
+| D6 | What did we decide before, and did it happen? | Director, steerco | Each steerco, quarter end | Tab 5 |
+| D7 | What do I tell my stakeholders this week? | GPM, director | Every one or two weeks | Email update |
 
-## Portal tabs (questions)
+## Portal tabs (the steerco reading order, set by the user)
 
-Each tab follows `design/DESIGN_SYSTEM.md`: headline, lede, one narrative sentence with the key figures, 3 insight cards phrased as questions, 6 KPI tiles (one spotlight), charts, then "The full list". KPI tiles below are the PM's intent; the architect finalises them in `portal/portal.spec.json`. Every exception tile carries an action cue such as "need a look".
+The portal reads in the order steerco runs. Each tab follows `design/DESIGN_SYSTEM.md` (headline, lede, narrative, insight cards, KPI tiles with one spotlight, charts, full list). Every tab can be filtered to one rock or one GPM portfolio, so there is no separate rock page. The architect finalises tiles in `portal/portal.spec.json`.
 
-**Tab 1. "Where do the rocks stand?"** (M1). Supports D1. All active rocks, grouped by GPM portfolio.
-* Spotlight: rocks At risk or Off track (x of y).
-* Other tiles: active rocks; committed epics slipped (x of y); positions filled (x of y, all rocks); decisions due before next steerco; updates older than 14 days ("need a look").
-* Insight cards: Which rocks changed state since the last update? Where is the lead's call greener than the data? (M2) Who has not updated in two weeks?
-* Full list: rock, GPM, lead, state, epics slipped x of y, positions x of y, one line summary, last update age.
+**Tab 1. "What does steerco need to hear?"** (M1). Supports D1. Everything here is written by the initiative lead on the rock tab.
+* Per rock: main message (one or two lines), top risks, call outs, and steerco decisions requested with a decide by date.
+* Spotlight: decisions requested for this steerco.
 
-**Tab 2. "What ships in the next six months?"** (M1). Supports D2.
+**Tab 2. "Where do the rocks stand?"** (M1). Supports D2. Overall state per rock across three lenses.
+* Per rock: state (On track, At risk, Off track), roadmap (committed epics slipped x of y), risks (open high risks), resourcing (positions filled x of y).
+* Spotlight: rocks At risk or Off track.
+
+**Tab 3. "What ships in the next six months?"** (M1). Supports D3.
+* Six month timeline per rock showing Committed, Choice point and Not committed, with planned vs forecast.
 * Spotlight: committed epics on plan (x of y).
-* Chart: six month timeline per rock, encoding commitment level (Committed, Choice point, Not committed) and planned vs forecast.
-* Full list: epics with rock, ADO id, commitment, planned, forecast, status, key result contribution.
+* **3.1 "Which choices are open?"** Choice points only: what the choice is, options, decide by date, rock. Spotlight: choice points due by the next steerco.
 
-**Tab 3. "What do we need to decide?"** (M1). Supports D3.
-* Spotlight: decisions due by the next steerco.
-* Content: choice points and decisions needed with decide by dates, overdue forecasts (forecast date passed, not Delivered), upcoming events.
-* Full list: every open call out, oldest decide by date first.
+**Tab 4. "What could stop us?"** (M1). Supports D5.
+* 3 by 3 risk matrix with counts per cell, then the risk list with key action and owner.
+* Spotlight: high risks without a key action.
 
-**Tab 4. "What could stop us?"** (M1). Supports D4.
-* Spotlight: High risks without an open key action.
-* Chart: 3 by 3 risk matrix with counts per cell.
-* Full list: risk, rock, linked epic or key result, likelihood, impact, key action, owner, due date.
+**Tab 5. "What did steerco decide?"** (M1). Supports D6. Decision log from previous steercos.
+* Each decision: steerco date, rock, decision, outcome, owner, follow up status.
+* Spotlight: decisions with an open follow up.
+* The log is the same table as the decisions requested on tab 1: the lead raises the request, and after steerco the outcome is filled in on the same row. Nothing is typed twice.
 
-**Tab 5. "How is this rock doing?"** (M1, one page per selected rock). Supports D5.
-* Profile: purpose, goals, what it delivers, value chain, initiative lead, GPM.
-* State and one line summary, resourcing (x of y positions filled), key results, epic table (planned, forecast, status, comment, ADO id, KR contribution), top 5 risks, open call outs.
-* M3 adds the state trend across updates.
+## Only essential information
 
-**Tab 6. "How did we move this quarter?"** (M3). Supports D7. Quarter by quarter look back from the update history: state per rock per update, slip trend, decisions taken.
+Every field must feed one of the five tabs or the email. If no tab or email section reads it, it is not in the workbook. Fields dropped for this reason: a separate key results table (the key result link is a short text on the epic, for example "60% of KR 1.1"), minutes spent per update, an attention point separate from the main message, links from risks to epics, risk due dates, and per field change history. A separate call out type for events is dropped too: call outs are free text, and decisions have their own table.
 
 ## Email update (M2, required structure)
 
@@ -105,7 +103,7 @@ Generated from the same data for one GPM portfolio (or one rock, or all rocks). 
 2. **Portfolio table:** rock, state, epics slipped (x of y), positions filled (x of y), one line summary.
 3. **Key call outs:** decisions needed with a date, overdue forecasts, upcoming events.
 4. **Development update:** count of epics per status (Delivered, On plan, On watch, Slipped, On hold, Not committed), releases this period, average slip in weeks.
-5. **Key risks and issues:** short bullets, linked to epics and key results where set.
+5. **Key risks and issues:** short bullets from the top risks.
 6. **Per rock section:** state, resourcing, headline, then the epic table (epic, ADO id, planned date, forecast date, status, comment, contribution to key results such as "60% of KR 1.1").
 
 Requirements: no value is typed for the email that is not already in the workbook; the sender only picks the portfolio and the date; a sendable text is ready in under 5 minutes (G5). The mechanism (Cowork prompt, workbook generated text, or both) is the architect's call. The factory must ship a reference rendering on sample data that tests can check section by section.
@@ -116,20 +114,20 @@ Assumed derivations, to be confirmed by the architect: "this period" is the 14 d
 
 | Fact | Owner | Changes | Why it exists |
 | :--- | :--- | :--- | :--- |
-| Rock profile: name, purpose, goals, what it delivers, value chain, initiative lead, GPM, active flag | Workbook owner, lead may edit | Quarterly | Tab 5, email header |
-| Positions planned and filled (counts only) | Lead | When it changes | Resourcing on tabs 1 and 5, email |
-| Key results per rock (id such as KR 1.1, text) | Workbook owner with lead | Quarterly | Links epics and risks to outcomes |
-| Epics: title, ADO id, commitment, planned date, forecast date, status inputs, comment, KR and contribution % | Lead | Forecast and comment when they move | Tabs 2, 3, 5, email |
-| Risks: title, likelihood, impact, linked epic or KR, key action, action owner, due date, open or closed | Lead | Only when they change | Tab 4, email |
-| Call outs: type (Decision needed, Event), text, date, rock, linked epic, open or closed | Lead or GPM | When raised or closed | Tab 3, email |
-| Update (check-in): date, rock, state, one line summary, attention point, minutes spent | Lead | Every one or two weeks, one row per rock | Tabs 1 and 5, history, G1, G3 |
-| Lookups: people (name, role), value chains, states, statuses, commitment levels, rating scale | Workbook owner | Rarely | Dropdowns everywhere |
+| Rock profile: name, purpose, goals, what it delivers, value chain, initiative lead, GPM, active flag | Workbook owner, lead may edit | Quarterly | Rock filter on every tab, email header |
+| Positions planned and filled (counts only) | Lead | When it changes | Tab 2, email |
+| Epics: title, ADO id, commitment, planned date, forecast date, status (hand set values only), comment, key result link as short text | Lead | Forecast and comment when they move | Tabs 2 and 3, email |
+| Risks: title, likelihood, impact, key action, action owner, open or closed, top risk flag | Lead | Only when they change | Tabs 1 and 4, email |
+| Call outs: text, date, open or closed | Lead | When raised or closed | Tab 1, email |
+| Decisions: steerco date, decision requested, decide by, choice point flag, options (choice points only), outcome, owner, follow up status | Lead raises, lead records the outcome after steerco | When raised and after each steerco | Tabs 1, 3.1 and 5, email |
+| Update: date, state, main message (one or two lines) | Lead | Every one or two weeks, overwritten in place on the rock tab; history comes from the snapshot log | Tabs 1 and 2, history, G1 |
+| Lookups: people (name, role), value chains, states, statuses, commitment levels | Workbook owner | Rarely | Dropdowns everywhere |
 
 One key action per risk is enough; no separate actions log in M1 or M2. Names are kept to people in their work role; no HR detail, no reasons for vacancies.
 
 ## Upkeep requirement: one tab per rock (decided by the user)
 
-Each rock has its own Excel tab that holds all of its key information: profile, resourcing, key results, epics, risks with key actions, call outs and the latest update. This is a user decision, not open for the architect. The architect designs how the portal, the email and history consolidate across the rock tabs, and records that design in `docs/DECISIONS.md`. The design must meet all of these:
+Each rock has its own Excel tab that holds all of its key information: profile, state and main message, resourcing, epics, risks with key actions, call outs and decisions. This is a user decision, not open for the architect. The architect designs how the portal, the email and history consolidate across the rock tabs, and records that design in `docs/DECISIONS.md`. The design must meet all of these:
 
 1. A lead does the whole regular update for one rock on that rock's tab, without touching any other tab.
 2. The regular update takes 7 minutes or less per rock, so a lead with two rocks stays within 15 minutes.
@@ -155,23 +153,22 @@ Each rock has its own Excel tab that holds all of its key information: profile, 
 * One tab per rock, with consolidation for the portal built (see Upkeep requirement).
 * History tables and the snapshot script with setup steps for Power Automate (see History).
 * Derived epic status (Slipped, On plan, Not committed), slip counts, positions x of y, update age.
-* Portal spec and preview for tabs 1 to 5, including the six month timeline and the 3 by 3 risk matrix.
+* Portal spec and preview for tabs 1 to 5 and 3.1, including the six month timeline, the 3 by 3 risk matrix and the decision log.
 * Handoff package (`dist/`) and `docs/DEPLOY.md`, so the director can deploy on SharePoint on Friday, leads can load their rocks over Friday and Monday, and the director can build the portal in Cowork before the steerco.
 
 ### Milestone 2: Email and trust (target Fri 30 Oct 2026)
 * Email update for a GPM portfolio, a single rock or all rocks, following the required structure, with a reference rendering and tests.
 * Data based state signal next to the lead's call, and a "check the call" flag when the lead's state is greener than the data (watermelon guard).
-* Upkeep minutes and freshness made visible (G1, G3).
+* Freshness made visible (G1).
 * Migration of the live workbook with `--from`, keeping all data entered since M1.
 
 ### Milestone 3: Look back (target before quarter end, Fri 11 Dec 2026)
-* Tab 6 quarter by quarter look back from the update history.
-* Light record of choice point outcomes (decided on, outcome) so D7 can see what steerco decided.
+* Quarter by quarter look back (trend on tabs 2 and 5) from the snapshot history.
 * Cockpit health figures for G1 to G4 computed in the workbook.
 
 ### Out of scope (all milestones unless adoption after two steerco cycles proves the need)
 * Integration with Azure DevOps or any other tool. ADO id is stored for traceability only.
-* Named roles or people per position; dependencies between rocks; budget; per field change history; a full decision log; a separate actions log.
+* Named roles or people per position; dependencies between rocks; budget; per field change history; a separate actions log.
 * Building the portal itself (the director builds it in Cowork from the handoff package).
 * Slide or PDF export beyond printing the portal.
 
@@ -184,7 +181,7 @@ All computable from the workbook unless marked.
 | S0 | Steerco runs from the portal | Steerco of week of 19 Oct held from the portal without a deck (director confirms) | Week of 19 Oct 2026 |
 | G1 | Data is fresh | Share of active rocks with an update dated in the last 14 days | 90% or more, every week from week 4 |
 | G2 | Decks retired | Steercos run from the portal vs from a deck (director logs it) | 100% from the second steerco cycle |
-| G3 | Upkeep within budget | Median minutes per lead per week, from the minutes field on the update row | 15 or less, weeks 2 to 6 |
+| G3 | Upkeep within budget | Leads asked at the first two retros how long the update takes (no field in the workbook) | 15 or less, weeks 2 to 6 |
 | G4 | Every delivery risk has an owner and action | Share of slipped committed epics and High risks that have an open key action with owner and due date | 100% within 6 weeks of go live |
 | G5 | Email on demand | Time from opening the portal to a sendable portfolio email (GPM confirms) | Under 5 minutes from M2 |
 
@@ -194,20 +191,20 @@ Steady state, per person per week. One off onboarding (first load of a rock, abo
 
 | Role | What they do | Minutes per week |
 | :--- | :--- | :--- |
-| Initiative lead, 1 rock | One update row (state, summary, attention point, minutes), forecasts and comments that moved, risks and call outs that changed, commitment levels after a steerco | 7 or less |
+| Initiative lead, 1 rock | On the rock tab: state and main message, forecasts and comments that moved, risks and call outs that changed, decisions requested, outcomes and commitment levels after a steerco | 7 or less |
 | Initiative lead, 2 rocks | Same, per rock | 15 or less |
-| GPM, 1 to 5 rocks | Scan tab 1 for the portfolio, add or close portfolio decisions and events, send the email (from M2) | 15 or less |
-| Product director | Weekly scan of tabs 1, 3 and 4, nudge stale rocks; portal changes only when the schema changes | 15 or less (portal build is one off) |
+| GPM, 1 to 5 rocks | Scan tabs 1 and 2 for the portfolio, send the email (from M2) | 15 or less |
+| Product director | Weekly scan of tabs 1, 2 and 4, nudge stale rocks; portal changes only when the schema changes | 15 or less (portal build is one off) |
 | Executives | Read only | 0 |
-| Workbook owner | Add or close rocks, key results, lookups at quarter start (about 30 minutes per quarter) | 3 or less averaged |
+| Workbook owner | Add or close rocks and lookups at quarter start (about 30 minutes per quarter) | 3 or less averaged |
 
-The cap is 15 minutes per person per week. If G3 shows a role above budget for two consecutive weeks, the PM reprioritises the plan to remove fields or derive more, before adding anything new.
+The cap is 15 minutes per person per week. If a role reports being above budget for two consecutive weeks, the PM reprioritises the plan to remove fields or derive more, before adding anything new.
 
 ## Weekly and steerco rituals
 
-* **Lead update** (every one or two weeks, any day before Monday): one update row per rock, then only what moved.
-* **Director scan** (Monday): tab 1 first, then exceptions on tabs 3 and 4. Output: nudges and 1:1 topics.
-* **Steerco** (as scheduled): tab 1, then tab 3 (decide), tab 2 (confirm commitments), tab 4 (top risks), tab 5 for deep dives. Within two working days after steerco, leads set commitment levels and close decided call outs in their next update.
+* **Lead update** (every one or two weeks, any day before Monday): on the rock tab, state and main message, then only what moved.
+* **Director scan** (Monday): tab 2 first, then exceptions on tabs 1 and 4. Output: nudges and 1:1 topics.
+* **Steerco** (as scheduled): tabs in order 1, 2, 3 and 3.1, 4, 5. Within two working days after steerco, leads record decision outcomes and set commitment levels on their rock tab.
 * **Email** (from M2, on request): GPM generates and sends the portfolio update.
 
 ## Risks and open questions
@@ -218,10 +215,10 @@ The cap is 15 minutes per person per week. If G3 shows a role above budget for t
 | :--- | :--- | :--- |
 | Deadline: four working days to build, deploy, load data and build the portal before steerco | High | M1 is the smallest slice that runs steerco; email, watermelon flag and history wait for M2 and M3; schema in M1 already holds every field the email needs so M2 adds no data entry |
 | First data load slips because leads have not got the time before steerco | High | Short entry guide, synthetic sample as example, director asks leads to load by Mon 19 Oct noon; only active rocks needed |
-| Upkeep breaks 15 minutes (long risk lists, many epics, two rocks) | High | Top 5 risks shown, 3 to 5 epics per quarter, update row carries values forward, minutes measured from day one |
+| Upkeep breaks 15 minutes (long risk lists, many epics, two rocks) | High | Top 5 risks shown, 3 to 5 epics per quarter, values stay in place on the rock tab, only essential fields |
 | Watermelon status: lead's call greener than the data | High | Derived epic status and slip counts shown next to the state in M1; explicit flag in M2 |
 | Executives still ask for slides | Medium (director enforces) | Printable portal pages; G2 log |
-| One tab per rock conflicts with consolidation | Medium | Upkeep requirements above; architect decides and records |
+| One tab per rock makes consolidation harder | Medium | User decision; architect designs consolidation against the upkeep requirements above |
 | Dates drift from ADO because epics are entered by hand | Medium | Only 3 to 5 epics per rock; ADO id stored; planned date changes only at steerco |
 | Commitment semantics misunderstood | Medium | Definitions on the About sheet and on tab 2 |
 | Sensitive content on a SharePoint site shared across stakeholders (risks, vacancies, choices) | Medium | Counts only for staffing, people at role level, no HR detail; director confirms the audience (Q4) |
