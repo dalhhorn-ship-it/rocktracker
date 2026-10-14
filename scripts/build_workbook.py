@@ -427,6 +427,19 @@ def build_table_sheet(wb, schema, sheet, rows, deploy_kind):
     return ws
 
 
+def check_formula(schema, excel):
+    """An about.checks formula: <Sheet.Column> becomes INDEX(Sheet!$A$2#,,n), then file format."""
+    sheets = {s["name"]: s for s in schema["sheets"]}
+    anchor = schema["rock_tab"]["consolidation_formula"]["anchor"]
+    anchor = "$" + re.sub(r"(\d+)", r"$\1", anchor)
+
+    def ref(m):
+        names = [c["name"] for c in sheets[m.group(1)]["columns"]]
+        return f"INDEX({m.group(1)}!{anchor}#,,{names.index(m.group(2)) + 1})"
+
+    return to_file_formula(spill_refs(re.sub(r"<(\w+)\.(\w+)>", ref, excel)))
+
+
 def build_about(wb, schema):
     about = wb.create_sheet("About")
     header_font, header_fill = Font(bold=True, color="FFFFFF"), solid(INK)
@@ -444,12 +457,56 @@ def build_about(wb, schema):
     for s in schema["sheets"]:
         pk = col_letter(s, s["primary_key"])
         about.append([s["name"], s.get("purpose", ""), s.get("owner", ""), f"=COUNTA('{s['name']}'!{pk}:{pk})-1"])
-    about.append([])
-    for line in schema.get("about", {}).get("rules", []):
+    spec = schema.get("about", {})
+    widths = {"A": 34, "B": 60, "C": 28, "D": 40}
+    wrap = Alignment(wrap_text=True, vertical="top")
+    total = sum(widths.values())
+
+    def section(title):
+        about.append([])
+        about.append([title])
+        about.cell(row=about.max_row, column=1).font = Font(bold=True, size=13, color=INK)
+
+    def header(*names):
+        about.append(list(names))
+        for c in about[about.max_row]:
+            if c.value is not None:
+                c.font, c.fill = header_font, header_fill
+
+    def text_row(line):
         about.append([line])
-    about.column_dimensions["A"].width = 22
-    about.column_dimensions["B"].width = 60
-    about.column_dimensions["C"].width = 24
+        r = about.max_row
+        about.merge_cells(start_row=r, start_column=1, end_row=r, end_column=4)
+        about.cell(row=r, column=1).alignment = wrap
+        about.row_dimensions[r].height = 15 * (len(line) // total + 1)
+
+    def lines(title, items):
+        section(title)
+        for line in items:
+            text_row(line)
+
+    section("Checks")
+    header("Check", "OK when", "Result")
+    for chk in spec.get("checks", []):
+        about.append([chk["label"], chk["ok_when"], check_formula(schema, chk["excel"])])
+        r = about.max_row
+        for col in (1, 2, 3):
+            about.cell(row=r, column=col).alignment = wrap
+        about.row_dimensions[r].height = 15 * (max(len(chk["label"]) // widths["A"], len(chk["ok_when"]) // widths["B"]) + 1)
+    lines("Update guide", spec.get("update_guide", []))
+    lines("Add a rock", spec.get("add_rock", []))
+    lines("Close a rock", spec.get("close_rock", []))
+    lines("Rules", spec.get("rules", []))
+    section("Definitions")
+    header("Term", "Meaning", "Group", "What ends it")
+    for d in spec.get("definitions", []):
+        about.append([d["term"], d["meaning"], d["group"], d.get("exit", "")])
+        r = about.max_row
+        for col in (1, 2, 3, 4):
+            about.cell(row=r, column=col).alignment = wrap
+        about.row_dimensions[r].height = 15 * (max(len(d["meaning"]) // widths["B"], len(d.get("exit", "")) // widths["D"]) + 1)
+    for letter, w in widths.items():
+        about.column_dimensions[letter].width = w
     return about
 
 
@@ -480,8 +537,7 @@ def build(schema, data, deploy):
     wb.remove(wb.active)
     R = Resolver(schema)
     rt = schema["rock_tab"]
-    if deploy:
-        build_about(wb, schema)
+    build_about(wb, schema)  # sample and deployment workbooks both start with About
     build_rock_tab(wb, rt["template_sheet"], schema, R)
     for rock in data.get("rocks", []):
         build_rock_tab(wb, rock["RockTab"], schema, R, rock)

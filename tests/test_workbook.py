@@ -33,7 +33,7 @@ def test_sheets_exist_in_order(workbook, schema):
     missing = [s["name"] for s in schema["sheets"] if s["name"] not in workbook.sheetnames]
     assert not missing, f"missing sheets: {missing}"
     names = workbook.sheetnames
-    assert names[0] == rt["template_sheet"]
+    assert names[:2] == ["About", rt["template_sheet"]]
     assert rock_tab_names(workbook, schema), "the sample needs rock tabs between the bookends"
     after = names[names.index(rt["end_sheet"]) + 1:]
     assert after == [s["name"] for s in schema["sheets"]], f"sheet order after {rt['end_sheet']}: {after}"

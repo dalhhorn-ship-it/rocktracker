@@ -2,7 +2,7 @@
 
 Owner: `developer`. Updated after every task. Entries TD01 to TD08 recorded by the architect at design time (review round 1, 14 Oct 2026).
 
-Open: 16 (high 1, medium 6, low 9). Resolved: 1.
+Open: 17 (high 1, medium 6, low 10). Resolved: 2.
 
 ## Open
 
@@ -21,12 +21,14 @@ Open: 16 (high 1, medium 6, low 9). Resolved: 1.
 | TD11 | `data/sample.json` is hand generated and snapshot rows are computed with a small status function that duplicates the schema rules. The T07 builder now reads the new shape (rocks with block lists, lookups, snapshots) | low | S | T08 `rock_model.py` recomputes snapshot rows and a test compares them with the stored ones | 14 Oct 2026 |
 | TD13 | `rock_model.py` raises on a Likelihood, Impact or State value outside the lookups where Excel would show an error value; dropdowns prevent it in the workbook | low | S | Decide in review whether the mirror should return "" instead | 14 Oct 2026 |
 | TD14 | Excel only behaviour that nothing here can check: ANCHORARRAY (`Rocks!$A$2#`) inside the duplicate Rock ID conditional format, defined names as dropdown sources written without a leading equals sign, the warning style steerco dropdown, 3D `VSTACK` itself (TD01), pink conditional formats using `start_color` and `end_color`, protection options on rock tabs after Duplicate | medium | S | Part of the user spike and deploy test run: open the deployment file in Excel for the web, duplicate RockTemplate, type a duplicate Rock ID, pick an unlisted steerco date, press Save snapshot; add results to DEPLOY | 14 Oct 2026 |
-| TD15 | About sheet is minimal until T11: sheet list with row counts and the schema rules only; no update guide, add rock steps, definitions or checks yet | low | S | T11 builds them from `about` in the schema | 14 Oct 2026 |
 | TD16 | `--from` migration reads rock tabs by the current schema layout (cell addresses), with no layout version stored on the tab; a future layout change would copy the wrong cells | low | M | M2 T26: store the layout version in a hidden cell on every rock tab and read old layouts from `schema/history/` (see TD03) | 14 Oct 2026 |
 | TD17 | Dropdown lists are fixed ranges (lookup rows 2 to 200), so Excel shows blank entries at the end of every list; consolidated and history sheets only format the first 2000 rows | low | S | Switch the defined names to table structured references once the T05 spike confirms Excel accepts them in validation | 14 Oct 2026 |
+| TD18 | About checks that read the consolidated sheets (`INDEX(Rocks!$A$2#,,n)` with UNIQUE and FILTER) are written by `check_formula` but never evaluated: LibreOffice cannot calculate the 3D VSTACK, so the tests only prove the formulas are present and that the standalone check calculates | low | S | Add the About checks to the Excel for the web spike and deploy test run (TD14); expect 0 on the sample except rock count | 14 Oct 2026 |
+| TD19 | `tests/test_recalc.py` (T09) cannot freeze TODAY() in LibreOffice, so it compares with the model at the machine date; a test run across midnight or a changed date rule could differ. Earlier sample snapshots (before the latest) cannot be recomputed from today's rock tabs, so they get a consistency check only (TD11 is covered for the latest snapshot) | low | small | Install `faketime` in CI and freeze to the sample date; or regenerate older snapshots from dated rock data | 14 Oct 2026 |
 
 ## Resolved
 
 | ID | Description | Resolved on | How |
 | :--- | :--- | :--- | :--- |
 | TD12 | `rock_model.py` loader `rocks_from_workbook` was tested only on a minimal workbook | 14 Oct 2026 | T07: the `rows` fixture in `tests/conftest.py` now loads the generated sample workbook with it and `tests/test_workbook.py` checks the result against the schema |
+| TD15 | About sheet was minimal | 14 Oct 2026 | T11: `build_about` now writes checks, update guide, add and close rock steps, rules and definitions from `about` in the schema, in both the sample and deployment workbook; `tests/test_about.py` |
