@@ -138,3 +138,9 @@ Option B, "cockpit core", adjusted with the answers above:
 * Light history: a check-in snapshot per rock per update (state, counts, summary) is enough to look back quarter by quarter.
 * **Open design tension for the architect:** the user prefers one tab per rock for upkeep, while the factory standard is one sheet per table so the portal and email can consolidate across rocks. The architect must resolve this and record the decision, with upkeep per PM as the deciding factor.
 * Deadline is tight: plan a minimal first slice that can run next week's steerco, then iterate.
+
+### Follow up decisions (14 Oct 2026)
+
+* **One tab per rock, decided by the user.** Each rock has its own Excel tab that holds all of its key information (profile, key results, epics, risks and actions, decisions and call outs, resourcing). The open design tension above is closed: the architect designs consolidation for the portal and email around per rock tabs, not instead of them.
+* **The user reviews the PRD before the architect starts.**
+* **History upkeep:** being brainstormed with the user; see the next update to this section.
