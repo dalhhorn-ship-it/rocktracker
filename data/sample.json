@@ -1,73 +1,1148 @@
 {
-  "_note": "Synthetic sample rows per sheet, in schema column order. Dates as YYYY-MM-DD. Lookup sheets use the schema seed rows.",
-  "Goals": [
-    [
-      "G1",
-      "Grow active users",
-      "Alex Example"
-    ],
-    [
-      "G2",
-      "Reduce support load",
-      "Sam Example"
-    ]
+ "_note": "Synthetic sample for the rock tab model. 'today' for tests is 2026-10-14. Each rock holds profile, update, and one list per block (Epics, Risks, CallOuts, Decisions) in slot order; a list entry is a dict of the input (non calculated) schema columns, an empty dict {} leaves that slot empty, slots after the list are empty. 'lookups' rows are appended after the schema seed rows (lkp_Steercos extra rows come after the seed row 2026-10-21). 'snapshots' rows are in schema column order. RockTab is the sheet name. R04 is deliberately half filled, R05 is inactive.",
+ "today": "2026-10-14",
+ "lookups": {
+  "lkp_People": [
+   [
+    "Priya Sampleton",
+    "GPM"
+   ],
+   [
+    "Marco Demoso",
+    "GPM"
+   ],
+   [
+    "Lena Testfield",
+    "Lead"
+   ],
+   [
+    "Omar Fictiv",
+    "Lead"
+   ],
+   [
+    "Tove Nomen",
+    "Lead"
+   ],
+   [
+    "Ravi Placeholder",
+    "Lead"
+   ],
+   [
+    "Ines Samplewood",
+    "Lead"
+   ]
   ],
-  "Initiatives": [
-    [
-      "I1",
-      "G1",
-      "Onboarding redesign",
-      "Alex Example",
-      "On track",
-      "2026-12-01"
-    ],
-    [
-      "I2",
-      "G2",
-      "Self service help centre",
-      "Sam Example",
-      "At risk",
-      "2027-02-01"
-    ],
-    [
-      "I3",
-      "G1",
-      "Referral programme",
-      "Jo Example",
-      "On track",
-      "2026-11-15"
-    ],
-    [
-      "I4",
-      "G1",
-      "Pricing page test",
-      "Alex Example",
-      "Done",
-      "2026-09-30"
-    ],
-    [
-      "I5",
-      "G2",
-      "Chatbot triage",
-      "Kim Example",
-      "Not started",
-      null
-    ],
-    [
-      "I6",
-      "G2",
-      "Known issues banner",
-      "Sam Example",
-      "Done",
-      "2026-08-20"
-    ],
-    [
-      "I7",
-      "G1",
-      "Activation emails",
-      "Jo Example",
-      "On track",
-      "2027-01-10"
-    ]
+  "lkp_ValueChains": [
+   [
+    "Checkout"
+   ],
+   [
+    "Onboarding"
+   ],
+   [
+    "Fulfilment"
+   ]
+  ],
+  "lkp_Steercos": [
+   [
+    "2026-09-16",
+    "Past steerco"
+   ],
+   [
+    "2026-11-18",
+    null
+   ],
+   [
+    "2026-12-16",
+    null
+   ]
   ]
+ },
+ "rocks": [
+  {
+   "RockTab": "R01 Checkout Speed",
+   "RockID": "R01",
+   "RockName": "Checkout Speed",
+   "ValueChain": "Checkout",
+   "Lead": "Lena Testfield",
+   "GPM": "Priya Sampleton",
+   "Active": "Yes",
+   "Purpose": "Make paying take fewer steps so fewer baskets are abandoned.",
+   "Goals": "Cut checkout steps from 5 to 3. Lift completed baskets.",
+   "Delivers": "One page checkout, saved payment methods, a faster address form.",
+   "UpdateDate": "2026-10-12",
+   "State": "On track",
+   "MainMessage": "One page checkout is in test and on plan. Saved payment methods are on watch while we wait for a vendor answer.",
+   "PositionsPlanned": 6,
+   "PositionsFilled": 5,
+   "Epics": [
+    {
+     "Title": "One page checkout",
+     "ADOId": "ADO-1101",
+     "Commitment": "Committed",
+     "PlannedDate": "2026-11-30",
+     "ForecastDate": "2026-11-30",
+     "LeadStatus": null,
+     "Comment": null,
+     "KRLink": "KR 1.1"
+    },
+    {
+     "Title": "Saved payment methods",
+     "ADOId": "ADO-1102",
+     "Commitment": "Committed",
+     "PlannedDate": "2026-12-15",
+     "ForecastDate": "2026-12-10",
+     "LeadStatus": "On watch",
+     "Comment": "Vendor sandbox access still pending",
+     "KRLink": "KR 1.2"
+    },
+    {
+     "Title": "Address form speed up",
+     "ADOId": "ADO-1103",
+     "Commitment": "Committed",
+     "PlannedDate": "2026-10-05",
+     "ForecastDate": "2026-10-02",
+     "LeadStatus": "Delivered",
+     "Comment": "Shipped 2 Oct",
+     "KRLink": "KR 1.1"
+    },
+    {
+     "Title": "Wallet support",
+     "ADOId": "ADO-1104",
+     "Commitment": "Choice point",
+     "PlannedDate": null,
+     "ForecastDate": null,
+     "LeadStatus": null,
+     "Comment": "Needs a funding decision before we can commit",
+     "KRLink": "KR 1.3"
+    }
+   ],
+   "Risks": [
+    {
+     "Title": "Payment vendor delays sandbox",
+     "Likelihood": "Low",
+     "Impact": "Low",
+     "KeyAction": "Escalate through vendor manager",
+     "ActionOwner": "Lena Testfield",
+     "RiskStatus": null,
+     "TopRisk": null
+    },
+    {
+     "Title": "Peak season freeze blocks release",
+     "Likelihood": "Medium",
+     "Impact": "High",
+     "KeyAction": "Agree a release window with ops",
+     "ActionOwner": "Lena Testfield",
+     "RiskStatus": null,
+     "TopRisk": "Yes"
+    },
+    {
+     "Title": "Legacy tax service times out",
+     "Likelihood": "High",
+     "Impact": "Medium",
+     "KeyAction": "Cache rates; retired in Sept",
+     "ActionOwner": "Lena Testfield",
+     "RiskStatus": "Closed",
+     "TopRisk": null
+    }
+   ],
+   "CallOuts": [
+    {
+     "Text": "Vendor review call",
+     "Date": "2026-10-20",
+     "CallOutStatus": null
+    },
+    {
+     "Text": "Pricing page test results shared",
+     "Date": "2026-09-30",
+     "CallOutStatus": "Closed"
+    }
+   ],
+   "Decisions": [
+    {
+     "Decision": "Fund wallet support this half",
+     "SteercoDate": "2026-10-21",
+     "DecideBy": "2026-10-21",
+     "ChoicePoint": "Yes",
+     "Options": "A: fund now. B: defer to next half. C: partner solution.",
+     "Outcome": null,
+     "Owner": null,
+     "FollowUp": null
+    }
+   ]
+  },
+  {
+   "RockTab": "R02 Guided Onboarding",
+   "RockID": "R02",
+   "RockName": "Guided Onboarding",
+   "ValueChain": "Onboarding",
+   "Lead": "Omar Fictiv",
+   "GPM": "Priya Sampleton",
+   "Active": "Yes",
+   "Purpose": "Help new users reach their first success in the first session.",
+   "Goals": "Raise week one activation. Halve time to first success.",
+   "Delivers": "Setup checklist, in app tips, role based starter templates.",
+   "UpdateDate": "2026-10-13",
+   "State": "At risk",
+   "MainMessage": "Setup checklist slipped two weeks because design review ran long. Recoverable this quarter. Hiring is the bigger worry.",
+   "PositionsPlanned": 4,
+   "PositionsFilled": 2,
+   "Epics": [
+    {
+     "Title": "Setup checklist",
+     "ADOId": "ADO-2201",
+     "Commitment": "Committed",
+     "PlannedDate": "2026-11-20",
+     "ForecastDate": "2026-12-04",
+     "LeadStatus": "On watch",
+     "Comment": "Design review ran long",
+     "KRLink": "KR 2.1"
+    },
+    {
+     "Title": "In app tips",
+     "ADOId": "ADO-2202",
+     "Commitment": "Committed",
+     "PlannedDate": "2027-01-31",
+     "ForecastDate": null,
+     "LeadStatus": "On hold",
+     "Comment": "Paused until checklist ships",
+     "KRLink": "KR 2.2"
+    },
+    {
+     "Title": "Starter templates",
+     "ADOId": null,
+     "Commitment": "Not committed",
+     "PlannedDate": null,
+     "ForecastDate": null,
+     "LeadStatus": null,
+     "Comment": "Known need, no promise yet",
+     "KRLink": "KR 2.3"
+    },
+    {
+     "Title": "Role picker",
+     "ADOId": "ADO-2204",
+     "Commitment": "Committed",
+     "PlannedDate": "2026-12-18",
+     "ForecastDate": null,
+     "LeadStatus": null,
+     "Comment": null,
+     "KRLink": "KR 2.1"
+    }
+   ],
+   "Risks": [
+    {
+     "Title": "Two engineering roles unfilled",
+     "Likelihood": "High",
+     "Impact": "High",
+     "KeyAction": null,
+     "ActionOwner": null,
+     "RiskStatus": null,
+     "TopRisk": "Yes"
+    },
+    {
+     "Title": "Tips content not ready",
+     "Likelihood": "Medium",
+     "Impact": "Medium",
+     "KeyAction": "Draft with content team",
+     "ActionOwner": "Omar Fictiv",
+     "RiskStatus": null,
+     "TopRisk": null
+    },
+    {
+     "Title": "Template licence unclear",
+     "Likelihood": "Low",
+     "Impact": "High",
+     "KeyAction": "Legal review requested",
+     "ActionOwner": "Omar Fictiv",
+     "RiskStatus": null,
+     "TopRisk": null
+    }
+   ],
+   "CallOuts": [
+    {
+     "Text": "Design review moved to next week",
+     "Date": "2026-10-15",
+     "CallOutStatus": null
+    }
+   ],
+   "Decisions": [
+    {
+     "Decision": "Approve contractors for onboarding",
+     "SteercoDate": "2026-11-18",
+     "DecideBy": "2026-11-18",
+     "ChoicePoint": null,
+     "Options": null,
+     "Outcome": null,
+     "Owner": null,
+     "FollowUp": null
+    },
+    {
+     "Decision": "Pause in app tips until checklist ships",
+     "SteercoDate": "2026-09-16",
+     "DecideBy": "2026-09-16",
+     "ChoicePoint": null,
+     "Options": null,
+     "Outcome": "Agreed, tips paused",
+     "Owner": "Omar Fictiv",
+     "FollowUp": null
+    }
+   ]
+  },
+  {
+   "RockTab": "R03 Same Day Fulfilment",
+   "RockID": "R03",
+   "RockName": "Same Day Fulfilment",
+   "ValueChain": "Fulfilment",
+   "Lead": "Tove Nomen",
+   "GPM": "Marco Demoso",
+   "Active": "Yes",
+   "Purpose": "Offer same day delivery in the two largest regions.",
+   "Goals": "Same day option live in two regions. Keep late deliveries under 3 percent.",
+   "Delivers": "Carrier integration, cut off time logic, delivery promise on product pages.",
+   "UpdateDate": "2026-09-25",
+   "State": "At risk",
+   "MainMessage": "Carrier integration is now forecast for January. We believe the quarter can still be saved with extra people.",
+   "PositionsPlanned": 5,
+   "PositionsFilled": 5,
+   "Epics": [
+    {
+     "Title": "Carrier integration",
+     "ADOId": "ADO-3301",
+     "Commitment": "Committed",
+     "PlannedDate": "2026-12-10",
+     "ForecastDate": "2027-01-14",
+     "LeadStatus": null,
+     "Comment": "Carrier API certification took longer",
+     "KRLink": "KR 3.1"
+    },
+    {
+     "Title": "Cut off time logic",
+     "ADOId": "ADO-3302",
+     "Commitment": "Committed",
+     "PlannedDate": "2027-02-15",
+     "ForecastDate": "2027-02-15",
+     "LeadStatus": null,
+     "Comment": null,
+     "KRLink": "KR 3.1"
+    },
+    {
+     "Title": "Delivery promise on product pages",
+     "ADOId": "ADO-3303",
+     "Commitment": "Committed",
+     "PlannedDate": "2027-03-10",
+     "ForecastDate": null,
+     "LeadStatus": null,
+     "Comment": null,
+     "KRLink": "KR 3.2"
+    }
+   ],
+   "Risks": [
+    {
+     "Title": "Carrier capacity in peak weeks",
+     "Likelihood": "High",
+     "Impact": "Low",
+     "KeyAction": "Reserve capacity early",
+     "ActionOwner": "Tove Nomen",
+     "RiskStatus": null,
+     "TopRisk": null
+    },
+    {
+     "Title": "Address data quality",
+     "Likelihood": "Medium",
+     "Impact": "Low",
+     "KeyAction": "Add validation",
+     "ActionOwner": "Tove Nomen",
+     "RiskStatus": null,
+     "TopRisk": null
+    },
+    {
+     "Title": "Warehouse staffing",
+     "Likelihood": "Low",
+     "Impact": "Medium",
+     "KeyAction": "Seasonal hiring plan",
+     "ActionOwner": "Tove Nomen",
+     "RiskStatus": null,
+     "TopRisk": null
+    }
+   ],
+   "CallOuts": [
+    {
+     "Text": "Carrier certification workshop",
+     "Date": "2026-10-28",
+     "CallOutStatus": null
+    }
+   ],
+   "Decisions": [
+    {
+     "Decision": "Add three people to carrier integration",
+     "SteercoDate": "2026-11-18",
+     "DecideBy": "2026-10-21",
+     "ChoicePoint": null,
+     "Options": null,
+     "Outcome": null,
+     "Owner": null,
+     "FollowUp": null
+    },
+    {
+     "Decision": "Pick carrier for region two",
+     "SteercoDate": "2026-09-16",
+     "DecideBy": "2026-09-16",
+     "ChoicePoint": null,
+     "Options": null,
+     "Outcome": "Carrier B selected",
+     "Owner": "Tove Nomen",
+     "FollowUp": "Closed"
+    }
+   ]
+  },
+  {
+   "RockTab": "R04 Loyalty Pilot",
+   "RockID": "R04",
+   "RockName": "Loyalty Pilot",
+   "ValueChain": "Checkout",
+   "Lead": "Ravi Placeholder",
+   "GPM": "Marco Demoso",
+   "Active": "Yes",
+   "Purpose": "Test a points scheme with a small group of returning customers.",
+   "Goals": null,
+   "Delivers": null,
+   "UpdateDate": null,
+   "State": "On track",
+   "MainMessage": "Just started, details to follow.",
+   "PositionsPlanned": null,
+   "PositionsFilled": null,
+   "Epics": [
+    {
+     "Title": "Points ledger",
+     "ADOId": null,
+     "Commitment": "Committed",
+     "PlannedDate": null,
+     "ForecastDate": null,
+     "LeadStatus": null,
+     "Comment": null,
+     "KRLink": null
+    },
+    {},
+    {
+     "Title": "Pilot group selection",
+     "ADOId": null,
+     "Commitment": "Not committed",
+     "PlannedDate": null,
+     "ForecastDate": null,
+     "LeadStatus": null,
+     "Comment": null,
+     "KRLink": null
+    }
+   ],
+   "Risks": [
+    {
+     "Title": "Fraud on points redemption",
+     "Likelihood": "Medium",
+     "Impact": null,
+     "KeyAction": "Add limits",
+     "ActionOwner": null,
+     "RiskStatus": null,
+     "TopRisk": null
+    },
+    {},
+    {
+     "Title": null,
+     "Likelihood": null,
+     "Impact": null,
+     "KeyAction": "Check with risk team",
+     "ActionOwner": null,
+     "RiskStatus": null,
+     "TopRisk": null
+    }
+   ],
+   "CallOuts": [],
+   "Decisions": []
+  },
+  {
+   "RockTab": "R05 Legacy Returns",
+   "RockID": "R05",
+   "RockName": "Legacy Returns",
+   "ValueChain": "Fulfilment",
+   "Lead": "Ines Samplewood",
+   "GPM": "Marco Demoso",
+   "Active": "No",
+   "Purpose": "Retire the old returns portal.",
+   "Goals": "Single returns flow.",
+   "Delivers": "Migration of open returns.",
+   "UpdateDate": "2026-07-10",
+   "State": "On track",
+   "MainMessage": "Closed after migration finished.",
+   "PositionsPlanned": 2,
+   "PositionsFilled": 2,
+   "Epics": [
+    {
+     "Title": "Migrate open returns",
+     "ADOId": null,
+     "Commitment": "Committed",
+     "PlannedDate": "2026-06-30",
+     "ForecastDate": "2026-06-28",
+     "LeadStatus": "Delivered",
+     "Comment": null,
+     "KRLink": null
+    }
+   ],
+   "Risks": [
+    {
+     "Title": "Data loss on migration",
+     "Likelihood": "Low",
+     "Impact": "High",
+     "KeyAction": "Dry run done",
+     "ActionOwner": "Ines Samplewood",
+     "RiskStatus": "Closed",
+     "TopRisk": null
+    }
+   ],
+   "CallOuts": [
+    {
+     "Text": "Old portal switched off",
+     "Date": "2026-07-01",
+     "CallOutStatus": "Closed"
+    }
+   ],
+   "Decisions": [
+    {
+     "Decision": "Close the legacy returns rock",
+     "SteercoDate": "2026-09-16",
+     "DecideBy": "2026-09-16",
+     "ChoicePoint": null,
+     "Options": null,
+     "Outcome": "Closed, no further work",
+     "Owner": "Ines Samplewood",
+     "FollowUp": "Closed"
+    }
+   ]
+  }
+ ],
+ "snapshots": {
+  "RockSnapshots": [
+   [
+    "2026-09-28|R01",
+    "2026-09-28",
+    "R01",
+    "Checkout Speed",
+    "Priya Sampleton",
+    "2026-10-12",
+    "On track",
+    "One page checkout is in test and on plan. Saved payment methods are on watch while we wait for a vendor answer.",
+    3,
+    0,
+    0,
+    6,
+    5,
+    1
+   ],
+   [
+    "2026-09-28|R02",
+    "2026-09-28",
+    "R02",
+    "Guided Onboarding",
+    "Priya Sampleton",
+    "2026-10-13",
+    "At risk",
+    "Setup checklist slipped two weeks because design review ran long. Recoverable this quarter. Hiring is the bigger worry.",
+    3,
+    0,
+    0,
+    4,
+    2,
+    1
+   ],
+   [
+    "2026-09-28|R03",
+    "2026-09-28",
+    "R03",
+    "Same Day Fulfilment",
+    "Marco Demoso",
+    "2026-09-25",
+    "At risk",
+    "Carrier integration is now forecast for January. We believe the quarter can still be saved with extra people.",
+    3,
+    0,
+    0,
+    5,
+    5,
+    0
+   ],
+   [
+    "2026-09-28|R04",
+    "2026-09-28",
+    "R04",
+    "Loyalty Pilot",
+    "Marco Demoso",
+    null,
+    "On track",
+    "Just started, details to follow.",
+    0,
+    0,
+    0,
+    null,
+    null,
+    0
+   ],
+   [
+    "2026-10-05|R01",
+    "2026-10-05",
+    "R01",
+    "Checkout Speed",
+    "Priya Sampleton",
+    "2026-10-12",
+    "On track",
+    "One page checkout is in test and on plan. Saved payment methods are on watch while we wait for a vendor answer.",
+    3,
+    0,
+    0,
+    6,
+    5,
+    1
+   ],
+   [
+    "2026-10-05|R02",
+    "2026-10-05",
+    "R02",
+    "Guided Onboarding",
+    "Priya Sampleton",
+    "2026-10-13",
+    "At risk",
+    "Setup checklist slipped two weeks because design review ran long. Recoverable this quarter. Hiring is the bigger worry.",
+    3,
+    1,
+    0,
+    4,
+    2,
+    1
+   ],
+   [
+    "2026-10-05|R03",
+    "2026-10-05",
+    "R03",
+    "Same Day Fulfilment",
+    "Marco Demoso",
+    "2026-09-25",
+    "At risk",
+    "Carrier integration is now forecast for January. We believe the quarter can still be saved with extra people.",
+    3,
+    0,
+    0,
+    5,
+    5,
+    0
+   ],
+   [
+    "2026-10-05|R04",
+    "2026-10-05",
+    "R04",
+    "Loyalty Pilot",
+    "Marco Demoso",
+    null,
+    "On track",
+    "Just started, details to follow.",
+    0,
+    0,
+    0,
+    null,
+    null,
+    0
+   ],
+   [
+    "2026-10-12|R01",
+    "2026-10-12",
+    "R01",
+    "Checkout Speed",
+    "Priya Sampleton",
+    "2026-10-12",
+    "On track",
+    "One page checkout is in test and on plan. Saved payment methods are on watch while we wait for a vendor answer.",
+    3,
+    0,
+    1,
+    6,
+    5,
+    1
+   ],
+   [
+    "2026-10-12|R02",
+    "2026-10-12",
+    "R02",
+    "Guided Onboarding",
+    "Priya Sampleton",
+    "2026-10-13",
+    "At risk",
+    "Setup checklist slipped two weeks because design review ran long. Recoverable this quarter. Hiring is the bigger worry.",
+    3,
+    1,
+    0,
+    4,
+    2,
+    1
+   ],
+   [
+    "2026-10-12|R03",
+    "2026-10-12",
+    "R03",
+    "Same Day Fulfilment",
+    "Marco Demoso",
+    "2026-09-25",
+    "At risk",
+    "Carrier integration is now forecast for January. We believe the quarter can still be saved with extra people.",
+    3,
+    1,
+    0,
+    5,
+    5,
+    0
+   ],
+   [
+    "2026-10-12|R04",
+    "2026-10-12",
+    "R04",
+    "Loyalty Pilot",
+    "Marco Demoso",
+    null,
+    "On track",
+    "Just started, details to follow.",
+    0,
+    0,
+    0,
+    null,
+    null,
+    0
+   ]
+  ],
+  "EpicSnapshots": [
+   [
+    "2026-09-28|R01-E01",
+    "2026-09-28",
+    "R01-E01",
+    "R01",
+    "One page checkout",
+    "Committed",
+    "2026-11-30",
+    "2026-11-30",
+    "On plan"
+   ],
+   [
+    "2026-09-28|R01-E02",
+    "2026-09-28",
+    "R01-E02",
+    "R01",
+    "Saved payment methods",
+    "Committed",
+    "2026-12-15",
+    "2026-12-10",
+    "On watch"
+   ],
+   [
+    "2026-09-28|R01-E03",
+    "2026-09-28",
+    "R01-E03",
+    "R01",
+    "Address form speed up",
+    "Committed",
+    "2026-10-05",
+    "2026-10-05",
+    "On plan"
+   ],
+   [
+    "2026-09-28|R01-E04",
+    "2026-09-28",
+    "R01-E04",
+    "R01",
+    "Wallet support",
+    "Choice point",
+    null,
+    null,
+    "Not committed"
+   ],
+   [
+    "2026-09-28|R02-E01",
+    "2026-09-28",
+    "R02-E01",
+    "R02",
+    "Setup checklist",
+    "Committed",
+    "2026-11-20",
+    "2026-11-20",
+    "On watch"
+   ],
+   [
+    "2026-09-28|R02-E02",
+    "2026-09-28",
+    "R02-E02",
+    "R02",
+    "In app tips",
+    "Committed",
+    "2027-01-31",
+    null,
+    "On hold"
+   ],
+   [
+    "2026-09-28|R02-E03",
+    "2026-09-28",
+    "R02-E03",
+    "R02",
+    "Starter templates",
+    "Not committed",
+    null,
+    null,
+    "Not committed"
+   ],
+   [
+    "2026-09-28|R02-E04",
+    "2026-09-28",
+    "R02-E04",
+    "R02",
+    "Role picker",
+    "Committed",
+    "2026-12-18",
+    null,
+    "On plan"
+   ],
+   [
+    "2026-09-28|R03-E01",
+    "2026-09-28",
+    "R03-E01",
+    "R03",
+    "Carrier integration",
+    "Committed",
+    "2026-12-10",
+    "2026-12-10",
+    "On plan"
+   ],
+   [
+    "2026-09-28|R03-E02",
+    "2026-09-28",
+    "R03-E02",
+    "R03",
+    "Cut off time logic",
+    "Committed",
+    "2027-02-15",
+    "2027-02-15",
+    "On plan"
+   ],
+   [
+    "2026-09-28|R03-E03",
+    "2026-09-28",
+    "R03-E03",
+    "R03",
+    "Delivery promise on product pages",
+    "Committed",
+    "2027-03-10",
+    null,
+    "On plan"
+   ],
+   [
+    "2026-09-28|R04-E01",
+    "2026-09-28",
+    "R04-E01",
+    "R04",
+    "Points ledger",
+    "Committed",
+    null,
+    null,
+    "On plan"
+   ],
+   [
+    "2026-09-28|R04-E03",
+    "2026-09-28",
+    "R04-E03",
+    "R04",
+    "Pilot group selection",
+    "Not committed",
+    null,
+    null,
+    "Not committed"
+   ],
+   [
+    "2026-10-05|R01-E01",
+    "2026-10-05",
+    "R01-E01",
+    "R01",
+    "One page checkout",
+    "Committed",
+    "2026-11-30",
+    "2026-11-30",
+    "On plan"
+   ],
+   [
+    "2026-10-05|R01-E02",
+    "2026-10-05",
+    "R01-E02",
+    "R01",
+    "Saved payment methods",
+    "Committed",
+    "2026-12-15",
+    "2026-12-10",
+    "On watch"
+   ],
+   [
+    "2026-10-05|R01-E03",
+    "2026-10-05",
+    "R01-E03",
+    "R01",
+    "Address form speed up",
+    "Committed",
+    "2026-10-05",
+    "2026-10-05",
+    "On plan"
+   ],
+   [
+    "2026-10-05|R01-E04",
+    "2026-10-05",
+    "R01-E04",
+    "R01",
+    "Wallet support",
+    "Choice point",
+    null,
+    null,
+    "Not committed"
+   ],
+   [
+    "2026-10-05|R02-E01",
+    "2026-10-05",
+    "R02-E01",
+    "R02",
+    "Setup checklist",
+    "Committed",
+    "2026-11-20",
+    "2026-11-27",
+    "Slipped"
+   ],
+   [
+    "2026-10-05|R02-E02",
+    "2026-10-05",
+    "R02-E02",
+    "R02",
+    "In app tips",
+    "Committed",
+    "2027-01-31",
+    null,
+    "On hold"
+   ],
+   [
+    "2026-10-05|R02-E03",
+    "2026-10-05",
+    "R02-E03",
+    "R02",
+    "Starter templates",
+    "Not committed",
+    null,
+    null,
+    "Not committed"
+   ],
+   [
+    "2026-10-05|R02-E04",
+    "2026-10-05",
+    "R02-E04",
+    "R02",
+    "Role picker",
+    "Committed",
+    "2026-12-18",
+    null,
+    "On plan"
+   ],
+   [
+    "2026-10-05|R03-E01",
+    "2026-10-05",
+    "R03-E01",
+    "R03",
+    "Carrier integration",
+    "Committed",
+    "2026-12-10",
+    "2026-12-10",
+    "On plan"
+   ],
+   [
+    "2026-10-05|R03-E02",
+    "2026-10-05",
+    "R03-E02",
+    "R03",
+    "Cut off time logic",
+    "Committed",
+    "2027-02-15",
+    "2027-02-15",
+    "On plan"
+   ],
+   [
+    "2026-10-05|R03-E03",
+    "2026-10-05",
+    "R03-E03",
+    "R03",
+    "Delivery promise on product pages",
+    "Committed",
+    "2027-03-10",
+    null,
+    "On plan"
+   ],
+   [
+    "2026-10-05|R04-E01",
+    "2026-10-05",
+    "R04-E01",
+    "R04",
+    "Points ledger",
+    "Committed",
+    null,
+    null,
+    "On plan"
+   ],
+   [
+    "2026-10-05|R04-E03",
+    "2026-10-05",
+    "R04-E03",
+    "R04",
+    "Pilot group selection",
+    "Not committed",
+    null,
+    null,
+    "Not committed"
+   ],
+   [
+    "2026-10-12|R01-E01",
+    "2026-10-12",
+    "R01-E01",
+    "R01",
+    "One page checkout",
+    "Committed",
+    "2026-11-30",
+    "2026-11-30",
+    "On plan"
+   ],
+   [
+    "2026-10-12|R01-E02",
+    "2026-10-12",
+    "R01-E02",
+    "R01",
+    "Saved payment methods",
+    "Committed",
+    "2026-12-15",
+    "2026-12-10",
+    "On watch"
+   ],
+   [
+    "2026-10-12|R01-E03",
+    "2026-10-12",
+    "R01-E03",
+    "R01",
+    "Address form speed up",
+    "Committed",
+    "2026-10-05",
+    "2026-10-02",
+    "Delivered"
+   ],
+   [
+    "2026-10-12|R01-E04",
+    "2026-10-12",
+    "R01-E04",
+    "R01",
+    "Wallet support",
+    "Choice point",
+    null,
+    null,
+    "Not committed"
+   ],
+   [
+    "2026-10-12|R02-E01",
+    "2026-10-12",
+    "R02-E01",
+    "R02",
+    "Setup checklist",
+    "Committed",
+    "2026-11-20",
+    "2026-12-04",
+    "Slipped"
+   ],
+   [
+    "2026-10-12|R02-E02",
+    "2026-10-12",
+    "R02-E02",
+    "R02",
+    "In app tips",
+    "Committed",
+    "2027-01-31",
+    null,
+    "On hold"
+   ],
+   [
+    "2026-10-12|R02-E03",
+    "2026-10-12",
+    "R02-E03",
+    "R02",
+    "Starter templates",
+    "Not committed",
+    null,
+    null,
+    "Not committed"
+   ],
+   [
+    "2026-10-12|R02-E04",
+    "2026-10-12",
+    "R02-E04",
+    "R02",
+    "Role picker",
+    "Committed",
+    "2026-12-18",
+    null,
+    "On plan"
+   ],
+   [
+    "2026-10-12|R03-E01",
+    "2026-10-12",
+    "R03-E01",
+    "R03",
+    "Carrier integration",
+    "Committed",
+    "2026-12-10",
+    "2027-01-14",
+    "Slipped"
+   ],
+   [
+    "2026-10-12|R03-E02",
+    "2026-10-12",
+    "R03-E02",
+    "R03",
+    "Cut off time logic",
+    "Committed",
+    "2027-02-15",
+    "2027-02-15",
+    "On plan"
+   ],
+   [
+    "2026-10-12|R03-E03",
+    "2026-10-12",
+    "R03-E03",
+    "R03",
+    "Delivery promise on product pages",
+    "Committed",
+    "2027-03-10",
+    null,
+    "On plan"
+   ],
+   [
+    "2026-10-12|R04-E01",
+    "2026-10-12",
+    "R04-E01",
+    "R04",
+    "Points ledger",
+    "Committed",
+    null,
+    null,
+    "On plan"
+   ],
+   [
+    "2026-10-12|R04-E03",
+    "2026-10-12",
+    "R04-E03",
+    "R04",
+    "Pilot group selection",
+    "Not committed",
+    null,
+    null,
+    "Not committed"
+   ]
+  ]
+ }
 }

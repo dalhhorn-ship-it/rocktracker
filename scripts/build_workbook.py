@@ -158,6 +158,102 @@ def build(schema, rows_by_sheet, deploy):
     return wb
 
 
+# ---------------------------------------------------------------------------
+# Dynamic array helper (T05). Self contained: used by scripts/build_spike.py and,
+# later, by the rock tab generator. openpyxl cannot mark a formula as a dynamic
+# array, so we write it as an array formula and patch cell metadata in the xlsx.
+# ---------------------------------------------------------------------------
+import re
+import shutil
+import tempfile
+import zipfile
+
+XLFN_FUNCTIONS = {
+    "LET": "_xlfn.LET", "VSTACK": "_xlfn.VSTACK", "HSTACK": "_xlfn.HSTACK",
+    "CHOOSECOLS": "_xlfn.CHOOSECOLS", "TOCOL": "_xlfn.TOCOL", "REDUCE": "_xlfn.REDUCE",
+    "LAMBDA": "_xlfn.LAMBDA", "SEQUENCE": "_xlfn.SEQUENCE", "FILTER": "_xlfn._xlws.FILTER",
+    "SORT": "_xlfn._xlws.SORT", "UNIQUE": "_xlfn.UNIQUE", "XLOOKUP": "_xlfn.XLOOKUP",
+}
+
+_METADATA_XML = (
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+    '<metadata xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+    'xmlns:xda="http://schemas.microsoft.com/office/spreadsheetml/2017/dynamicarray">'
+    '<metadataTypes count="1"><metadataType name="XLDAPR" minSupportedVersion="120000" copy="1" '
+    'pasteAll="1" pasteValues="1" merge="1" splitFirst="1" rowColShift="1" clearFormats="1" '
+    'clearComments="1" assign="1" coerce="1" cellMeta="1"/></metadataTypes>'
+    '<futureMetadata name="XLDAPR" count="1"><bk><extLst><ext uri="{bdbb8cdc-fa1e-496e-a857-3c3f30c029c3}">'
+    '<xda:dynamicArrayProperties fDynamic="1" fCollapsed="0"/></ext></extLst></bk></futureMetadata>'
+    '<cellMetadata count="1"><bk><rc t="1" v="0"/></bk></cellMetadata></metadata>'
+)
+
+
+def to_file_formula(formula, names=()):
+    """Convert a formula as typed in Excel to the file format: _xlfn. prefixes on newer
+    functions and _xlpm. on LET and LAMBDA variable names. String literals are untouched.
+    `names` lists the LET and LAMBDA variable names used in the formula."""
+    names = set(names)
+    parts = re.split(r'("(?:[^"]|"")*")', formula)
+    for i in range(0, len(parts), 2):  # even parts are outside string literals
+        def sub(m):
+            word, nxt = m.group(1), m.group(2)
+            if nxt == "(" and word in XLFN_FUNCTIONS:
+                return XLFN_FUNCTIONS[word] + nxt
+            if nxt != "(" and word in names:
+                return "_xlpm." + word + nxt
+            return m.group(0)
+        parts[i] = re.sub(r"(?<![\w.!:$'])([A-Za-z_][A-Za-z0-9_]*)(\(?)", sub, parts[i])
+    return "".join(parts)
+
+
+def set_dynamic_formula(ws, cell, formula, names=()):
+    """Write a dynamic array formula (spills from `cell`). Call mark_dynamic_arrays on the
+    saved file afterwards, passing the (sheet name, cell) pairs written here."""
+    from openpyxl.worksheet.formula import ArrayFormula
+    if not formula.startswith("="):
+        formula = "=" + formula
+    ws[cell] = ArrayFormula(cell, to_file_formula(formula, names))
+
+
+def mark_dynamic_arrays(path, cells):
+    """Patch a saved xlsx so the listed (sheet name, cell) pairs are dynamic arrays: adds
+    cm="1" on the cell, xl/metadata.xml, its content type and workbook relationship."""
+    path = Path(path)
+    with zipfile.ZipFile(path) as z:
+        files = {n: z.read(n) for n in z.namelist()}
+    wbxml = files["xl/workbook.xml"].decode()
+    rels = files["xl/_rels/workbook.xml.rels"].decode()
+    rid_target = {m.group(1): m.group(2) for m in re.finditer(r'<Relationship\b[^>]*?\bId="([^"]+)"[^>]*?\bTarget="([^"]+)"', rels)}
+    rid_target.update({m.group(2): m.group(1) for m in re.finditer(r'<Relationship\b[^>]*?\bTarget="([^"]+)"[^>]*?\bId="([^"]+)"', rels)})
+    sheet_file = {}
+    for m in re.finditer(r"<sheet\b[^>]*>", wbxml):
+        tag = m.group(0)
+        name = re.search(r'\bname="([^"]*)"', tag).group(1)
+        rid = re.search(r'\br:id="([^"]*)"', tag).group(1)
+        target = rid_target[rid].lstrip("/")
+        sheet_file[name.replace("&amp;", "&")] = target if target.startswith("xl/") else "xl/" + target
+    for sheet, cell in cells:
+        fn = sheet_file[sheet]
+        xml = files[fn].decode()
+        new, n = re.subn(r'<c r="%s"(?![^>]*\bcm=)' % re.escape(cell), '<c r="%s" cm="1"' % cell, xml, count=1)
+        if n != 1:
+            raise ValueError(f"cell {sheet}!{cell} not found in {fn}")
+        files[fn] = new.encode()
+    files["xl/metadata.xml"] = _METADATA_XML.encode()
+    ct = files["[Content_Types].xml"].decode()
+    if "sheetMetadata" not in ct:
+        ct = ct.replace("</Types>", '<Override PartName="/xl/metadata.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheetMetadata+xml"/></Types>')
+    files["[Content_Types].xml"] = ct.encode()
+    if "sheetMetadata" not in rels:
+        rels = rels.replace("</Relationships>", '<Relationship Id="rIdMeta1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sheetMetadata" Target="metadata.xml"/></Relationships>')
+    files["xl/_rels/workbook.xml.rels"] = rels.encode()
+    tmp = Path(tempfile.mkdtemp()) / "patched.xlsx"
+    with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as z:
+        for n, b in files.items():
+            z.writestr(n, b)
+    shutil.move(str(tmp), path)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--deploy", action="store_true", help="build the deployment workbook")
