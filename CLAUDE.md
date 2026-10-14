@@ -238,6 +238,7 @@ tests/                       the test system
 Project level lessons. One line each, newest first: `date: lesson (where it bit us)`.
 `/retro` decides which of these should move into the template itself.
 
+* 2026-10-14: Excel reserves the LET names c and r; a formula using them makes Excel offer to repair the whole file, and LibreOffice does not catch it (the repair prompt on the first workbook). tests/test_package.py now guards it.
 * 2026-10-14: rock state and milestone status colours must follow the user's existing reports, not our own palette (the first brief used colours the user did not recognise).
 * 2026-10-14: LibreOffice cannot evaluate VSTACK, FILTER or CHOOSECOLS, so the consolidated sheets are only proven in Excel; ship the one rock fallback brief and list the Excel check (T05, TD14, TD29) early.
 * 2026-10-14: parallel developers editing `docs/TECH_DEBT.md` and `docs/PLAN.md` caused merge noise and a duplicate id (TD31); batch debt and plan changes through the operator.

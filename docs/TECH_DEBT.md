@@ -2,7 +2,7 @@
 
 Owner: `developer`. Updated after every task. Entries TD01 to TD08 recorded by the architect at design time (review round 1, 14 Oct 2026).
 
-Open: 35 (high 2, medium 7, low 26). Resolved: 4.
+Open: 33 (high 1, medium 7, low 25). Resolved: 6.
 
 ## Open
 
@@ -37,8 +37,6 @@ Open: 35 (high 2, medium 7, low 26). Resolved: 4.
 | TD28 | T40: v1 to 2.1.0 migration is tested only on a synthetic v1 fixture, never on a real live copy | low | S | Run `--deploy --from` on the real v1 file once and compare typed values before go live | 14 Oct 2026 |
 | TD29 | T46: LibreOffice 24.2 cannot evaluate the consolidated sheets (VSTACK, FILTER, CHOOSECOLS, LET with SEQUENCE), so the Teams column guard `IF((f=0)*(c<>4)*(c<>5)*(c<>6),"",f)` (DECISIONS 0018) is tested as formula text and on the mirror only; the Excel result is unverified. An empty Budgeted or Actual cell now shows 0 on the Teams sheet | medium | S | Add to the Excel for the web deploy test run (TD14): a team with Actual 0 must show 0, an empty Budgeted must show 0 and FillPct blank | 14 Oct 2026 |
 | TD32 | Open question to the product owner: is it wanted that a milestone dated in a past quarter that is not Overdue (Not committed or On hold) has a blank QuarterAhead and is hidden (Visible No, DECISIONS 0020)? Before change request 2 it showed as overdue | low | S | Ask the product owner; if not wanted, let Visible show any past dated, not Completed milestone (schema change by the architect) | 14 Oct 2026 |
-| TD35 | Excel repair prompt: the likely causes are fixed in the generator (DECISIONS 0022) but the fix is UNVERIFIED until the user opens `dist/Rock Tracker/Rock Tracker.xlsx` in Excel; there is no Excel here, so it rests on OOXML knowledge, `tests/test_package.py` and a comparison with XlsxWriter output | high | S | User opens the deployment workbook, then the files in `dist/repair_check/` per its `CHECK.md` if it still asks for repair; send back the file names and the repair log | 14 Oct 2026 |
-| TD36 | The bisect kit switches off one feature per file; if two independent causes exist, files 2 to 5 all still ask for repair and only 6_bare is clean. Variant 5 also removes the dropdown lists because they point at defined names | low | S | Add combined variants from `--without` (for example `--without dynamic,cf`) after the user's first answer | 14 Oct 2026 |
 | TD37 | `RockIDList` is the fixed range `Rocks!$A$2:$A$200`, so the pink duplicate Rock ID rule sees at most 199 rocks | low | S | Raise the bound in the schema param if the portfolio ever grows past 199 rocks | 14 Oct 2026 |
 | TD38 | A migrated live copy keeps its own lkp_ValueChains rows (the old values), not the new seed B2C, B2B, Trade, Assets, Enterprise; the workbook owner must replace the values and re pick the value chain on each rock tab | low | S | One line in DEPLOY upgrade steps; or add a mapping table to the migration once the old values are known | 14 Oct 2026 |
 | TD39 | Plain explanations in column D of the rock tab are one long unwrapped line that overflows to the right; the longest (Data signal, about 200 characters) runs past the screen edge on a narrow window. The cell note on grey headers is a fixed size box | low | S | Wrap column D text and set row heights, or shorten the longest plain texts, after the product owner sees it in Excel | 14 Oct 2026 |
@@ -48,6 +46,8 @@ Open: 35 (high 2, medium 7, low 26). Resolved: 4.
 
 | ID | Description | Resolved on | How |
 | :--- | :--- | :--- | :--- |
+| TD35 | Excel repair prompt: the likely causes are fixed in the generator (DECISIONS 0022) but the fix is UNVERIFIED until the u | 14 Oct 2026 | User confirmed on 14 Oct 2026 that the workbook opens in Excel for the web without the repair prompt (fix from DECISIONS 0022: reserved LET name c, plus the other generator fixes) |
+| TD36 | The bisect kit switches off one feature per file; if two independent causes exist, files 2 to 5 all still ask for repair | 14 Oct 2026 | Not needed: the first fix worked, so the bisect kit was not used |
 | TD12 | `rock_model.py` loader `rocks_from_workbook` was tested only on a minimal workbook | 14 Oct 2026 | T07: the `rows` fixture in `tests/conftest.py` now loads the generated sample workbook with it and `tests/test_workbook.py` checks the result against the schema |
 | TD15 | About sheet was minimal | 14 Oct 2026 | T11: `build_about` now writes checks, update guide, add and close rock steps, rules and definitions from `about` in the schema, in both the sample and deployment workbook; `tests/test_about.py` |
 | TD30 | A real 0 in Teams Budgeted, Actual or FillPct showed blank on the consolidated sheet (zero to blank wrap) | 14 Oct 2026 | T46, DECISIONS 0018: `keep_zero_columns` in the schema, column aware wrap in `consolidation_formula()`, mirror `zero_wrap` aligned, test exemption removed, mirror and anchor formula tests |
