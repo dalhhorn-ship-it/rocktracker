@@ -13,6 +13,8 @@ Binding. Where this conflicts with sections above, this section wins; the archit
 5. **Teams instead of rock level positions.** A final section on the rock tab holds up to 5 teams: team name, team lead, budgeted positions, actual positions and a calculated fill %. Rock resourcing is the sum over its teams.
 6. **Portal:** light and dark mode; each section is its own tab; section 1 shows the up to 5 decisions and up to 3 key risks or attention points; a milestone is clickable and opens a pop up with owner, description, start, planned and forecast date, state (status) and the three bullets; ADO links open when present.
 
+7. **Milestone progress (added 14 Oct 2026).** Each milestone carries a progress % typed by the lead (whole number 0 to 100, optional). The portal shows it as a progress bar on the roadmap list and in the milestone pop up. A Completed milestone always shows 100%.
+
 ## Problem
 
 Each rock (strategic initiative) is reported today through hand built steerco decks, ad hoc status mails and one off answers to executive questions. Product managers rebuild the same facts in several formats, executives see slightly different versions of state, dates and commitments, and the product director has to chase people to find bottlenecks. Choice points surface late because nobody sees them across all rocks at once.
