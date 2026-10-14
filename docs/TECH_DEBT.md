@@ -2,7 +2,7 @@
 
 Owner: `developer`. Updated after every task. Entries TD01 to TD08 recorded by the architect at design time (review round 1, 14 Oct 2026).
 
-Open: 10 (high 1, medium 5, low 4). Resolved: 0.
+Open: 11 (high 1, medium 5, low 5). Resolved: 0.
 
 ## Open
 
