@@ -22,3 +22,21 @@ Checks:
 * Plan quality: dependencies are correct; acceptance criteria are testable and specific. T08 should also depend on T07 only if it reads a workbook; as written it does not, which is fine.
 * Safety: no secrets, no real data; sample names to be synthetic (T06 states it). Prose has no dash punctuation.
 Evidence: read the five documents in full; grep for dash punctuation (none); docs/TECH_DEBT.md checked (empty). Tests not run (no code to test; known failing template tests).
+
+## 2026-10-14 Kickoff re-check (round 1 fixes, commit 8fdf9af)
+Verdict: APPROVED
+Round: 2
+Findings:
+* [ok] 1 Plan C and C2 with go or no go Thu 15 Oct 12:00: DECISIONS 0002/0003, PLAN T05, ARCHITECTURE. Plan C needs no 3D reference and keeps conditions 4 and 5; spike tests both formulas.
+* [ok] 2 OpenFollowUp column and "empty = Open" for FollowUp: schema Decisions, ARCHITECTURE rules, T08 edge case.
+* [ok] 3 SteercoDate validation is a warning; About check "next steerco date missing" in schema about.checks and T11.
+* [ok] 4 EpicsOnPlan rewritten as three COUNTIFS (no array constant). Also fixes the on plan x of y ratio (Delivered now counted in x).
+* [ok] 5 read_by on ValueChain, Purpose, Goals, Delivers (tab 1 rock header, email per rock section); PRD field table clarified.
+* [ok] 6 TECH_DEBT TD01 to TD08 recorded, counts match (8: 1 high, 4 medium, 3 low).
+* [ok] 7 T14 carries the test_portal anatomy.
+* [ok] 8 T05/T06/T07 (plan A)/T08/T10 start now; spike gates only the final formula path.
+* [ok] Notes: choice point mismatch checks both ways, duplicate Rock ID pink highlight, on plan ratio all done.
+Notes (not blocking):
+* The PRD was edited by the architect (field table "why it exists" cell only). Content is a clarification, not a scope change, but the pm should acknowledge it since the PRD is user approved.
+* The choice point check counts only epics and decisions of active rocks and compares by RockID, not by epic, so one open decision covers several choice point epics on a rock. Acceptable for a warning check.
+Evidence: git diff HEAD~1 over schema, DECISIONS, ARCHITECTURE, PLAN, TECH_DEBT, PRD read in full. No code exists; tests not run.
