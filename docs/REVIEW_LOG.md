@@ -88,3 +88,15 @@ Notes (not blocking):
 * docs/PRD.md outside the Change request 1 section still says epic and Delivered (lines 28, 30, 42, 43, 46, 61, 116, 120, 144, 156 and more); docs/ARCHITECTURE.md line 54 says "27 delivered". Pm and architect to align.
 * TD22 is partly stale: the brief now uses `#72777D` for subtle labels.
 * Decided: workbook, schema, generator, sample and tests need no change; only the two brief edits above block approval. T13 can proceed once they are made.
+
+## 2026-10-14 T47 Review change request 1 workbook, round 2 (schema 2.2.0)
+Verdict: APPROVED
+Round: 2
+Findings:
+* [ok] Round 1 items fixed: the Next steerco label no longer reorders requests; On plan dark is `#8C9097`; All filter note for overdue milestones from an earlier quarter added; Stale flag (Q2) used; About guide numbering is now 1 to 7; 21 Oct is in sample.json lookups, so rock_model on the sample gives the brief's Next steerco flags (D01, D02, D05).
+* [ok] Schema 2.2.0 and DECISIONS 0019: Milestones now A to AC. Progress % (R, input, whole number 0 to 100 validation, unlocked), Progress shown (S, calculated, locked, 100 when Completed else Progress, empty when empty; a typed 0 stays 0, R02-M04). Owner (C) dropdown from lkp_People with warning style. Rule matches rock_model for all sample milestones and the LibreOffice recalc (R01-M05 typed 80 shows 100; R01-M03 and R02-M05 Completed show 100).
+* [ok] Brief addresses: Milestones columns A to Z listed as built (R Progress %, S Progress shown, T Status, U Slip, V Timeline date, W MC quarter, X In outlook, Y Visible, Z Overdue); other sections unchanged and still correct. Expected R01 values (signals, 5 requests, owners, progress 60 and 30, Express pay 100, teams, risks) match rock_model and the workbook recalculation for today 2026-10-14. Light and dark tokens match design/tokens.css and DESIGN_SYSTEM.md; no Epic or Delivered as vocabulary (only the rule "never Epic, never Delivered"); no dashes as punctuation.
+* [ok] Tests: ./scripts/test.sh 235 passed, 3 failed (the known tests/test_portal.py items, T14).
+* [ok] Admin load: Progress adds one optional cell per moved milestone, about 1 to 2 cells in a typical update, so the walk stays at about 27 to 33 cells, inside 7 minutes. Progress has a reader (progress bar in the list and pop up).
+Evidence: ./scripts/test.sh; LibreOffice recalc of data/workbook.xlsx; openpyxl read of header row 36, formulas, validations and locks; rock_model.build_model on data/sample.json.
+Notes (not blocking): docs/PRD.md has one remaining "epic", in the change request line that describes the rename itself, which is correct.
