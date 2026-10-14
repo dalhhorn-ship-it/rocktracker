@@ -144,3 +144,5 @@ Option B, "cockpit core", adjusted with the answers above:
 * **One tab per rock, decided by the user.** Each rock has its own Excel tab that holds all of its key information (profile, key results, epics, risks and actions, decisions and call outs, resourcing). The open design tension above is closed: the architect designs consolidation for the portal and email around per rock tabs, not instead of them.
 * **The user reviews the PRD before the architect starts.**
 * **History upkeep:** being brainstormed with the user; see the next update to this section.
+* **History, decided 14 Oct 2026:** option D, an automatic snapshot log (rock rows and epic rows) written by an Office Script on a Power Automate schedule, with a manual button as fallback and SharePoint version history as backstop. Defaults taken for unanswered details: Power Automate assumed available, snapshot every Monday, epic level history included. Detail in `docs/PRD.md`, section History.
+* **PRD approved by the user** with these two changes folded in.

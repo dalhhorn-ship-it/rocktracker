@@ -127,11 +127,11 @@ Assumed derivations, to be confirmed by the architect: "this period" is the 14 d
 
 One key action per risk is enough; no separate actions log in M1 or M2. Names are kept to people in their work role; no HR detail, no reasons for vacancies.
 
-## Upkeep requirement for the architect (one tab per rock vs one sheet per table)
+## Upkeep requirement: one tab per rock (decided by the user)
 
-The user prefers one rock to be one Excel tab to upkeep; the factory standard is one sheet per table so the portal and the email can consolidate across rocks. The architect decides and records it in `docs/DECISIONS.md`. Whatever the choice, it must meet all of these:
+Each rock has its own Excel tab that holds all of its key information: profile, resourcing, key results, epics, risks with key actions, call outs and the latest update. This is a user decision, not open for the architect. The architect designs how the portal, the email and history consolidate across the rock tabs, and records that design in `docs/DECISIONS.md`. The design must meet all of these:
 
-1. A lead does the whole regular update for one rock in one place (one tab, or one view filtered to their rock), without scrolling past other rocks' rows.
+1. A lead does the whole regular update for one rock on that rock's tab, without touching any other tab.
 2. The regular update takes 7 minutes or less per rock, so a lead with two rocks stays within 15 minutes.
 3. No fact is typed twice. Unchanged values carry over without retyping (for example, the new update row starts from the previous state and summary, or only changed fields are entered).
 4. Consolidation across rocks for the portal, the email and history needs zero manual copy steps by anyone.
@@ -143,12 +143,22 @@ The user prefers one rock to be one Excel tab to upkeep; the factory standard is
 
 ### Milestone 1: Steerco slice (factory ready Fri 16 Oct 2026, steerco week of 19 Oct)
 * Workbook with every fact listed above, dropdowns from lookups, About sheet with the definitions, a short "how to update in 7 minutes" guide, and synthetic sample data.
-* The upkeep design decision (tab per rock or not) made and built.
+* One tab per rock, with consolidation for the portal built (see Upkeep requirement).
+* History tables and the snapshot script with setup steps for Power Automate (see History).
 * Derived epic status (Slipped, On plan, Not committed), slip counts, positions x of y, update age.
 * Portal spec and preview for tabs 1 to 5, including the six month timeline and the 3 by 3 risk matrix.
 * Handoff package (`dist/`) and `docs/DEPLOY.md`, so the director can deploy on SharePoint on Friday, leads can load their rocks over Friday and Monday, and the director can build the portal in Cowork before the steerco.
 
-### Milestone 2: Email and trust (target Fri 30 Oct 2026)
+## History (decided by the user: automatic snapshot log)
+
+* A History area holds one row per rock per snapshot (date, state, headline, epics slipped x of y, epics delivered, positions filled x of y, open high risks) and one row per epic per snapshot (forecast date, status, commitment).
+* Snapshots are taken automatically by an Office Script run on a schedule by Power Automate, so nobody has to remember. Default schedule: every Monday morning, which covers both weekly and fortnightly update rhythms.
+* Fallback if the tenant blocks Power Automate: the same script behind a "Save snapshot" button, pressed by the GPM before each steerco.
+* SharePoint version history stays on as a free backstop. Planned (baseline) dates on epics show slip in the current data without history.
+* Size stays small: about 400 rock rows and 2,000 epic rows a year at 15 rocks.
+* M1 ships the History tables and the snapshot script so history accumulates from the first steerco; the look back tab comes in M3.
+
+ (target Fri 30 Oct 2026)
 * Email update for a GPM portfolio, a single rock or all rocks, following the required structure, with a reference rendering and tests.
 * Data based state signal next to the lead's call, and a "check the call" flag when the lead's state is greener than the data (watermelon guard).
 * Upkeep minutes and freshness made visible (G1, G3).
