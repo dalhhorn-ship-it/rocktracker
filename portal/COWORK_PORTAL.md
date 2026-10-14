@@ -1,7 +1,7 @@
 # Copilot Cowork brief: Rock Tracker portal
 
 Paste everything below the line into Copilot Cowork, with the Rock Tracker workbook linked from
-SharePoint. It builds the full steerco portal for all rocks, with a rock and portfolio filter.
+SharePoint. It builds the full steerco portal for all rocks, with a rock filter.
 This version follows workbook schema 2.4.0, change requests 1 to 3 (milestones, MC quarters, teams,
 4 quarter horizon, roadmap bars) and change request 4 (audience selection, filterable decision log).
 Cowork first asks you which rocks to include, so you can build a portal for a specific audience.
@@ -118,10 +118,11 @@ Rules:
     for the session.
 
 **Filter bar** under the tab bar, on every tab:
-* `PORTFOLIO`: All, or one GPM.
-* `ROCK`: All, or one rock (`R01 · Checkout Speed`). The rock list follows the portfolio choice.
+* `ROCK`: All, or one rock (`R01 · Checkout Speed`), listing only the rocks selected in step 0.
 
-Both filters apply to every tab. When one rock is chosen, show its profile under the filter bar in
+There is no portfolio (GPM) filter; to show one portfolio, select its rocks in step 0.
+
+The rock filter applies to every tab. When one rock is chosen, show its profile under the filter bar in
 three quiet lines:
 * Purpose.
 * Goals and What it delivers, in grey.
@@ -438,7 +439,7 @@ filters leave nothing, show `No decisions match these filters.` in grey.
 5. **Colours:** state and status colours match in both modes.
 6. **Rows:** rows without a key and rocks with Active No are ignored, except in the decision log.
 7. **Filters:**
-   * The portfolio and rock filters change every tab.
+   * The rock filter changes every tab, and there is no portfolio filter.
    * The horizon selector (`1Q` to `4Q`) changes the roadmap and the full list.
    * Only milestones with Visible = Yes appear.
 8. **Roadmap:** grey plan bars run from start to planned, slip extensions are crimson for Major and
@@ -455,7 +456,7 @@ filters leave nothing, show `No decisions match these filters.` in grey.
 ## For you (not for Cowork): what the sample workbook should show
 
 Values come from `scripts/rock_model.py` on `data/sample.json` with today 14 Oct 2026. They hold
-for the sample `workbook.xlsx` once Excel has calculated it. With PORTFOLIO and ROCK on All:
+for the sample `workbook.xlsx` once Excel has calculated it. With ROCK on All:
 
 * **Rocks:** four active rocks show, R01 to R04. R05 Legacy Returns is closed and appears only in
   the decision log.

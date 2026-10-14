@@ -8,6 +8,7 @@ Binding; wins over older sections where they conflict.
 
 1. **Tab 5 is a filterable decision log:** all decisions (Requested and Decided) of the selected rocks, with filters on state, follow up, owner (requested rows match the rock lead who raised them), rock, steerco date and choice points, plus four KPI tiles (requested, due at next steerco, decided, open follow ups).
 2. **Audience selection:** the Cowork portal brief first asks which rocks to include (all, by RockID, by GPM or by value chain) and the audience name; the portal then shows only the selected rocks everywhere. To change the selection, the portal is rebuilt from the brief.
+3. **No portfolio filter in the portal:** the filter bar has a ROCK filter only (limited to the selected rocks). A portfolio view is made by selecting its rocks in step 0.
 
 ## Change request 3 (user, 14 Oct 2026, workbook)
 
