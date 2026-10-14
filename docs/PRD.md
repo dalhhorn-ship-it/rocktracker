@@ -78,19 +78,21 @@ These go verbatim on the About sheet and in the portal, so nobody has to guess.
 
 ## Portal tabs (the steerco reading order, set by the user)
 
-The portal reads in the order steerco runs. Each tab follows `design/DESIGN_SYSTEM.md` (headline, lede, narrative, insight cards, KPI tiles with one spotlight, charts, full list). Every tab can be filtered to one rock or one GPM portfolio, so there is no separate rock page. The architect finalises tiles in `portal/portal.spec.json`.
+Aligned to change request 1 by the architect (14 Oct 2026). The portal reads in the order steerco runs; each section is its own tab, in this order: 1, 2, 3, 3.1, 4, 5, then the full list. Each tab follows `design/DESIGN_SYSTEM.md` (headline, lede, narrative, insight cards, KPI tiles with one spotlight, charts, full list) in light and dark mode. Every tab can be filtered to one rock or one GPM portfolio, so there is no separate rock page. The architect finalises tiles in `portal/portal.spec.json`.
 
 **Tab 1. "What does steerco need to hear?"** (M1). Supports D1. Everything here is written by the initiative lead on the rock tab.
-* Per rock: main message (one or two lines), top risks, call outs, and steerco decisions requested with a decide by date.
+* Per rock: main message (one or two lines), up to 3 key risks or attention points (one line each), up to 5 decisions requested (one line each, the first 5 open requests on the rock tab, with decide by date and a choice point label), and open call outs.
 * Spotlight: decisions requested for this steerco.
 
 **Tab 2. "Where do the rocks stand?"** (M1). Supports D2. Overall state per rock across three lenses.
-* Per rock: state (On track, At risk, Off track), roadmap (committed epics slipped x of y), risks (open high risks), resourcing (positions filled x of y).
+* Per rock: state (On track, At risk, Off track), roadmap (committed milestones slipped x of y in the outlook, overdue milestones), risks (open high risks), resourcing (actual of budgeted positions and fill %, summed over the rock's teams; the teams list with team lead and fill % per team).
 * Spotlight: rocks At risk or Off track.
 
-**Tab 3. "What ships in the next six months?"** (M1). Supports D3.
-* Six month timeline per rock showing Committed, Choice point and Not committed, with planned vs forecast.
-* Spotlight: committed epics on plan (x of y).
+**Tab 3. "What ships this MC quarter and next?"** (M1). Supports D3.
+* Outlook timeline of the current and the next MC quarter per rock showing Committed, Choice point and Not committed, with planned vs forecast. Delivered milestones in the past drop out; milestones not delivered whose date has passed stay visible as overdue; milestones without a date sit in a "Not dated yet" list.
+* Filter on MC quarter (default: current and next).
+* Each milestone is clickable and opens a pop up: owner, description, start, planned and forecast date, status and the three detail bullets, plus a link to ADO when the ADO link is filled in.
+* Spotlight: committed milestones on plan (x of y).
 * **3.1 "Which choices are open?"** Choice points only: what the choice is, options, decide by date, rock. Spotlight: choice points due by the next steerco.
 
 **Tab 4. "What could stop us?"** (M1). Supports D5.
@@ -100,7 +102,7 @@ The portal reads in the order steerco runs. Each tab follows `design/DESIGN_SYST
 **Tab 5. "What did steerco decide?"** (M1). Supports D6. Decision log from previous steercos.
 * Each decision: steerco date, rock, decision, outcome, owner, follow up status.
 * Spotlight: decisions with an open follow up.
-* The log is the same table as the decisions requested on tab 1: the lead raises the request, and after steerco the outcome is filled in on the same row. Nothing is typed twice.
+* The log is the same table as the decisions requested on tab 1: the lead raises the request as one line in the decisions section of the rock tab, section 1 and tab 1 show the first 5 open ones, and after steerco the outcome is filled in on the same row. Nothing is typed twice (DECISIONS 0012).
 
 ## Only essential information
 
@@ -126,13 +128,14 @@ Assumed derivations, to be confirmed by the architect: "this period" is the 14 d
 | Fact | Owner | Changes | Why it exists |
 | :--- | :--- | :--- | :--- |
 | Rock profile: name, purpose, goals, what it delivers, value chain, initiative lead, GPM, active flag | Workbook owner, lead may edit | Quarterly | Name, lead and GPM: rock and portfolio filter on every tab, email header. Purpose, goals, what it delivers and value chain: rock header on tab 1 and the per rock section of the email (from the brief) |
-| Positions planned and filled (counts only) | Lead | When it changes | Tab 2, email |
-| Epics: title, ADO id, commitment, planned date, forecast date, status (hand set values only), comment, key result link as short text | Lead | Forecast and comment when they move | Tabs 2 and 3, email |
-| Risks: title, likelihood, impact, key action, action owner, open or closed, top risk flag | Lead | Only when they change | Tabs 1 and 4, email |
+| Teams (up to 5 per rock): team name, team lead, budgeted positions, actual positions; fill % calculated; rock totals are the sums | Lead | When it changes | Tab 2 resourcing, email portfolio table and per rock resourcing |
+| Milestones: title, description, up to three detail bullets, owner, ADO id, ADO link (optional URL), commitment, start date, planned date, forecast date, actual delivery date, lead status (On hold, On watch only; Delivered follows from the actual date), comment, key result link as short text | Lead | Forecast, actual date and comment when they move; the rest when the milestone is set up | Tabs 2 and 3 (timeline, MC quarter filter, pop up), email |
+| Risks: title, likelihood, impact, key action, action owner, open or closed | Lead | Only when they change | Tab 4, email |
+| Key risks or attention points: up to 3 one line texts in the update section | Lead | When they change | Tab 1, email key risks |
 | Call outs: text, date, open or closed | Lead | When raised or closed | Tab 1, email |
-| Decisions: steerco date, decision requested, decide by, choice point flag, options (choice points only), outcome, owner, follow up status | Lead raises, lead records the outcome after steerco | When raised and after each steerco | Tabs 1, 3.1 and 5, email |
+| Decisions: steerco date, decision requested (one line), decide by, choice point flag, options (choice points only), outcome, owner, follow up status | Lead raises, lead records the outcome after steerco | When raised and after each steerco | Tabs 1 (first 5 open requests), 3.1 and 5, email |
 | Update: date, state, main message (one or two lines) | Lead | Every one or two weeks, overwritten in place on the rock tab; history comes from the snapshot log | Tabs 1 and 2, history, G1 |
-| Lookups: people (name, role), value chains, states, statuses, commitment levels | Workbook owner | Rarely | Dropdowns everywhere |
+| Lookups: people (name, role), value chains, steerco dates, states, statuses, commitment levels | Workbook owner | Rarely | Dropdowns everywhere |
 
 One key action per risk is enough; no separate actions log in M1 or M2. Names are kept to people in their work role; no HR detail, no reasons for vacancies.
 
@@ -246,5 +249,5 @@ The cap is 15 minutes per person per week. If a role reports being above budget 
 4. **Audience and permissions** on the SharePoint site: who may edit (leads, GPMs, owner) and who only reads.
 5. **Email derivations:** "this period", "releases this period" and "average slip" as assumed above. Confirm against the example email.
 6. **On watch:** is a lead flag acceptable, or should it be derived (for example, forecast within 2 weeks of planned)?
-7. **Quarter definition** for history and the six month window: assumed calendar quarters.
+7. **Quarter definition** for history and the six month window: resolved by change request 1, MC quarters (MC year starts in April) and an outlook of the current plus the next MC quarter.
 8. **Prepared by** in the email: assumed the GPM of the portfolio.

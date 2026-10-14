@@ -2,6 +2,46 @@
 
 Owner: `architect`. Newest first.
 
+## 0016 Portal for change request 1: tab per section, milestone pop up, MC quarter filter, dark mode (14 Oct 2026)
+* Context: PRD change request 1 item 6. `design/DESIGN_SYSTEM.md` and `design/tokens.css` have no dark mode tokens.
+* Decision: the portal has one tab per section in steerco order (1, 2, 3, 3.1, 4, 5, full list). Tab 3 reads Milestones where Visible is Yes, offers a filter on MCQuarter (default CurrentMCQuarter and NextMCQuarter from Rocks) and opens a pop up per milestone (Owner, Description, StartDate, PlannedDate, ForecastDate, Status, Detail1 to Detail3, ADOLink as a link only when it starts with https://). Teams show on tab 2 under the resourcing lens, not as a tab of their own. Dark mode is a second token set under `[data-theme="dark"]` and `prefers-color-scheme: dark`, same names, same hues: crimson stays the only emphasis (lightened to `#E06A93` for contrast), stage colours keep their meaning. Full palette in PLAN T44.
+* Consequences: new portal element kinds (pop up, MC quarter filter, theme switch) need generator support in `build_handoff.py` and checks in `test_portal.py`. No schema impact beyond the columns in 0011.
+
+## 0015 Rock tab re layout for schema 2.0.0 (14 Oct 2026)
+* Context: new fields in section 1, wider Milestones block, new Teams block. Sections must not overlap; the strip row and the 3D VSTACK pattern stay (0002, 0004).
+* Decision: rows 1 title, 2 hidden strip, 3 guide; 5 to 17 section 1 Update and steerco message; 19 to 33 section 2 Signals; 35 to 51 section 3 Milestones (15 slots, columns A to AA); 53 to 64 section 4 Risks (10); 66 to 75 section 5 Call outs (8); 77 to 103 section 6 Decisions (25); 105 to 114 section 7 Rock profile; 116 to 122 section 8 Teams (5). In the Milestones block the cells a lead touches weekly (dates, lead status, comment) sit left of the set up once texts (ADO, description, details).
+* Consequences: every cell address on the rock tab moves, so the version is 2.0.0 and v1 is kept in `schema/history/`. Migration note in schema `migration`. No live v1 workbook exists, so `--from` from v1 is a safety net, not a deploy step.
+
+## 0014 Teams replace rock level positions (14 Oct 2026)
+* Context: PRD change request 1 item 5.
+* Decision: section 8 Teams, a block of 5 slots: TeamName, TeamLead (free text, no lookup, so no admin), Budgeted, Actual, calculated FillPct. Rock totals PositionsBudgeted, PositionsActual and FillPct are calculated in Signals and carried on Rocks; snapshots keep PositionsBudgeted and PositionsActual. A sixth consolidated sheet `Teams` (key RockID-T01) feeds the teams list on tab 2 and the email per rock section. Fill % is stored as a fraction with number format 0%.
+* Options: rock totals only (no Teams sheet) was cheaper but tab 2 and the email could not show the team breakdown the user asked for.
+* Consequences: a real 0 in Budgeted or Actual shows blank on the Teams sheet (VSTACK zero wrap); the portal reads blank counts as 0. Rock totals on Rocks are exact.
+
+## 0013 Key risks or attention points replace the Top risk flag (14 Oct 2026)
+* Context: PRD change request 1 item 4.
+* Decision: three typed one line fields Attention1 to Attention3 in section 1, carried on Rocks. Risks.TopRisk is dropped. The lines are free text and not linked to risk rows, because an attention point need not be a risk.
+* Consequences: one fewer column per risk; tab 1 and the email key risks read Rocks.Attention1 to 3. `--from` v1 copies the titles of up to 3 open top risks into these lines.
+
+## 0012 Decision log with 5 one line requests: one Decisions table, section 1 shows the first 5 open requests (14 Oct 2026)
+* Context: PRD change request 1 item 4: section 1 holds up to 5 one line decision requests, and the decision log (tab 5) and choice points (tab 3.1) must keep working with nothing typed twice.
+* Options considered:
+  1. Five typed request lines in section 1, each with Outcome and Follow up cells; the weekly snapshot script appends decided lines to a `DecisionLog` history table and the lead then clears the line. Cost: the log lags up to a week; it depends on Power Automate running (a failed flow plus a cleared line loses a decision); a follow up closed after the line is cleared can never be closed in the log, so the tab 5 spotlight goes stale; keys must survive slot reuse; leads must remember a clear rule.
+  2. Five typed request lines in section 1 plus the existing Decisions block as the log. Every decision typed twice. Rejected.
+  3. Keep the Decisions block (section 6) as the single table for request, outcome and follow up, as approved in M1a. Add a calculated RequestNo (position of a Requested row among the rock's open requests) and five grey lines in section 1 that show the decision text of RequestNo 1 to 5, plus a count of open requests. Tab 1 reads Decisions with RequestNo 1 to 5.
+* Decision: option 3. It is the lowest upkeep: each decision is typed once, the outcome goes on the same row, nothing is ever cleared or copied, the log is live, and choice point support (ChoicePoint, Options, DecideBy) for tab 3.1 is unchanged. The 5 cap is enforced by display (section 1, tab 1) plus an About check that counts open requests beyond 5.
+* Consequences: the lead types a request in section 6, one screen below section 1, and sees it appear in section 1 at once. The 25 slot limit per rock remains (TD02, M3 archive). If the user insists on typing in section 1 itself, option 1 is the fallback and needs a `DecisionLog` table and snapshot script work.
+
+## 0011 MC quarters, outlook of two quarters, Delivered from the actual date (14 Oct 2026)
+* Context: PRD change request 1 items 1 to 3; the user confirmed the outlook is the current plus the next MC quarter and undelivered milestones past their date stay visible as overdue.
+* Decision: params `MCQuarterStart`, `MCQuarterEnd`, `OutlookEnd`, `CurrentMCQuarter`, `NextMCQuarter` replace QuarterStart, QuarterEnd, WindowStart and WindowEnd. MC quarters start on calendar quarter days; only the label shifts. Milestones gain calculated columns: `TimelineDate` (actual, else forecast, else planned), `MCQuarter` (`"MC"&RIGHT(YEAR(EDATE(d,-3)),2)&"Q"&INT((MONTH(EDATE(d,-3))+2)/3)`; no `TEXT(…,"yy")` because format codes change with the Excel language), `InOutlook` (planned or timeline date in the outlook; drives the x of y counts and the data signal, so delivering in the quarter never lowers a ratio) and `Visible` (what the roadmap shows: PRD item 3 rule, plus undated milestones for the "Not dated yet" list). Status Delivered now follows from ActualDate only; Delivered leaves `lkp_LeadStatus`, so there is one way to say it. The data signal also turns At risk on an overdue committed milestone (new MilestonesOverdue count). Rocks carries CurrentMCQuarter and NextMCQuarter so the portal needs no date logic.
+* Consequences: the six month window language goes everywhere; MilestoneSnapshots adds ActualDate and MCQuarter so the M3 look back groups by MC quarter. A future dated actual date counts as Delivered (guide says type it on delivery).
+
+## 0010 Epic renamed Milestone (14 Oct 2026)
+* Context: PRD change request 1 item 1.
+* Decision: rename everywhere: section 3 Milestones, consolidated sheet `Milestones`, key `MilestoneKey` = RockID-M plus slot, `MilestoneSnapshots`, `lkp_MilestoneStatus`, signals `Milestones*`. New typed columns Owner, StartDate, ActualDate, ADOLink (optional, validated to start with https://), Description, Detail1 to Detail3. Schema version 2.0.0.
+* Consequences: renaming sheets and columns is a breaking change, acceptable now because no workbook is live (T13, T19 open). Every script, test, sample and portal doc that says Epic changes (PLAN T40 to T45). Migration mapping in schema `migration`.
+
 ## 0009 Fields added beyond the PRD list, with reasons (14 Oct 2026)
 * Context: the PRD allows only fields that feed a tab or the email; additions need a written reason.
 * Decision, typed fields: one lookup sheet `lkp_Steercos` (steerco dates, entered once a quarter by the workbook owner). Reason: tab 1 and tab 3.1 spotlights need "the next steerco", and Decisions.SteercoDate becomes a dropdown so tab 5 groups cleanly by steerco.
@@ -16,16 +56,19 @@ Owner: `architect`. Newest first.
 * Consequences: drift between the Excel formula and the Python rule is caught by the LibreOffice comparison; consolidation correctness depends on one manual check per release.
 
 ## 0007 History: snapshot Office Script on a Monday schedule (14 Oct 2026, user decision)
+* Superseded in part by 0010 and 0014 (2.0.0): EpicSnapshots is MilestoneSnapshots, positions columns are PositionsBudgeted and PositionsActual.
 * Context: PRD section History. Formulas recalculate, so past states are not frozen.
 * Decision: `scripts/office/snapshot.ts` reads the Rocks and Epics spills and appends one row per active rock to `RockSnapshots` and one row per epic of an active rock to `EpicSnapshots` (real Excel Tables). Idempotent per day (SnapshotID = date|key). Run by a Power Automate recurrence every Monday 06:00; fallback a "Save snapshot" button the GPM presses before steerco. SharePoint version history stays on as backstop.
 * Consequences: one off setup by the director (about 15 minutes, documented in DEPLOY); the flow runs under one person's account (flagged to `pm`). The script also unprotects and reprotects the history sheets.
 
 ## 0006 Six month window, x of y counts and the data signal (14 Oct 2026)
+* Superseded by 0011 (MC quarters and outlook) and 0014 (positions from teams).
 * Context: PRD asks for slip counts, positions x of y, update age and a data based signal next to the lead's call.
 * Decision: the window is the current calendar quarter plus the next (WindowStart to WindowEnd, named formulas), stable within a quarter. y = committed epics with a planned or forecast date in the window; x = those Slipped. Data signal: Off track when a Slipped epic planned this quarter is forecast after quarter end; At risk when any committed epic in the window slipped or a High risk lacks key action or owner; else On track. CheckCall = data signal worse than the lead's State. All calculated on the rock tab so the lead sees them while updating.
 * Consequences: the watermelon guard is in the data from M1; showing it in the portal and email is M2 work, with no schema change.
 
 ## 0005 Epic status: one hand set column, everything else derived (14 Oct 2026)
+* Amended by 0011: Delivered follows from the Actual date; Lead status holds On hold and On watch only.
 * Context: PRD epic status table; as much as possible derived.
 * Decision: the lead sets Lead status only (Delivered, On hold, On watch, or empty). Status is calculated, first match wins: Delivered, On hold, Not committed (commitment not Committed or empty), Slipped (forecast later than planned), On watch, On plan. An empty forecast means "on the planned date". "Releases this period" uses the forecast date of Delivered epics as ship date.
 * Consequences: Slipped cannot be hidden behind On watch. No delivered date field; leads set Forecast date to the ship date when marking Delivered (on the About sheet).
