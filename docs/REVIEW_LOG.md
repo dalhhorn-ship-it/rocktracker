@@ -40,3 +40,21 @@ Notes (not blocking):
 * The PRD was edited by the architect (field table "why it exists" cell only). Content is a clarification, not a scope change, but the pm should acknowledge it since the PRD is user approved.
 * The choice point check counts only epics and decisions of active rocks and compares by RockID, not by epic, so one open decision covers several choice point epics on a rock. Acceptable for a warning check.
 Evidence: git diff HEAD~1 over schema, DECISIONS, ARCHITECTURE, PLAN, TECH_DEBT, PRD read in full. No code exists; tests not run.
+
+## 2026-10-14 T12 Workbook review (T05 to T11)
+Verdict: APPROVED
+Round: 1
+Findings:
+* [ok] Spec: T05 spike file and CHECK.md in dist/spike, T06 sample (5 rocks, R05 inactive, R04 half filled), T07 generator reads the schema only, T08 rule mirror with business rule tests, T09 LibreOffice recalc, T10 snapshot script with mirror and tsc check, T11 About sheet with guide, add and close rock, definitions and checks. Each has its tests green.
+* [ok] Contract: schema last changed in 8fdf9af together with DECISIONS 0002 to 0009. No schema change since. Rebuilding data/workbook.xlsx from the generator gives the same sheets (binary differs only by file metadata; restored the committed copy).
+* [ok] Seven upkeep conditions on data/workbook.xlsx: (1) all update cells are on the rock tab; (2) see walk below; (3) values stay in place, keys, RockID, Rock, GPM and dates are calculated, 0 unlocked formula cells on rock tabs; (4) five consolidated sheets are spill formulas over RockTemplate:RocksEnd, no copy step; (5) add rock is Duplicate, rename, fill section 7 (About steps, no portal change); (6) one tab per rock, so co-authors on different tabs do not collide; (7) half filled R04 and the template tab produce no errors (ISTEXT key filter, tests green).
+* [ok] Essential fields: every typed field maps to PRD "What the workbook must hold"; the additions (lkp_Steercos, calculated keys and copies) are justified in DECISIONS 0009 and cost the leads no typing.
+* [ok] Safety: synthetic names, no emails or secrets in sample.json or the workbook; sheet protection has no password by design (TD06); formulas are non destructive, no macros.
+* [ok] Debt: TD list complete for what can be foreseen. Header counts match the table (17 open: 1 high, 6 medium, 10 low; 2 resolved). TD01, TD10, TD14, TD18 cover everything that needs Excel for the web.
+Lead update walk (R01 Checkout Speed, typical week): Update date 1, State 1 (only if changed), Main message 1, positions 0 to 2, two epics that moved (forecast plus comment) 4, one Lead status 1, one risk changed 1 to 2, one new call out 2 (text, date) plus 1 to close one, one new decision request 3 to 5 (Decision, SteercoDate, DecideBy, optional ChoicePoint and Options). Total about 15 to 20 cells, about 25 s each including reading, which fits 7 minutes. Post steerco week adds Outcome, Owner, FollowUp per decision (3 cells each), about 30 cells, still plausible but the tightest case. The claim is credible, not measured; PRD G3 retro question is the real test.
+Notes (not blocking):
+* docs/DEPLOY.md sections jump from 4 to 6 (no section 5); renumber or fill when T13 writes the workbook part.
+* The sample is dated October 2026 and rock tabs use TODAY(), so Stale and the data signal in the sample drift as the date moves; related to TD19, worth one line there.
+* The Update date is typed each time; a note in the guide that Ctrl+; enters today would save a few seconds. No schema change.
+* build_spike.py and dist/spike can be deleted after the user spike check (already in TD09).
+Evidence: ./scripts/test.sh gave 163 passed, 3 failed; the 3 failures are tests/test_portal.py (test_references_exist_in_schema, test_filters_use_allowed_values, test_kpis_compute_on_workbook), the known T15 items (portal spec still references the old Initiatives table). Opened data/workbook.xlsx with openpyxl: sheet order, protection, unlocked cells, spill formulas, hidden strip row inspected; git status clean after the review.
