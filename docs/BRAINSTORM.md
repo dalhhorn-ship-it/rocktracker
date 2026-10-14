@@ -104,3 +104,37 @@ The PRD should focus on:
 
 ## User answers and chosen direction
 
+
+Answers given on 14 Oct 2026.
+
+1. **Adoption:** yes. Steerco updates will run off the portal, and the director will enforce this.
+2. **Scale:** each initiative lead has one, at most two, rocks. A GPM owns a portfolio of 1 to 5 rocks.
+3. **Cadence:** updates every one or two weeks. The check-in must not assume a strict weekly rhythm.
+4. **Source of releases:** entered by hand. Expect 3 to 5 key items (epics) per rock per quarter. No integration (option E dropped).
+5. **Email update:** example shared (weekly status update for a GPM portfolio of three rocks). Its structure is the template:
+   * Header: week of, rocks in the portfolio, prepared by (name, role).
+   * Portfolio table: rock, state (On track, At risk, Off track), epics slipped (x of y), positions filled (x of y), one line summary.
+   * Key call outs: decisions needed with a date, overdue forecasts, upcoming events.
+   * Development update: counts of epics by status (Delivered, On plan, On watch, Slipped, On hold, Not committed), releases this period, average slip in weeks.
+   * Key risks and issues: short bullets, often linked to epics and key results.
+   * Per rock section: state, resourcing, headline, then an epic table with planned date, forecast date, status and comment. Each epic carries an ADO id and its contribution to key results (for example "60% of KR 1.1").
+6. **Risk scale:** 3x3. "High" means very likely to impact the timeline.
+7. **Commitment states** (Committed, Choice point, Not committed) are set by hand from the steerco outcome. No rule to compute them.
+8. **Location:** a SharePoint site shared across stakeholders.
+9. **Portal owner:** the user (product director) builds and maintains the portal in Copilot Cowork.
+10. **Deadline:** next steerco is next week (week of 19 Oct 2026). A usable first version must be ready before then.
+11. **History:** yes, keep it light, but it must be possible to look back quarter by quarter.
+12. **Staffing:** counts only (x of y positions filled).
+13. **Upkeep shape:** ideally one rock is one Excel tab to upkeep.
+
+### Chosen direction
+
+Option B, "cockpit core", adjusted with the answers above:
+
+* Vocabulary follows the email example: rocks have **epics** (the key deliverables, with ADO id and key result contribution), a **state** (On track, At risk, Off track) and an epic **status** (Delivered, On plan, On watch, Slipped, On hold, Not committed), plus the roadmap commitment level (Committed, Choice point, Not committed) set by hand.
+* Key results per rock are in scope because the example links epics and risks to them.
+* Decisions needed and call outs are first class, since they lead the email.
+* The email update reproduces the example structure for a portfolio (one GPM, several rocks).
+* Light history: a check-in snapshot per rock per update (state, counts, summary) is enough to look back quarter by quarter.
+* **Open design tension for the architect:** the user prefers one tab per rock for upkeep, while the factory standard is one sheet per table so the portal and email can consolidate across rocks. The architect must resolve this and record the decision, with upkeep per PM as the deciding factor.
+* Deadline is tight: plan a minimal first slice that can run next week's steerco, then iterate.
