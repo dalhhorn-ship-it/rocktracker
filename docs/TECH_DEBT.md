@@ -2,14 +2,12 @@
 
 Owner: `developer`. Updated after every task. Entries TD01 to TD08 recorded by the architect at design time (review round 1, 14 Oct 2026).
 
-Open: 33 (high 1, medium 7, low 25). Resolved: 6.
+Open: 31 (high 0, medium 6, low 25). Resolved: 8.
 
 ## Open
 
 | ID | Description | Impact | Effort | Proposed fix | Added |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| TD09 | Dynamic array metadata (`cm`, `xl/metadata.xml`) is patched into the xlsx by `mark_dynamic_arrays` from knowledge of the file format; tests prove structure and LibreOffice opening, not Excel behaviour. T07 now reuses the helper for the six consolidated sheets; `scripts/build_spike.py` stays as the throwaway spike file | medium | small | Keep the spike result in DECISIONS after the user check (Thu 15 Oct 12:00); delete `build_spike.py` once the path is settled | 14 Oct 2026 |
-| TD01 | 3D reference inside VSTACK and dynamic array metadata written by openpyxl are unverified in Excel for the web (DECISIONS 0002, 0003) | high | small (spike) | PLAN T05 user check by Thu 15 Oct 12:00; fallbacks A2 `setup.ts`, plan C `consolidate.ts`, plan C2 tab list formula | 14 Oct 2026 |
 | TD02 | 25 decision slots per rock and no archive; the decision log fills in about a year (DECISIONS 0004) | medium | medium | M3 T30: archive Decided rows into a history table before the slots run out; About check on slots left | 14 Oct 2026 |
 | TD03 | Fixed capacity per rock tab (15 milestones, 10 risks, 8 call outs, 25 decisions, 5 teams); more rows need a schema change and a layout migration | medium | medium | M2 T26 layout versioned `--from`; leads reuse slots only for closed items | 14 Oct 2026 |
 | TD04 | Snapshot Power Automate flow runs under the director's account; it stops if the account is disabled or loses access (DECISIONS 0007) | medium | small | DEPLOY names a backup owner; move the flow to a service account if the tenant allows; button fallback | 14 Oct 2026 |
@@ -46,6 +44,8 @@ Open: 33 (high 1, medium 7, low 25). Resolved: 6.
 
 | ID | Description | Resolved on | How |
 | :--- | :--- | :--- | :--- |
+| TD01 | 3D reference inside VSTACK and dynamic array metadata written by openpyxl are unverified in Excel for the web (DECISIONS | 14 Oct 2026 | User confirmed on 14 Oct 2026 that all six summary sheets show the rows of every rock tab in Excel for the web (T05 outcome A, plan A kept) |
+| TD09 | Dynamic array metadata (`cm`, `xl/metadata.xml`) is patched into the xlsx by `mark_dynamic_arrays` from knowledge of the | 14 Oct 2026 | Confirmed by the same check: Excel for the web reads the patched dynamic array metadata and the six anchors spill |
 | TD35 | Excel repair prompt: the likely causes are fixed in the generator (DECISIONS 0022) but the fix is UNVERIFIED until the u | 14 Oct 2026 | User confirmed on 14 Oct 2026 that the workbook opens in Excel for the web without the repair prompt (fix from DECISIONS 0022: reserved LET name c, plus the other generator fixes) |
 | TD36 | The bisect kit switches off one feature per file; if two independent causes exist, files 2 to 5 all still ask for repair | 14 Oct 2026 | Not needed: the first fix worked, so the bisect kit was not used |
 | TD12 | `rock_model.py` loader `rocks_from_workbook` was tested only on a minimal workbook | 14 Oct 2026 | T07: the `rows` fixture in `tests/conftest.py` now loads the generated sample workbook with it and `tests/test_workbook.py` checks the result against the schema |

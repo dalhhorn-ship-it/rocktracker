@@ -2,6 +2,12 @@
 
 Owner: `architect`. Newest first.
 
+## 0023 T05 outcome A: the 3D VSTACK consolidation works in Excel for the web (14 Oct 2026)
+
+* **Context:** DECISIONS 0002 and 0003 chose one dynamic array formula per summary sheet over the rock tabs, with plans A2, C and C2 as fallbacks until the user checked it in Excel.
+* **Result:** after the repair fix (0022) the user opened the workbook in Excel for the web and all six summary sheets show the rows of every rock tab.
+* **Decision:** plan A stays. The fallbacks (`setup.ts`, `consolidate.ts`, the tab list formula) are not built. The full portal brief reads the summary sheets; the one rock brief stays only as a debugging aid.
+
 ## 0022 Excel repair fix, rock tab with the profile first, value chain list, plain explanations of grey cells (14 Oct 2026, operator, PRD change request 3)
 
 * **Context:** Excel reports critical issues on opening the workbook and offers a repair. There is no Excel here, so the cause was found by inspecting every part of the generated package against the OOXML rules and against XlsxWriter output (a writer that Excel accepts).
