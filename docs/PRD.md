@@ -2,6 +2,13 @@
 
 Owner: `pm`. Status: v1, 14 Oct 2026. Builds on `docs/BRAINSTORM.md`, option B "cockpit core" as adjusted by the user answers of 14 Oct 2026. The "how" (sheets, keys, formulas, portal layout) belongs to the `architect`.
 
+## Change request 4 (user, 14 Oct 2026, portal)
+
+Binding; wins over older sections where they conflict.
+
+1. **Tab 5 is a filterable decision log:** all decisions (Requested and Decided) of the selected rocks, with filters on state, follow up, owner (requested rows match the rock lead who raised them), rock, steerco date and choice points, plus four KPI tiles (requested, due at next steerco, decided, open follow ups).
+2. **Audience selection:** the Cowork portal brief first asks which rocks to include (all, by RockID, by GPM or by value chain) and the audience name; the portal then shows only the selected rocks everywhere. To change the selection, the portal is rebuilt from the brief.
+
 ## Change request 3 (user, 14 Oct 2026, workbook)
 
 Binding; wins over older sections where they conflict. Schema 2.4.0.

@@ -2,8 +2,9 @@
 
 Paste everything below the line into Copilot Cowork, with the Rock Tracker workbook linked from
 SharePoint. It builds the full steerco portal for all rocks, with a rock and portfolio filter.
-This version follows workbook schema 2.3.0, change request 1 (milestones, MC quarters, teams) and
-change request 2 (4 quarter horizon, roadmap on tab 2, roadmap bars).
+This version follows workbook schema 2.4.0, change requests 1 to 3 (milestones, MC quarters, teams,
+4 quarter horizon, roadmap bars) and change request 4 (audience selection, filterable decision log).
+Cowork first asks you which rocks to include, so you can build a portal for a specific audience.
 
 **Before you start:** open the workbook once in Excel for the web, so it calculates and saves its
 values. A freshly generated file has no stored results, and Cowork would find the calculated
@@ -34,6 +35,35 @@ title is a question:
 5. What did steerco decide?
 
 Show tab 1 first. Only one tab is visible at a time; the active tab has a crimson underline.
+
+## Step 0: ask who this portal is for (before building anything)
+
+Before you build, read the Rocks sheet and ask me two questions. Wait for my answers.
+
+1. **Which rocks should this portal include?** Show me the active rocks (Active = Yes) as a numbered
+   list, one line each: `{RockID} · {RockName} · GPM {GPM} · {ValueChain} · {State}`. Under the list,
+   show the closed rocks (Active = No) separately as `Closed: {RockID} · {RockName}`. I can answer
+   with:
+   * `All`;
+   * RockIDs, for example `R01, R03`;
+   * one or more GPM names (all their active rocks);
+   * one or more value chains (all active rocks in it).
+
+   Repeat the resulting selection back to me as a list of RockIDs and names, and ask me to confirm.
+2. **Who is the audience?** A short name for the masthead, for example `Executive steerco` or
+   `B2C portfolio review`. When I give none, use `Steerco`.
+
+Then build the portal **for the selected rocks only**:
+* **Every number, list, chart, filter option and decision** uses only rows whose RockID is in the
+  selection. This includes the decision log, the major risks and every total. Data of rocks outside
+  the selection must not appear anywhere on the page, not even in counts.
+* **Closed rocks:** their decisions appear in the decision log only when I named them explicitly
+  (by RockID), or when I answered All.
+* **Masthead:** the eyebrow becomes `ROCK TRACKER · {AUDIENCE}`. A grey meta line under the title
+  reads `{n} rocks: {RockID list}`.
+* **Footer:** `Built for {audience}. Shows {n} of {m} active rocks.`
+
+To change the selection later, I rebuild the portal from this brief.
 
 ## Where the data is
 
@@ -297,10 +327,51 @@ stay in the list with the word Closed.
 
 ## Tab 5 · What did steerco decide?
 
-The decision log: every decision with DecisionState Decided, including those of closed rocks, newest
-SteercoDate first. Columns: Steerco, Rock, Decision, Outcome, Follow up owner and Follow up. Rows
-with OpenFollowUp = Yes show `Open` in crimson. When there are none, show `No decisions recorded
-yet.` in grey.
+The decision log: every decision of the selected rocks, both Requested and Decided, in one
+filterable table. It also includes the decisions of selected closed rocks.
+
+**Headline and lede.**
+* Headline: `{d} decisions taken, {r} still requested.`
+* Lede: `{f} follow ups are still open.`, where f is the count of OpenFollowUp = Yes.
+
+**Four small KPI tiles** in one row (this tab uses 4, not 6). The spotlight is Open follow ups when
+it is above 0; otherwise it is Due at next steerco.
+
+| Tile | Big value | Sub line |
+| :--- | :--- | :--- |
+| Requested | count of DecisionState Requested | `{n} choice points` |
+| Due at next steerco | count of DueNextSteerco Yes | `next steerco {date}` |
+| Decided | count of DecisionState Decided | `across {k} steercos` (distinct SteercoDate) |
+| Open follow ups | count of OpenFollowUp Yes | `decided, follow up not closed` |
+
+**Filter row** above the table. Each filter is a set of text chips or a dropdown; the default is
+`All`, and filters combine. Each choice shows its count, for example `Requested (8)`. A `Clear
+filters` link resets them all. The filters are:
+* `STATE`: All, Requested, Decided.
+* `FOLLOW UP`: All, Open, Closed. It applies to decided rows only; an empty FollowUp counts as Open.
+* `OWNER`: All, then every distinct person in alphabetical order. A decided row matches its Owner
+  (the follow up owner). A requested row has no owner yet, so it matches the Lead of its rock (look
+  it up on Rocks by RockID).
+* `ROCK`: All, then the selected rocks. This follows the global ROCK filter when that is set.
+* `STEERCO`: All, then every distinct SteercoDate, newest first.
+* `TYPE`: All, Choice points only.
+
+**The table.** Newest SteercoDate first; within a date, Requested rows before Decided rows, then by
+DecisionKey. Columns:
+* Steerco (date);
+* Rock;
+* Decision, with a small `Choice point` label when ChoicePoint is Yes;
+* Decide by;
+* State, as a word: Requested in ink, Decided in the muted grey;
+* Outcome;
+* Owner: the Owner for decided rows; for requested rows, `raised by {Lead}` in grey;
+* Follow up: `Open` in crimson when OpenFollowUp is Yes, `Closed` in grey, and a dash for requested
+  rows.
+
+Requested rows with DueNextSteerco = Yes get a small crimson `Next steerco` label. Clicking a row
+opens a pop up with all of its fields, including the Options of a choice point broken onto lines at
+`A:`, `B:` and `C:`. A line under the table reads `{shown} of {total} decisions shown`. When the
+filters leave nothing, show `No decisions match these filters.` in grey.
 
 ## Look and feel
 
@@ -375,6 +446,9 @@ yet.` in grey.
 9. **Pop up:** clicking a milestone opens it, the ADO link opens in a new tab, and the theme switch
    flips between light and dark.
 10. **Masthead:** the update date shows top right.
+11. **Audience:** you asked which rocks to include before building, and nothing from other rocks
+    appears anywhere.
+12. **Decision log:** the six filters on tab 5 work alone and combined, and each shows its counts.
 
 ---
 
@@ -421,10 +495,26 @@ for the sample `workbook.xlsx` once Excel has calculated it. With PORTFOLIO and 
 * **Tab 3:** the same milestones as the roadmap. Each card has a description and bullets.
   "Express pay button" (R01) shows 100% although the lead typed 80, because it is Completed.
 * **Tab 3.1:** one card, "Fund wallet support this half" (R01), decide by 21 Oct, Next steerco.
+* **Step 0:** Cowork lists R01 to R04 as active and R05 Legacy Returns as closed, then asks which
+  rocks to include and who the audience is. Answer `All` and `Steerco` for the values below.
+  To see the selection at work, answer `R01, R03`: then only those two rocks appear anywhere, and
+  tab 1 still says "4 decisions are needed today." (3 from R01, 1 from R03), but "1 of 2 rocks are At risk or Off track."
 * **Tab 5:**
-  * Four decided rows, all from the 16 Sep 26 steerco. One of them is R05's "Close the legacy
-    returns rock".
+  * Tiles:
+
+    | Tile | Big value | Sub line |
+    | :--- | :--- | :--- |
+    | Requested | 8 | 1 choice point |
+    | Due at next steerco | 4 | next steerco 21 Oct 26 |
+    | Decided | 4 | across 1 steerco |
+    | Open follow ups | 1 | spotlight |
+
+  * 12 rows in total. All four decided rows are from the 16 Sep 26 steerco, and one of them is
+    R05's "Close the legacy returns rock".
   * "Pause in app tips until checklist ships" (R02) shows `Open`.
+  * OWNER lists Ines Samplewood, Lena Testfield, Omar Fictiv and Tove Nomen. Lena Testfield
+    matches 7 rows: R01's decided row plus its 6 requests, which she raised as lead.
+  * STATE = Requested together with ROCK = R01 shows 6 rows.
 
 For one rock, choose ROCK = R01 and compare with the R01 list in `portal/COWORK_ROCK_TEST.md`.
 Note that its roadmap now sits on tab 2.
