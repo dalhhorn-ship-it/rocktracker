@@ -2,6 +2,16 @@
 
 Owner: `pm`. Status: v1, 14 Oct 2026. Builds on `docs/BRAINSTORM.md`, option B "cockpit core" as adjusted by the user answers of 14 Oct 2026. The "how" (sheets, keys, formulas, portal layout) belongs to the `architect`.
 
+## Change request 2 (user, 14 Oct 2026, portal)
+
+Binding; wins over older sections where they conflict.
+
+1. **Horizon of up to 4 MC quarters.** The roadmap shows 1, 2, 3 or 4 MC quarters ahead (current quarter first), chosen with a selector; default 2. The workbook gives every milestone its quarter offset (1 to 4) so the portal only filters. Signals and x of y counts in the workbook keep the two quarter outlook of change request 1.
+2. **Update date top right** in the masthead, labelled UPDATED.
+3. **Section 1** also lists the major risks (open High risks) at the bottom.
+4. **Sections 2 and 3 combined:** tab 2 runs header, then the roadmap, then key metrics, then teams. Tab 3 becomes the full list of deliveries (milestones), including the description.
+5. **Roadmap bars** run from start date to planned date, with the forecast shown: a later forecast extends the bar in crimson, an earlier one is marked on the bar; a Completed milestone ends at its actual date; a milestone without a start date is a single marker. Visual style to follow the example the user is sending.
+
 ## Change request 1 (user, 14 Oct 2026, after testing the sample)
 
 Binding. Where this conflicts with sections above, this section wins; the architect aligns the field table, tabs and schema to it.
