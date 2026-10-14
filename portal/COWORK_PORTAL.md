@@ -375,3 +375,56 @@ yet.` in grey.
 9. **Pop up:** clicking a milestone opens it, the ADO link opens in a new tab, and the theme switch
    flips between light and dark.
 10. **Masthead:** the update date shows top right.
+
+---
+
+## For you (not for Cowork): what the sample workbook should show
+
+Values come from `scripts/rock_model.py` on `data/sample.json` with today 14 Oct 2026. They hold
+for the sample `workbook.xlsx` once Excel has calculated it. With PORTFOLIO and ROCK on All:
+
+* **Rocks:** four active rocks show, R01 to R04. R05 Legacy Returns is closed and appears only in
+  the decision log.
+* **Masthead:** UPDATED 13 Oct 26, NEXT STEERCO 21 Oct 26.
+* **Tab 1:**
+  * Headline: "4 decisions are needed today." Lede: "2 of 4 rocks are At risk or Off track."
+  * Block order: R02 and R03 (At risk) first, then R01 and R04 (On track).
+  * R03 shows "The data says Off track, the lead says At risk. Check the call." and `Update is
+    stale`. R04 is also stale.
+  * Major risks, highest score first:
+    1. "Two engineering roles unfilled" (R02), High x High, score 9, with `Needs an action`.
+    2. "Peak season freeze blocks release" (R01), Medium x High, score 6.
+* **Tab 2:**
+  * Headline: "2 of 10 committed milestones have slipped." Lede: "Outlook MC26Q3 and MC26Q4. 1
+    overdue."
+  * Roadmap at 1Q: 6 dated milestones; 2Q: 10; 3Q: 11; 4Q: 12. Plus 4 under "Not dated yet"
+    whatever the horizon.
+  * Slip extensions:
+    * "Carrier integration" (R03): crimson (Major), from 10 Dec 26 to 14 Jan 27, so it moves from
+      MC26Q3 into MC26Q4.
+    * "Setup checklist" (R02): amber (Minor), from 20 Nov 26 to 4 Dec 26.
+  * "Region one pilot" (R03) shows with `· overdue` in crimson. "Fourth region rollout" appears only
+    at 4Q, and "Delivery analytics" (MC27Q3) never appears.
+  * Key metrics, with Rocks needing attention as the spotlight:
+
+    | Tile | Big value | Sub line |
+    | :--- | :--- | :--- |
+    | Rocks needing attention | 2 of 4 | 1 where the data disagrees |
+    | Roadmap | 2 of 10 | 1 overdue |
+    | On plan | 7 of 10 | 2 completed |
+    | Risks | 2 | 1 without an action |
+    | Resourcing | 13 of 15 | 87% |
+    | Freshness | 2 | |
+
+  * Teams: Carrier Integration (R03) has 3 actual against 2 budgeted, so it is `over budget`. Pilot
+    squad (R04) has 0 budgeted and 1 actual, so its Fill % is a dash. Total 13 of 15, 87%.
+* **Tab 3:** the same milestones as the roadmap. Each card has a description and bullets.
+  "Express pay button" (R01) shows 100% although the lead typed 80, because it is Completed.
+* **Tab 3.1:** one card, "Fund wallet support this half" (R01), decide by 21 Oct, Next steerco.
+* **Tab 5:**
+  * Four decided rows, all from the 16 Sep 26 steerco. One of them is R05's "Close the legacy
+    returns rock".
+  * "Pause in app tips until checklist ships" (R02) shows `Open`.
+
+For one rock, choose ROCK = R01 and compare with the R01 list in `portal/COWORK_ROCK_TEST.md`.
+Note that its roadmap now sits on tab 2.

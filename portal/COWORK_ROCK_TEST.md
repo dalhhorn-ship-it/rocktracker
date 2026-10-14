@@ -3,7 +3,7 @@
 Paste everything below the line into Copilot Cowork, with the Rock Tracker workbook attached or
 linked from SharePoint. It builds one page for one rock, so you can test the look, the reading
 order and whether Cowork reads the workbook correctly before the full portal is built. This
-version follows workbook schema 2.2.0 and change request 1: Milestones (not Epics), MC quarters,
+version follows workbook schema 2.3.0 and change request 1: Milestones (not Epics), MC quarters,
 an outlook of two quarters, teams, light and dark mode, and one tab per section.
 
 **Before you start:** upload `workbook.xlsx` to SharePoint and open it once in Excel for the web,
@@ -78,7 +78,7 @@ down. A row counts only when its **Key** (column A) is not empty. Ignore all oth
 
 | Table | Header row | Data rows | Columns |
 | :--- | :--- | :--- | :--- |
-| Milestones | 36 | 37 to 51 | A Key, B Milestone, C Owner, D Commitment, E Start date, F Planned date, G Forecast date, H Actual date, I Lead status, J Comment, K Key result link, L ADO id, M ADO link, N Description, O Detail 1, P Detail 2, Q Detail 3, R Progress % (typed, may be empty), S Progress shown, T Status, U Slip (weeks), V Timeline date, W MC quarter, X In outlook, Y Visible, Z Overdue |
+| Milestones | 36 | 37 to 51 | A Key, B Milestone, C Owner, D Commitment, E Start date, F Planned date, G Forecast date, H Actual date, I Lead status, J Comment, K Key result link, L ADO id, M ADO link, N Description, O Detail 1, P Detail 2, Q Detail 3, R Progress % (typed, may be empty), S Progress shown, T Status, U Slip (weeks), V Slip severity, W Timeline date, X MC quarter, Y Quarter ahead, Z In outlook, AA Visible, AB Overdue |
 | Risks | 54 | 55 to 64 | A Key, B Risk, C Likelihood, D Impact, E Key action, F Action owner, G Status (empty means Open), H Score, I High, J Needs action |
 | Call outs | 67 | 68 to 75 | A Key, B Call out, C Date, D Status (empty means Open) |
 | Decisions | 78 | 79 to 103 | A Key, B Decision requested, C Steerco, D Decide by, E Choice point, F Options, G Outcome, H Follow up owner, I Follow up (empty means Open), J State (Requested or Decided), K Request no, L Due at next steerco, M Open follow up |
@@ -86,12 +86,12 @@ down. A row counts only when its **Key** (column A) is not empty. Ignore all oth
 
 Use the workbook's own calculated columns (Progress shown, Status, Slip, Timeline date, MC quarter,
 In outlook, Visible, Overdue, Score, High, Needs action, State, Request no, Due at next steerco, Open follow
-up, Fill %). Do not recalculate them. In particular, **use the Visible flag (column Y) to decide
+up, Fill %). Do not recalculate them. In particular, **use the Visible flag (column AA) to decide
 which milestones to show; never work out visibility from the dates yourself.**
 
 **MC quarters** are the company quarters. The MC year starts in April. MC26Q3 is October to
 December 2026, MC26Q4 is January to March 2027, MC27Q1 is April to June 2027. The workbook
-already gives each milestone its MC quarter in column W; show it as is.
+already gives each milestone its MC quarter in column X; show it as is.
 
 ## Page layout
 
@@ -152,10 +152,10 @@ Positions actual and Fill %. If there are no teams, show `No teams recorded yet.
 ### Tab 3 · What ships in the next two quarters?
 * A filter above the chart, **MC quarter**, with the choices `All`, and the two quarters of the
   Outlook cell (C23, for example MC26Q3 and MC26Q4). Default `All`. It filters the chart and the
-  list below by the MC quarter in column W. Milestones without an MC quarter (no date yet) show
+  list below by the MC quarter in column X. Milestones without an MC quarter (no date yet) show
   only under `All`, in the `Not dated yet` list. Overdue milestones from an earlier MC quarter
   (for example MC26Q2) also show under `All` only, because they match neither quarter chip.
-* Show only milestones whose **Visible** (column Y) is Yes. Completed milestones in the past are
+* Show only milestones whose **Visible** (column AA) is Yes. Completed milestones in the past are
   already hidden by the workbook (Visible is No); do not bring them back.
 * A horizontal timeline from the first day of the first outlook quarter to the last day of the
   second, with quarter and month labels along the top (each quarter labelled with its MC name)
@@ -163,8 +163,8 @@ Positions actual and Fill %. If there are no teams, show `No teams recorded yet.
 * One row per visible milestone, labelled with the milestone title and its MC quarter in grey.
   The Owner (column C) sits next to the title, in ink 3. The ADO id (column L) sits next to it in grey; when the ADO link (column M) is filled it is a
   link that opens in a new tab.
-* Each milestone is a marker at its **Timeline date** (column V). If Status is Slipped, draw a
-  thin line from the Planned date to the Forecast date. If Overdue (column Z) is Yes, add a small
+* Each milestone is a marker at its **Timeline date** (column W). If Status is Slipped, draw a
+  thin line from the Planned date to the Forecast date. If Overdue (column AB) is Yes, add a small
   crimson label `Overdue`.
 * Commitment decides the style: **Committed** filled marker, **Choice point** hollow amber
   marker, **Not committed** hollow grey dashed marker. Milestones without any date sit in a short
@@ -261,7 +261,7 @@ crimson. If there are none yet, show `No decisions recorded yet.` in grey.
 ## For you (not for Cowork): what R01 should show
 
 Use this to check that Cowork read the workbook correctly. Values come from
-`scripts/rock_model.py` (it supports schema 2.2.0), run on `data/sample.json` with today
+`scripts/rock_model.py` (it supports schema 2.3.0), run on `data/sample.json` with today
 2026-10-14 and the sample steerco dates (21 Oct is the next steerco).
 
 * **Masthead:** R01 · Checkout Speed, value chain Checkout, GPM Priya Sampleton, lead Lena
