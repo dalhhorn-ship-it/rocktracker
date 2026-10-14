@@ -359,9 +359,28 @@ def test_team_fill_pct_budgeted_zero_and_empty():
     assert [x["FillPct"] for x in t] == [0.75, "", "", 1.0]
 
 
-def test_team_fill_pct_zero_actual_is_zero_wrapped_blank_like_the_workbook():
+def test_team_with_zero_actual_keeps_zero_in_the_mirror():
     t = teams_of(dict(TeamName="a", Budgeted=4, Actual=0))["Teams"][0]
-    assert t["FillPct"] == "" and t["Actual"] == ""  # 0 shows blank on the sheet (DECISIONS 0014)
+    assert t["Actual"] == 0 and t["FillPct"] == 0 and t["Budgeted"] == 4  # DECISIONS 0018
+
+
+def test_team_empty_count_arrives_as_zero_and_other_zero_columns_still_blank():
+    m = teams_of(dict(TeamName="a", Actual=2))
+    assert m["Teams"][0]["Budgeted"] == 0
+    assert rm.zero_wrap({"X": 0, "Budgeted": 0}, keep={"Budgeted"}) == {"X": "", "Budgeted": 0}
+
+
+def test_teams_anchor_formula_has_the_column_guard(schema):
+    import build_workbook as bw
+    teams = next(s for s in schema["sheets"] if s["name"] == "Teams")
+    assert teams["keep_zero_columns"] == ["Budgeted", "Actual", "FillPct"]
+    cols = [c["name"] for c in teams["columns"]]
+    f = bw.consolidation_formula(schema, teams, bw.Resolver(schema))
+    guard = "".join(f"*(c<>{cols.index(k) + 1})" for k in teams["keep_zero_columns"])
+    assert f'IF((f=0){guard},"",f)' in f and "SEQUENCE(1,COLUMNS(f))" in f
+    others = next(s for s in schema["sheets"] if s["name"] == "Risks")
+    g = bw.consolidation_formula(schema, others, bw.Resolver(schema))
+    assert 'IF(f=0,"",f)' in g and "SEQUENCE" not in g
 
 
 def test_rock_totals_sum_keyed_teams_and_keep_real_zero():
@@ -608,10 +627,6 @@ def test_rows_copy_rock_profile_and_follow_tab_order():
 def test_blank_cells_come_out_empty_not_none_in_text_columns():
     m = ms_of()
     assert m["Comment"] == "" and m["LeadStatus"] == "" and m["Detail1"] == ""
-
-
-def test_epics_key_is_accepted_as_alias_for_milestones():
-    assert model(rock(Epics=[ms()]))["Milestones"][0]["MilestoneKey"] == "R01-M01"
 
 
 # ------------------------------------------------------------------ schema alignment

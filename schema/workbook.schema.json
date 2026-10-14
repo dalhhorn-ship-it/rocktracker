@@ -129,7 +129,7 @@
       "rocks": "=LET(d,VSTACK({span}!{range}),k,CHOOSECOLS(d,1),FILTER(d,ISTEXT(k)*(k<>\"\"),\"\"))",
       "span": "RockTemplate:RocksEnd",
       "anchor": "A2",
-      "note": "Header row 1 is static text; the formula in A2 spills all rows. Empty cells arrive as 0 through VSTACK, hence ISTEXT on the key and the zero to blank wrap on list blocks. A real 0 in a list block (Teams Budgeted or Actual 0, FillPct 0) also shows blank on the consolidated sheet; the portal treats a blank count as 0. The Rocks strip already returns \"\" for blanks and holds real zero counts, so it is not wrapped."
+      "note": "Header row 1 is static text; the formula in A2 spills all rows. Empty cells arrive as 0 through VSTACK, hence ISTEXT on the key and the zero to blank wrap on list blocks. Sheets with keep_zero_columns (Teams: Budgeted, Actual, FillPct) skip the wrap on those columns so a real 0 stays 0 (DECISIONS 0018); an empty count cell then shows 0. The Rocks strip already returns \"\" for blanks and holds real zero counts, so it is not wrapped."
     },
     "label_column": "B",
     "value_column": "C",
@@ -446,6 +446,7 @@
       "purpose": "Up to 5 teams per active rock with budgeted and actual positions and fill %. Read only, stacked from section 8 of every rock tab",
       "owner": "formula (no one types here)",
       "primary_key": "TeamKey",
+      "keep_zero_columns": ["Budgeted", "Actual", "FillPct"],
       "foreign_keys": {"RockID": "Rocks.RockID"},
       "columns": [
         {"name": "TeamKey", "label": "Key", "type": "string", "required": true, "formula": true,

@@ -11,12 +11,13 @@ Rock dict shape (all keys optional, missing means empty):
     Goals, Delivers, UpdateDate, State, MainMessage, Attention1, Attention2, Attention3
   block rows: "Milestones", "Risks", "CallOuts", "Decisions", "Teams": lists of dicts keyed
     by the typed column names, one item per slot in order. {} or None is an empty slot.
-    "Epics" is accepted as an alias of "Milestones" for pre 2.1.0 sample data.
 Dates may be date, datetime or YYYY-MM-DD text.
 
 Blank safety follows the workbook: calculated cells are "" when the row has no key.
-List blocks are consolidated with the zero to blank wrap, so a real numeric 0 (Teams
-Budgeted, Actual, FillPct) is "" on the consolidated sheet; the Rocks strip keeps real zeros.
+List blocks are consolidated with the zero to blank wrap, so a numeric 0 is "" on the
+consolidated sheet, except the schema `keep_zero_columns` (Teams Budgeted, Actual, FillPct;
+DECISIONS 0018), where a real 0 stays 0 and an empty typed count arrives as 0 through VSTACK.
+The Rocks strip keeps real zeros.
 """
 from __future__ import annotations
 
@@ -108,8 +109,6 @@ def normalize_rock(rock: dict) -> dict:
         out[f] = to_date(v) if f == "UpdateDate" else ("" if v is None else v)
     for b in BLOCKS:
         src = rock.get(b)
-        if src is None and b == "Milestones":
-            src = rock.get("Epics")
         rows = []
         for r in src or []:
             r = dict(r or {})
@@ -333,10 +332,23 @@ def compute_rock(raw, p, today):
             "Milestones": ms, "Risks": rs, "CallOuts": cs, "Decisions": ds, "Teams": ts}
 
 
-def zero_wrap(row):
-    """List block consolidation wraps a real numeric 0 to blank."""
-    return {k: ("" if isinstance(v, (int, float)) and not isinstance(v, bool) and v == 0 else v)
-            for k, v in row.items()}
+def _keep_zero():
+    return {s["name"]: set(s.get("keep_zero_columns", [])) for s in load_schema()["sheets"]}
+
+
+def zero_wrap(row, keep=()):
+    """List block consolidation wraps a numeric 0 to blank, except the keep_zero_columns.
+    An empty typed count in a keep column arrives as 0 through VSTACK."""
+    out = {}
+    for k, v in row.items():
+        if k in keep:
+            out[k] = 0 if v == "" and k in TYPED_COUNTS else v
+        else:
+            out[k] = "" if isinstance(v, (int, float)) and not isinstance(v, bool) and v == 0 else v
+    return out
+
+
+TYPED_COUNTS = {"Budgeted", "Actual"}  # typed (not formula) keep zero columns: empty cell is 0
 
 
 KEY = {"Milestones": "MilestoneKey", "Risks": "RiskKey", "CallOuts": "CallOutKey",
@@ -348,12 +360,13 @@ def build_model(rocks, today: dt.date, steercos=(), schema=None):
     dicts) for the given rock tabs (in tab order) and frozen today."""
     p = params(today, steercos)
     out = {"Rocks": [], **{b: [] for b in BLOCKS}}
+    keep = _keep_zero()
     for raw in rocks:
         c = compute_rock(raw, p, today)
         if c["strip"] is not None:
             out["Rocks"].append(c["strip"])
         for b in BLOCKS:  # consolidation filter: key must be non empty text
-            out[b] += [zero_wrap(r) for r in c[b] if r[KEY[b]]]
+            out[b] += [zero_wrap(r, keep.get(b, ())) for r in c[b] if r[KEY[b]]]
     if schema is not None:
         out = order_columns(out, schema)
     return out

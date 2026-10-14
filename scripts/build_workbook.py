@@ -127,7 +127,15 @@ def consolidation_formula(schema, sheet, resolver):
         sec = resolver.blocks[sheet["name"]]
         rng = f"$A${sec['first_row']}:${last}${sec['first_row'] + sec['capacity'] - 1}"
         pattern = cf["lists"]
-    return pattern.replace("{span}", cf["span"]).replace("{range}", rng)
+    formula = pattern.replace("{span}", cf["span"]).replace("{range}", rng)
+    keep = [i + 1 for i, c in enumerate(sheet["columns"]) if c["name"] in sheet.get("keep_zero_columns", [])]
+    if keep and sheet["source"] != "strip":  # DECISIONS 0018: column aware zero to blank wrap
+        guard = "".join(f"*(c<>{n})" for n in keep)
+        old = 'IF(f=0,"",f)'
+        assert old in formula, "consolidation pattern has no zero wrap to make column aware"
+        formula = formula.replace(old, f'IF((f=0){guard},"",f)').replace(
+            ',IF((f=0)', ',c,SEQUENCE(1,COLUMNS(f)),IF((f=0)')
+    return formula
 
 
 def dynamic_cells(schema):

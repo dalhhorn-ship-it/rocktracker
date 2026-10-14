@@ -82,8 +82,6 @@ def test_required_and_types(rows, schema):
             for col in sheet["columns"]:
                 value = row.get(col["name"])
                 if value in (None, ""):
-                    if sheet["kind"] == "consolidated" and col["type"] == "integer" and not col.get("formula"):
-                        continue  # a real 0 in a list block shows blank on the consolidated sheet (DECISIONS 0014)
                     if col.get("required") and (sheet["kind"] != "consolidated" or col.get("formula")):
                         errors.append(f"{sheet['name']}!row {i} {col['name']} is empty")
                     elif col.get("required") and row.get("RockID") != HALF_FILLED:
