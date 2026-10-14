@@ -96,4 +96,5 @@ With no build or review history yet, every learning below comes from the kickoff
 
 ## Status
 
-Proposals awaiting the user's choice. No template change made yet.
+Sent: L1 to L4 in https://github.com/dalhhorn-ship-it/claudecentral/pull/1 (template tests: 30 passed).
+Kept in the project for now: L5, L6, L7.
