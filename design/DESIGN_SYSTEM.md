@@ -162,9 +162,9 @@ Stage, status and chart colours are fills and marks, not text. They keep at leas
 | Milestone Slipped | `--stage-progress` / `--accent` (crimson) | `#B22D5B` | `#E06A93` | solid, label in crimson |
 | Milestone On hold | `--cat-other` (grey) | `#8B8F96` | `#8C9097` | solid |
 | Milestone Not committed | `--cat-other` (grey) | `#8B8F96` | `#8C9097` | outline only, no fill |
-| Rock On track | `--stage-progress` (existing stage map) | `#B22D5B` | `#E06A93` | solid |
+| Rock On track | `--stage-done` (green) | `#438852` | `#6DB97E` | solid |
 | Rock At risk | `--stage-review` (amber) | `#CC7C2E` | `#E0A15F` | solid |
-| Rock Off track | `--cat-8` (wine, crimson family) | `#AE2A3F` | `#D9677A` | solid, bold label |
+| Rock Off track | `--accent` (crimson) | `#B22D5B` | `#E06A93` | solid, bold label |
 
 Wine on `--bg`: 6.56 light, 5.46 dark, so Off track text is also readable.
 
