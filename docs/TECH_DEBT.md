@@ -18,6 +18,7 @@ Open: 10 (high 1, medium 5, low 4). Resolved: 0.
 | TD07 | Slot based keys: a lead who reuses an epic slot for a different epic mixes two epics in EpicSnapshots history (titles are kept) | low | small | Guide rule "a slot is one epic for life"; M3 look back groups by key and title | 14 Oct 2026 |
 | TD08 | Excel formulas and the Python mirror (`rock_model.py`) can drift; consolidation cells cannot be recalculated outside Excel | low | small | T09 LibreOffice comparison for all rock tab formulas; one manual Excel check per release in DEPLOY | 14 Oct 2026 |
 | TD09 | `snapshot.ts` is verified only by `tsc` against a minimal declaration file and by the Python mirror; the Office Scripts runtime (addRows, protect/unprotect, used range of the spills, serial dates) is untested | low | small | One manual run in the real workbook per release (DEPLOY section 6, steps A3 and B5); run the script inside the deploy test run | 14 Oct 2026 |
+| TD11 | `data/sample.json` is hand generated and snapshot rows are computed with a small status function that duplicates the schema rules; the new sample shape (rocks with block lists) is read by no builder yet, so old shape tests fail until T07 | low | S | T07 reads the new shape; T08 `rock_model.py` recomputes snapshot rows and a test compares them with the stored ones | 14 Oct 2026 |
 
 ## Resolved
 
