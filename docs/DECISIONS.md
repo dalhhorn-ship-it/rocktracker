@@ -2,6 +2,12 @@
 
 Owner: `architect`. Newest first.
 
+## 0018 Teams counts keep real zeros on the consolidated sheet (14 Oct 2026, operator)
+
+* **Context:** VSTACK turns empty cells into 0, so the list pattern wraps every 0 to blank. On the Teams sheet that hides real zeros: a team with 0 actual positions would look like missing data in the portal and the email.
+* **Decision:** the zero to blank wrap skips the numeric count columns of a consolidated sheet. The schema lists them per sheet in `keep_zero_columns` (Teams: Budgeted, Actual, FillPct). The wrap becomes `IF((f=0)*(c<>n1)*(c<>n2)...,"",f)` with `c` the column number from `SEQUENCE(1,COLUMNS(f))`, so text columns still blank and counts keep 0. An empty count cell shows 0, which is acceptable because TeamName is required and counts are validated whole numbers.
+* **Consequence:** the builder's `consolidation_formula()`, the mirror's `zero_wrap` and the `test_workbook.py` exemption change together in T46.
+
 ## 0017 User answers to change request 1: Completed is a lead status; decision log design accepted; Teams on tab 2 (14 Oct 2026)
 * Context: the three open questions after 0010 to 0016, answered by the user.
 * Decision 1: the user accepted 0012. Decision requests are typed only on the rock tab, once, in section 6; section 1 and tab 1 show the first 5 open ones; the log is live. No DecisionLog table.
@@ -111,9 +117,3 @@ Owner: `architect`. Newest first.
 * Decision: one shared workbook is the source of truth; the factory builds and tests the workbook; the product owner builds the portal
   in Copilot Cowork from the deployed workbook and the portal pack.
 * Consequences: the workbook schema is the contract and is tested on every change.
-
-## 0018 Teams counts keep real zeros on the consolidated sheet (14 Oct 2026, operator)
-
-* **Context:** VSTACK turns empty cells into 0, so the list pattern wraps every 0 to blank. On the Teams sheet that hides real zeros: a team with 0 actual positions would look like missing data in the portal and the email.
-* **Decision:** the zero to blank wrap skips the numeric count columns of a consolidated sheet. The schema lists them per sheet in `keep_zero_columns` (Teams: Budgeted, Actual, FillPct). The wrap becomes `IF((f=0)*(c<>n1)*(c<>n2)...,"",f)` with `c` the column number from `SEQUENCE(1,COLUMNS(f))`, so text columns still blank and counts keep 0. An empty count cell shows 0, which is acceptable because TeamName is required and counts are validated whole numbers.
-* **Consequence:** the builder's `consolidation_formula()`, the mirror's `zero_wrap` and the `test_workbook.py` exemption change together in T46.
