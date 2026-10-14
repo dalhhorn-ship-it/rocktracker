@@ -53,12 +53,12 @@ Columns: A key (narrow, grey), B labels and titles (wide), C values, D onward bl
 | 23 to 39 | 3 Epics | lead | 15 slots: Title, ADO id, Commitment, Planned, Forecast, Lead status, Comment, KR link; then grey Status, Slip weeks, In window, Overdue, RockID, Rock, GPM |
 | 41 to 52 | 4 Risks | lead | 10 slots: Title, Likelihood, Impact, Key action, Action owner, Status, Top risk; then grey Score, High, Needs action, RockID, Rock, GPM |
 | 54 to 63 | 5 Call outs | lead | 8 slots: Text, Date, Status; then grey RockID, Rock, GPM |
-| 65 to 91 | 6 Decisions | lead | 25 slots: Decision, Steerco, Decide by, Choice point, Options, Outcome, Owner, Follow up; then grey State, Due at next steerco, RockID, Rock, GPM |
+| 65 to 91 | 6 Decisions | lead | 25 slots: Decision, Steerco, Decide by, Choice point, Options, Outcome, Owner, Follow up; then grey State, Due at next steerco, Open follow up, RockID, Rock, GPM |
 | 93 to 102 | 7 Rock profile | owner | Rock ID, name, value chain, lead, GPM, Active, purpose, goals, delivers |
 
 Block column order on the rock tab equals the column order of the consolidated sheet, so the stack needs no reordering. Exact rows and formulas are in `rock_tab` of the schema; the generator never hard codes them.
 
-Guard rails: sheet protection without password (entry cells unlocked, no row insert or delete), dropdowns from `lst_lkp_*` names, date validation, pink highlight for empty required cells on rows that have a title, and a pink row when a block row has data but no title (it would be invisible to the portal).
+Guard rails: sheet protection without password (entry cells unlocked, no row insert or delete), dropdowns from `lst_lkp_*` names (Decisions.SteercoDate as a warning, not a stop, so a lead can enter a steerco not listed yet), date validation, a pink Rock ID when another tab uses the same ID, pink highlight for empty required cells on rows that have a title, and a pink row when a block row has data but no title (it would be invisible to the portal).
 
 ## Consolidation
 
@@ -76,6 +76,7 @@ Guard rails: sheet protection without password (entry cells unlocked, no row ins
 * Rock tab names are free: no formula refers to them. Renaming RockTemplate or RocksEnd is safe (Excel updates the reference); moving or deleting them is not.
 * Spill cells take the number format of the target cells, so the generator formats date columns on the consolidated sheets.
 * Generator detail: dynamic array functions are written with `_xlfn.` prefixes (`_xlfn.LET`, `_xlpm.` parameters, `_xlfn.VSTACK`, `_xlfn._xlws.FILTER`, `_xlfn.CHOOSECOLS`, `_xlfn.MINIFS`) and the anchor cell gets dynamic array cell metadata; fallback `scripts/office/setup.ts`.
+* If Excel rejects the 3D reference inside VSTACK (go or no go Thu 15 Oct 12:00), plan C in DECISIONS 0002 applies: `consolidate.ts` rebuilds five real Tables from the rock tabs every 30 minutes, with the same sheet and column names, so the portal and email contract does not change.
 
 ## Computed rules
 
@@ -89,15 +90,18 @@ All in the schema (`excel` plus `rule`), mirrored in `scripts/rock_model.py`. Na
 | Overdue | committed, not Delivered or On hold, forecast (or planned) before today |
 | Risk Score, High | likelihood times impact (1 to 3 each); High when 6 or more |
 | NeedsAction | High, not Closed, key action or action owner empty |
-| Epics x of y | y EpicsCommitted = committed and in window; x EpicsSlipped = Slipped and in window; also EpicsOnPlan (On plan or On watch) and EpicsDelivered |
+| Epics x of y | y EpicsCommitted = committed and in window; x EpicsSlipped = Slipped and in window; EpicsOnPlan = On plan, On watch or Delivered (tab 3 spotlight, so delivering never lowers the ratio); EpicsDelivered |
 | Positions x of y | PositionsFilled of PositionsPlanned, both typed |
 | Update age, Stale | today minus update date; Stale when empty or over 14 days |
 | Data signal | Off track: a Slipped epic planned this quarter is forecast after quarter end; At risk: slipped x > 0 or a High risk without action; else On track |
 | CheckCall | data signal worse than the lead's State (order On track, At risk, Off track) |
 | DecisionState | Requested until Outcome is filled in, then Decided |
 | DueNextSteerco | Requested and (raised for the next steerco or decide by on or before it) |
+| OpenFollowUp | Decided and FollowUp not Closed; empty FollowUp counts as Open (tab 5 spotlight) |
 
-Blank safety: every calculated cell returns "" when its row has no key, wraps dates in `N()` so an empty date is 0, and never divides by an empty value. Empty Status on risks and call outs counts as Open.
+Blank safety: every calculated cell returns "" when its row has no key, wraps dates in `N()` so an empty date is 0, and never divides by an empty value. Empty Status on risks and call outs, and empty FollowUp on decided decisions, counts as Open.
+
+About sheet checks (schema `about.checks`): rock tabs found, duplicate rock IDs, next steerco date missing, and choice point mismatches in both directions between epic Commitment and open choice point decisions. The Decisions row is authoritative for tab 3.1; the epic Commitment drives the roadmap colour on tab 3.
 
 ## History
 
@@ -105,8 +109,8 @@ Blank safety: every calculated cell returns "" when its row has no key, wraps da
 
 ## How the portal and the email consume the data (brief)
 
-* The portal (later phase, spec in `portal/portal.spec.json`) reads only Rocks, Epics, Risks, CallOuts, Decisions and the lookups, never rock tabs. Every tab filters on Rocks.Active = Yes and can filter on RockID or GPM, present on every row. Tab 1 reads Rocks.MainMessage, Risks TopRisk, CallOuts, Decisions Requested; tab 2 Rocks state and signals; tab 3 Epics in window; tab 3.1 Decisions with ChoicePoint Yes and Requested; tab 4 Risks by Likelihood and Impact; tab 5 Decisions Decided. Spotlights rely on precomputed flags (DueNextSteerco, NeedsAction, State) so Cowork needs no date logic.
-* The email (M2) reads the same five sheets: header from Rocks and lkp_People.Role; portfolio table from Rocks; call outs from Decisions Requested, Epics Overdue, CallOuts open; development update from Epics Status counts, Delivered with forecast in the last 14 days, mean SlipWeeks; risks from Risks Top or High; per rock epic table from Epics. Mechanism decided in T20.
+* The portal (later phase, spec in `portal/portal.spec.json`) reads only Rocks, Epics, Risks, CallOuts, Decisions and the lookups, never rock tabs. Every tab filters on Rocks.Active = Yes and can filter on RockID or GPM, present on every row. Tab 1 reads a rock header (RockName, Lead, GPM, ValueChain, Purpose, Goals, Delivers) when filtered to one rock, Rocks.MainMessage, Risks TopRisk, CallOuts, Decisions Requested; tab 2 Rocks state and signals; tab 3 Epics in window; tab 3.1 Decisions with ChoicePoint Yes and Requested; tab 4 Risks by Likelihood and Impact; tab 5 Decisions Decided. Spotlights rely on precomputed flags (DueNextSteerco, NeedsAction, OpenFollowUp, State, EpicsOnPlan of EpicsCommitted) so Cowork needs no date logic.
+* The email (M2) reads the same five sheets: header from Rocks and lkp_People.Role; portfolio table from Rocks; call outs from Decisions Requested, Epics Overdue, CallOuts open; development update from Epics Status counts, Delivered with forecast in the last 14 days, mean SlipWeeks; risks from Risks Top or High; per rock section opens with RockName, ValueChain, Purpose, Goals and Delivers, then state, resourcing, headline and the epic table from Epics. Mechanism decided in T21.
 
 ## Upkeep per role mapped to fields
 

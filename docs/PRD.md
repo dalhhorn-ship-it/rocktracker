@@ -114,7 +114,7 @@ Assumed derivations, to be confirmed by the architect: "this period" is the 14 d
 
 | Fact | Owner | Changes | Why it exists |
 | :--- | :--- | :--- | :--- |
-| Rock profile: name, purpose, goals, what it delivers, value chain, initiative lead, GPM, active flag | Workbook owner, lead may edit | Quarterly | Rock filter on every tab, email header |
+| Rock profile: name, purpose, goals, what it delivers, value chain, initiative lead, GPM, active flag | Workbook owner, lead may edit | Quarterly | Name, lead and GPM: rock and portfolio filter on every tab, email header. Purpose, goals, what it delivers and value chain: rock header on tab 1 and the per rock section of the email (from the brief) |
 | Positions planned and filled (counts only) | Lead | When it changes | Tab 2, email |
 | Epics: title, ADO id, commitment, planned date, forecast date, status (hand set values only), comment, key result link as short text | Lead | Forecast and comment when they move | Tabs 2 and 3, email |
 | Risks: title, likelihood, impact, key action, action owner, open or closed, top risk flag | Lead | Only when they change | Tabs 1 and 4, email |
