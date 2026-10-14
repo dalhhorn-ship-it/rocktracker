@@ -28,7 +28,7 @@ Captured from the **Finance, Procurement, Margin & Forecasting Hub** (Eneco · G
 | `--ink-3` | `#3D3F43` | Card body text |
 | `--slate` | `#5B6067` | Inactive tab labels, neutral bars ("Backlog") |
 | `--muted` | `#686D73` | KPI sub-lines, secondary metadata |
-| `--subtle` | `#8C9097` | Eyebrows, uppercase labels, "AS OF" / "BOARD" labels |
+| `--subtle` | `#72777D` | Eyebrows, uppercase labels, "AS OF" / "BOARD" labels |
 | `--rule-strong` | `#45474B` | 1px rule under header and under tab bar |
 | `--rule` | `#E6E7E9` | Card borders |
 | `--rule-soft` | `#EAEAEA` | Divider under chart-card titles |
@@ -106,6 +106,67 @@ Suggested stacks:
 - **Radius:** 8px on all cards and tiles, 3px on bar ends.
 - **Elevation:** none. Use a 1px `--rule` border only, with no shadows.
 - **Vertical rhythm:** 8px eyebrow to H1, 12px H1 to lede, 32px lede to narrative, 24px narrative to cards, 16px between card rows.
+
+### 2.6 Dark mode
+
+Dark mode is a second value set for the same token names (`design/tokens.css`), under `:root[data-theme="dark"]` and under `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) }`. Rules:
+
+- Same names, same hues, same fonts, radius and spacing. No shadows, no gradients. `--brand-red` is unchanged.
+- Crimson stays the only emphasis colour. It is lightened (`#E06A93`) so it reads on dark; nothing else becomes an accent.
+- `--card` is a new token (light `#FFFFFF`, dark `#1A1C21`). Cards and KPI tiles use `--card`; the page uses `--bg`.
+- Default follows the system setting. The masthead meta holds a theme switch written as text (LIGHT and DARK, not an icon) that sets `data-theme` on the root element and is remembered for the session.
+- Body text, labels and the accent reach a contrast of 4.5:1 or more against both `--bg` and `--card` in both modes. `tests/test_portal.py::test_dark_mode_tokens` enforces this and that every light token has a dark value. To reach 4.5:1 in light mode, `--subtle` moved from `#8C9097` to `#72777D`.
+
+| Token | Light | Dark | Ratio light on `--bg` | Ratio dark on `--bg` | Ratio dark on `--card` |
+|---|---|---|---|---|---|
+| `--bg` | `#FFFFFF` | `#121317` | | | |
+| `--card` | `#FFFFFF` | `#1A1C21` | | | |
+| `--ink` | `#0F1116` | `#F2F2F3` | 18.88 | 16.59 | 15.24 |
+| `--ink-2` | `#1E2025` | `#E1E2E4` | 16.30 | 14.32 | 13.15 |
+| `--ink-3` | `#3D3F43` | `#C4C6CA` | 10.55 | 10.85 | 9.97 |
+| `--slate` | `#5B6067` | `#A3A7AD` | 6.34 | 7.68 | 7.05 |
+| `--muted` | `#686D73` | `#9A9EA5` | 5.22 | 6.90 | 6.34 |
+| `--subtle` | `#72777D` | `#868B92` | 4.52 | 5.41 | 4.97 |
+| `--accent` | `#B22D5B` | `#E06A93` | 6.14 | 5.88 | 5.40 |
+| `--accent-tint` | `#F6E8EE` | `#3A1E29` | | | |
+| `--rule-strong` | `#45474B` | `#5A5D63` | | | |
+| `--rule` | `#E6E7E9` | `#2C2E33` | | | |
+| `--rule-soft` | `#EAEAEA` | `#26282C` | | | |
+| `--grid` | `#F3F3F4` | `#202226` | | | |
+| `--spot-bg` | `#DDEFDF` | `#1E3323` | | | |
+| `--spot-ink` | `#1F3C23` | `#CFEBD4` | 10.11 on spot-bg | 10.62 on spot-bg | |
+| `--spot-label` | `#486B4F` | `#8DBB96` | 5.01 on spot-bg | 6.23 on spot-bg | |
+| `--stage-backlog` | `#5B6067` | `#8C9097` | | | |
+| `--stage-progress` | `#B22D5B` | `#E06A93` | | | |
+| `--stage-review` | `#CC7C2E` | `#E0A15F` | | | |
+| `--stage-done` | `#438852` | `#6DB97E` | | | |
+| `--cat-other` | `#8B8F96` | `#8C9097` | | | |
+| `--cat-1` | `#B22D5B` | `#E06A93` | | | |
+| `--cat-2` | `#CC7C2E` | `#E0A15F` | | | |
+| `--cat-3` | `#A85923` | `#D08A55` | | | |
+| `--cat-4` | `#D4494C` | `#E8787A` | | | |
+| `--cat-5` | `#2D679C` | `#6FA3D6` | | | |
+| `--cat-6` | `#438852` | `#6DB97E` | | | |
+| `--cat-7` | `#743EE4` | `#A585F0` | | | |
+| `--cat-8` | `#AE2A3F` | `#D9677A` | | | |
+
+Stage, status and chart colours are fills and marks, not text. They keep at least 3:1 against the surface in dark mode (lowest: `--stage-progress` 5.4 and `--stage-done` 7.2 on `--card`, `--stage-backlog` 5.3). In light mode amber (3.24) and grey (3.2) stay above 3:1 and `--stage-done` is 4.3. Always put the status word next to the colour; colour is never the only signal.
+
+**Milestone status and rock state colours.** Milestone statuses reuse the stage colours; Slipped and Off track are the strongest marks. Same meaning in both modes.
+
+| Item | Token (stage) | Light | Dark | Mark |
+|---|---|---|---|---|
+| Milestone Completed | `--stage-done` (Done) | `#438852` | `#6DB97E` | solid |
+| Milestone On plan | `--stage-backlog` (slate) | `#5B6067` | `#8C9097` | solid |
+| Milestone On watch | `--stage-review` (amber) | `#CC7C2E` | `#E0A15F` | solid |
+| Milestone Slipped | `--stage-progress` / `--accent` (crimson) | `#B22D5B` | `#E06A93` | solid, label in crimson |
+| Milestone On hold | `--cat-other` (grey) | `#8B8F96` | `#8C9097` | solid |
+| Milestone Not committed | `--cat-other` (grey) | `#8B8F96` | `#8C9097` | outline only, no fill |
+| Rock On track | `--stage-progress` (existing stage map) | `#B22D5B` | `#E06A93` | solid |
+| Rock At risk | `--stage-review` (amber) | `#CC7C2E` | `#E0A15F` | solid |
+| Rock Off track | `--cat-8` (wine, crimson family) | `#AE2A3F` | `#D9677A` | solid, bold label |
+
+Wine on `--bg`: 6.56 light, 5.46 dark, so Off track text is also readable.
 
 ---
 
@@ -219,7 +280,7 @@ Use the same tokens: 11px sans body, UPPERCASE 9–10px header in `--subtle`, 1p
 :root{
   /* core */
   --ink:#0F1116; --ink-2:#1E2025; --ink-3:#3D3F43;
-  --slate:#5B6067; --muted:#686D73; --subtle:#8C9097;
+  --slate:#5B6067; --muted:#686D73; --subtle:#72777D;
   --rule-strong:#45474B; --rule:#E6E7E9; --rule-soft:#EAEAEA; --grid:#F3F3F4;
   --bg:#FFFFFF;
   /* accent & status */

@@ -6,10 +6,11 @@
                                                     migration: new structure, rows copied from a downloaded
                                                     live copy (every rock tab's typed cells, lookups, history)
 
-Sheet order: About (deploy), RockTemplate, rock tabs, RocksEnd, Rocks, Epics, Risks, CallOuts,
-Decisions, RockSnapshots, EpicSnapshots, lookups. Rock tabs follow `rock_tab` in the schema,
-the five consolidated sheets hold one dynamic array formula each (DECISIONS 0002, 0003),
-history and lookup sheets are Excel Tables `tbl_<sheet>`. Params are defined names.
+Sheet order: About, RockTemplate, rock tabs, RocksEnd, then the sheets in schema order (Rocks,
+Milestones, Risks, CallOuts, Decisions, Teams, RockSnapshots, MilestoneSnapshots, lookups).
+Rock tabs follow `rock_tab` in the schema, the six consolidated sheets hold one dynamic array
+formula each (DECISIONS 0002, 0003), history and lookup sheets are Excel Tables `tbl_<sheet>`.
+Params are defined names. `--from` a schema 1.0.0 file applies the schema `migration` (DECISIONS 0010 to 0017).
 """
 import argparse
 import datetime as dt
@@ -49,6 +50,13 @@ def coerce(value, col_type):
     if col_type == "date" and isinstance(value, str) and value:
         return dt.date.fromisoformat(value)
     return value
+
+
+def number_format(c):
+    """Excel number format of a field or column: the schema `number_format`, else the date format."""
+    if c.get("number_format"):
+        return c["number_format"]
+    return DATE_FORMAT if c["type"] == "date" else None
 
 
 def list_name(ref):
@@ -195,8 +203,9 @@ THIN = Side(style="thin", color=RULE)
 BOX = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)
 
 
-def value_validation(c, ref_name=None, warning=False):
-    """DataValidation for an entry cell or column, or None."""
+def value_validation(c, first_cell="A1"):
+    """DataValidation for an entry cell or column, or None. `first_cell` is the top left cell of the
+    range it will be added to (custom formulas are relative to it)."""
     ref = c.get("lookup")
     if ref:
         dv = DataValidation(type="list", formula1=list_name(ref), allow_blank=True)
@@ -208,6 +217,9 @@ def value_validation(c, ref_name=None, warning=False):
     elif c["type"] == "date":
         dv = DataValidation(type="date", operator="greaterThan", formula1="DATE(2000,1,1)", allow_blank=True)
         dv.error, dv.errorTitle = "Enter a date, for example 16 Oct 2026", "Not a date"
+    elif c.get("format") == "url":
+        dv = DataValidation(type="custom", formula1=f'OR({first_cell}="",LEFT({first_cell},8)="https://")', allow_blank=True)
+        dv.error, dv.errorTitle = "Enter a link that starts with https://", "Not a secure link"
     elif c["type"] == "integer":
         dv = DataValidation(type="whole", operator="greaterThanOrEqual", formula1="0", allow_blank=True)
         dv.error, dv.errorTitle = "Enter a whole number, 0 or more", "Not a number"
@@ -237,8 +249,8 @@ def build_rock_tab(wb, name, schema, R, rock=None):
         else:
             f = rocks_sheet["strip_default_excel"].replace("{FROM}", "{%s}" % col["from"])
         cell = ws.cell(row=rt["strip_row"], column=i, value=file_formula(R.resolve(f)))
-        if col["type"] == "date":
-            cell.number_format = DATE_FORMAT
+        if number_format(col):
+            cell.number_format = number_format(col)
     ws.row_dimensions[rt["strip_row"]].hidden = bool(rt.get("strip_hidden"))
     ws[rt["guide_cell"]] = rt["guide_text"]
     ws[rt["guide_cell"]].font = Font(italic=True, color=SLATE)
@@ -254,8 +266,8 @@ def build_rock_tab(wb, name, schema, R, rock=None):
         cell.border = BOX
         cell.protection = unlocked
         cell.alignment = Alignment(horizontal="left")
-        if col["type"] == "date":
-            cell.number_format = DATE_FORMAT
+        if number_format(col):
+            cell.number_format = number_format(col)
 
     def put(cell, col, value):
         if value not in (None, ""):
@@ -275,11 +287,13 @@ def build_rock_tab(wb, name, schema, R, rock=None):
                     cell.value = file_formula(R.resolve(f["excel"]))
                     style_calc(cell)
                     cell.alignment = Alignment(horizontal="left")
+                    if number_format(f):
+                        cell.number_format = number_format(f)
                     continue
                 style_entry(cell, f)
                 value = rock.get(f["name"]) if rock is not None else f.get("template_value")
                 put(cell, f, value)
-                dv = value_validation(f)
+                dv = value_validation(f, first_cell=cell.coordinate)
                 if dv:
                     ws.add_data_validation(dv)
                     dv.add(cell.coordinate)
@@ -309,17 +323,15 @@ def build_rock_tab(wb, name, schema, R, rock=None):
                     if c.get("formula"):
                         cell.value = file_formula(R.resolve(c["excel"], block=sec["block"], row=r, slot=slot))
                         style_calc(cell)
-                        if c["type"] == "date":
-                            cell.number_format = DATE_FORMAT
-                        elif c["type"] == "number":
-                            cell.number_format = "0.0"
+                        if number_format(c):
+                            cell.number_format = number_format(c)
                     else:
                         style_entry(cell, c)
                         put(cell, c, data.get(c["name"]))
             first = sec["first_row"]
             # validations: one per entry column
             for i, c in typed:
-                dv = value_validation(c)
+                dv = value_validation(c, first_cell=f"{get_column_letter(i)}{first}")
                 if dv:
                     ws.add_data_validation(dv)
                     dv.add(f"{get_column_letter(i)}{first}:{get_column_letter(i)}{last_row}")
@@ -369,12 +381,9 @@ def build_consolidated(wb, schema, sheet, R):
         cell = ws.cell(row=1, column=i)
         cell.font, cell.fill = header_font, header_fill
         ws.column_dimensions[get_column_letter(i)].width = max(12, min(40, len(c["name"]) + 6))
-        if c["type"] in ("date",):
+        if number_format(c):
             for r in range(2, sheet.get("max_rows", MAX_ROWS) + 1):
-                ws.cell(row=r, column=i).number_format = DATE_FORMAT
-        elif c["name"] == "SlipWeeks":
-            for r in range(2, sheet.get("max_rows", MAX_ROWS) + 1):
-                ws.cell(row=r, column=i).number_format = "0.0"
+                ws.cell(row=r, column=i).number_format = number_format(c)
     anchor = schema["rock_tab"]["consolidation_formula"]["anchor"]
     set_dynamic_formula(ws, anchor, consolidation_formula(schema, sheet, R), CONSOLIDATION_NAMES)
     ws.freeze_panes = "A2"
