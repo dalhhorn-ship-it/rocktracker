@@ -716,3 +716,27 @@ def test_loader_reads_rock_tab_by_schema_layout(tmp_path):
     assert m["Milestones"][0]["Status"] == "On plan"
     assert m["Rocks"][0]["Attention1"] == "watch this"
     assert (m["Rocks"][0]["PositionsBudgeted"], m["Rocks"][0]["PositionsActual"]) == (4, 0)
+
+
+# ------------------------------------------------------------------ milestone progress (PRD item 7)
+def test_progress_shown_is_the_typed_value_when_not_completed():
+    assert ms_of(Progress=60)["ProgressShown"] == 60
+
+
+def test_progress_shown_is_blank_when_progress_is_empty():
+    assert ms_of()["ProgressShown"] == ""
+    assert ms_of(Progress=None)["ProgressShown"] == ""
+
+
+def test_progress_shown_is_100_when_completed_whatever_was_typed():
+    assert ms_of(LeadStatus="Completed", Progress=80, ActualDate="2026-10-14")["ProgressShown"] == 100
+    assert ms_of(LeadStatus="Completed")["ProgressShown"] == 100
+
+
+def test_a_typed_zero_progress_stays_zero_on_the_consolidated_sheet():
+    assert ms_of(Progress=0)["ProgressShown"] == 0
+    assert ms_of(Progress=0)["Progress"] == ""  # the input column is wrapped; the portal reads ProgressShown
+
+
+def test_progress_shown_is_blank_for_a_row_without_a_key():
+    assert model(rock(Milestones=[ms(Title="", Progress=50)]))["Milestones"] == []

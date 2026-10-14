@@ -276,3 +276,29 @@ def test_smoke_libreoffice_opens_and_about_counts_calculate(tmp_path, schema):
     for s in schema["sheets"]:
         if s["kind"] in ("lookup", "history"):
             assert counts[s["name"]] == len(s.get("seed", [])), s["name"]
+
+
+def _milestone_dv(wb, schema, sheets, col):
+    ws = wb[schema["rock_tab"]["template_sheet"]]
+    sec = block(schema, "Milestones")
+    letter = build_workbook.col_letter(sheets["Milestones"], col)
+    rng = f"{letter}{sec['first_row']}:{letter}{sec['first_row'] + sec['capacity'] - 1}"
+    return next(d for d in ws.data_validations.dataValidation if str(d.sqref) == rng)
+
+
+def test_progress_is_a_whole_number_from_0_to_100(wb, schema, sheets):
+    dv = _milestone_dv(wb, schema, sheets, "Progress")
+    assert dv.type == "whole" and dv.operator == "between"
+    assert (dv.formula1, dv.formula2) == ("0", "100") and dv.allow_blank and dv.showErrorMessage
+
+
+def test_milestone_owner_is_a_people_dropdown_that_only_warns(wb, schema, sheets):
+    dv = _milestone_dv(wb, schema, sheets, "Owner")
+    assert dv.type == "list" and dv.formula1 == "lst_lkp_People_Name"
+    assert dv.errorStyle == "warning" and dv.allow_blank
+
+
+def test_progress_columns_sit_right_after_the_lead_inputs(schema):
+    names = [c["name"] for c in next(s for s in schema["sheets"] if s["name"] == "Milestones")["columns"]]
+    assert names[names.index("Detail3") + 1:names.index("Detail3") + 3] == ["Progress", "ProgressShown"]
+    assert names.index("ProgressShown") < names.index("Status")

@@ -3,7 +3,7 @@
 Paste everything below the line into Copilot Cowork, with the Rock Tracker workbook attached or
 linked from SharePoint. It builds one page for one rock, so you can test the look, the reading
 order and whether Cowork reads the workbook correctly before the full portal is built. This
-version follows workbook schema 2.1.0 and change request 1: Milestones (not Epics), MC quarters,
+version follows workbook schema 2.2.0 and change request 1: Milestones (not Epics), MC quarters,
 an outlook of two quarters, teams, light and dark mode, and one tab per section.
 
 **Before you start:** upload `workbook.xlsx` to SharePoint and open it once in Excel for the web,
@@ -78,20 +78,20 @@ down. A row counts only when its **Key** (column A) is not empty. Ignore all oth
 
 | Table | Header row | Data rows | Columns |
 | :--- | :--- | :--- | :--- |
-| Milestones | 36 | 37 to 51 | A Key, B Milestone, C Owner, D Commitment, E Start date, F Planned date, G Forecast date, H Actual date, I Lead status, J Comment, K Key result link, L ADO id, M ADO link, N Description, O Detail 1, P Detail 2, Q Detail 3, R Status, S Slip (weeks), T Timeline date, U MC quarter, V In outlook, W Visible, X Overdue |
+| Milestones | 36 | 37 to 51 | A Key, B Milestone, C Owner, D Commitment, E Start date, F Planned date, G Forecast date, H Actual date, I Lead status, J Comment, K Key result link, L ADO id, M ADO link, N Description, O Detail 1, P Detail 2, Q Detail 3, R Progress % (typed, may be empty), S Progress shown, T Status, U Slip (weeks), V Timeline date, W MC quarter, X In outlook, Y Visible, Z Overdue |
 | Risks | 54 | 55 to 64 | A Key, B Risk, C Likelihood, D Impact, E Key action, F Action owner, G Status (empty means Open), H Score, I High, J Needs action |
 | Call outs | 67 | 68 to 75 | A Key, B Call out, C Date, D Status (empty means Open) |
 | Decisions | 78 | 79 to 103 | A Key, B Decision requested, C Steerco, D Decide by, E Choice point, F Options, G Outcome, H Follow up owner, I Follow up (empty means Open), J State (Requested or Decided), K Request no, L Due at next steerco, M Open follow up |
 | Teams (section 8) | 117 | 118 to 122 | A Key, B Team, C Team lead, D Budgeted, E Actual, F Fill % |
 
-Use the workbook's own calculated columns (Status, Slip, Timeline date, MC quarter, In outlook,
-Visible, Overdue, Score, High, Needs action, State, Request no, Due at next steerco, Open follow
-up, Fill %). Do not recalculate them. In particular, **use the Visible flag (column W) to decide
+Use the workbook's own calculated columns (Progress shown, Status, Slip, Timeline date, MC quarter,
+In outlook, Visible, Overdue, Score, High, Needs action, State, Request no, Due at next steerco, Open follow
+up, Fill %). Do not recalculate them. In particular, **use the Visible flag (column Y) to decide
 which milestones to show; never work out visibility from the dates yourself.**
 
 **MC quarters** are the company quarters. The MC year starts in April. MC26Q3 is October to
 December 2026, MC26Q4 is January to March 2027, MC27Q1 is April to June 2027. The workbook
-already gives each milestone its MC quarter in column U; show it as is.
+already gives each milestone its MC quarter in column W; show it as is.
 
 ## Page layout
 
@@ -111,16 +111,17 @@ lines. Then the evidence. Blocks are separated by generous white space and a 1px
 
 ### Tab 1 · What does steerco need to hear?
 * Headline: the lead's **Main message** (C8), as written.
-* Lede: `State: {State}. Updated {Days since update} days ago.` If Days since update is more than
-  14, add `Update is stale.` in crimson.
+* Lede: `State: {State}. Updated {Days since update} days ago.` If the workbook's **Stale** flag is Yes (cell Q2, in the
+  hidden row 2 of the sheet; the workbook decides the number of days, do not hard code it), add
+  `Update is stale.` in crimson.
 * If **Check the call** is Yes, show one crimson line under the lede:
   `The data says {Data signal}, the lead says {State}. Check the call.`
 * Two cards side by side, each with a serif heading phrased as a question:
   1. **What do we need from you?** The requested decisions from C13 to C17, in order, skipping
      empty ones (up to 5). For each, look up the decision row in the Decisions table by exact
      match of the text in column B, and add the decide by date in bold and a small `Choice point`
-     label when Choice point is Yes. Mark rows with Due at next steerco = Yes as `Next steerco`
-     and put them first within their order. If Open decision requests (C12) is more than 5, add a
+     label when Choice point is Yes. Keep the order of C13 to C17. Mark rows with Due at next
+     steerco = Yes with a small `Next steerco` label, without reordering. If Open decision requests (C12) is more than 5, add a
      grey line `{C12} requests are open, showing the first 5. All are in the workbook.`
   2. **What should you know?** The attention points from C9 to C11, skipping empty ones (up to
      3), one line each. Under them, a small grey list `Coming up` of Call outs where Status is
@@ -151,18 +152,19 @@ Positions actual and Fill %. If there are no teams, show `No teams recorded yet.
 ### Tab 3 · What ships in the next two quarters?
 * A filter above the chart, **MC quarter**, with the choices `All`, and the two quarters of the
   Outlook cell (C23, for example MC26Q3 and MC26Q4). Default `All`. It filters the chart and the
-  list below by the MC quarter in column U. Milestones without an MC quarter (no date yet) show
-  only under `All`, in the `Not dated yet` list.
-* Show only milestones whose **Visible** (column W) is Yes. Completed milestones in the past are
+  list below by the MC quarter in column W. Milestones without an MC quarter (no date yet) show
+  only under `All`, in the `Not dated yet` list. Overdue milestones from an earlier MC quarter
+  (for example MC26Q2) also show under `All` only, because they match neither quarter chip.
+* Show only milestones whose **Visible** (column Y) is Yes. Completed milestones in the past are
   already hidden by the workbook (Visible is No); do not bring them back.
 * A horizontal timeline from the first day of the first outlook quarter to the last day of the
   second, with quarter and month labels along the top (each quarter labelled with its MC name)
   and a thin vertical line for today.
 * One row per visible milestone, labelled with the milestone title and its MC quarter in grey.
-  The ADO id (column L) sits next to it in grey; when the ADO link (column M) is filled it is a
+  The Owner (column C) sits next to the title, in ink 3. The ADO id (column L) sits next to it in grey; when the ADO link (column M) is filled it is a
   link that opens in a new tab.
-* Each milestone is a marker at its **Timeline date** (column T). If Status is Slipped, draw a
-  thin line from the Planned date to the Forecast date. If Overdue (column X) is Yes, add a small
+* Each milestone is a marker at its **Timeline date** (column V). If Status is Slipped, draw a
+  thin line from the Planned date to the Forecast date. If Overdue (column Z) is Yes, add a small
   crimson label `Overdue`.
 * Commitment decides the style: **Committed** filled marker, **Choice point** hollow amber
   marker, **Not committed** hollow grey dashed marker. Milestones without any date sit in a short
@@ -172,12 +174,18 @@ Positions actual and Fill %. If there are no teams, show `No teams recorded yet.
 * **Every milestone is clickable** (marker, title and row in the full list). Clicking opens a pop
   up (modal) with a close control, closing also on the Escape key and a click outside. The pop up
   shows: Milestone title, Owner, Description, Start date, Planned date, Forecast date, Status
-  (coloured word), MC quarter, and the three detail bullets (Detail 1, 2, 3, skipping empty
+  (coloured word), MC quarter, the progress bar (below), and the three detail bullets (Detail 1, 2, 3, skipping empty
   ones). When the ADO link is filled, add a link `Open {ADO id} in ADO` that opens in a **new
   tab**; when it is empty, show the ADO id as plain grey text.
-* Under the timeline, "The full list": a quiet table with Milestone, MC quarter, ADO id (a link
-  that opens in a new tab when the ADO link exists), Commitment, Start, Planned, Forecast, Status
-  (coloured word), Slip (weeks), Key result link and Comment.
+* **Progress bar** on every milestone in the full list and in the pop up. Read **Progress shown**
+  (column S), never Progress % (column R): Completed milestones already hold 100 there, even when
+  the lead typed a lower number, so a Completed milestone always shows 100%. A thin bar (6px, 8px
+  corners) with the track in the rule colour and the fill in the milestone's status colour (see
+  Look and feel); the percentage as text beside it in muted grey, for example `60%`. When Progress
+  shown is empty, show a quiet dash and no bar. A typed 0 shows an empty bar and `0%`.
+* Under the timeline, "The full list": a quiet table with Milestone, Owner, MC quarter, ADO id (a
+  link that opens in a new tab when the ADO link exists), Commitment, Start, Planned, Forecast,
+  Status (coloured word), Progress (the bar), Slip (weeks), Key result link and Comment.
 
 ### Tab 3.1 · Which choices are open?
 Decisions where Choice point is Yes and State is Requested, each as a card: the decision, the
@@ -226,7 +234,7 @@ crimson. If there are none yet, show `No decisions recorded yet.` in grey.
 * **Rock state colours:** On track green (`#438852` light, `#6DB97E` dark), At risk amber
   (`#CC7C2E` light, `#E0A15F` dark), Off track crimson (`#B22D5B` light, `#E06A93` dark).
 * **Milestone status colours:** Completed green (`#438852` / `#6DB97E`), On plan slate (`#5B6067`
-  / `#A3A7AD`), On watch amber (`#CC7C2E` / `#E0A15F`), Slipped crimson (`#B22D5B` / `#E06A93`),
+  / `#8C9097`), On watch amber (`#CC7C2E` / `#E0A15F`), Slipped crimson (`#B22D5B` / `#E06A93`),
   On hold grey (`#8B8F96` / `#8C9097`), Not committed hollow grey.
 * Fonts: a clean sans serif (Inter or Segoe UI) for labels, numbers and tables; a text serif
   (Source Serif or Georgia) for ledes, narrative and card headings.
@@ -243,7 +251,9 @@ crimson. If there are none yet, show `No decisions recorded yet.` in grey.
 5. State colours match: On track green, At risk amber, Off track crimson, in both modes.
 6. Rows without a Key are ignored in every table.
 7. Tab 3 shows only milestones with Visible = Yes, and the MC quarter filter works.
-8. Clicking a milestone opens the pop up; the ADO link opens in a new tab; the switch flips
+8. Every milestone in the list and pop up has its Owner, and a progress bar from Progress shown
+   (Completed = 100%).
+9. Clicking a milestone opens the pop up; the ADO link opens in a new tab; the switch flips
    between light and dark.
 
 ---
@@ -251,14 +261,14 @@ crimson. If there are none yet, show `No decisions recorded yet.` in grey.
 ## For you (not for Cowork): what R01 should show
 
 Use this to check that Cowork read the workbook correctly. Values come from
-`scripts/rock_model.py` (it supports schema 2.1.0), run on `data/sample.json` with today
+`scripts/rock_model.py` (it supports schema 2.2.0), run on `data/sample.json` with today
 2026-10-14 and the sample steerco dates (21 Oct is the next steerco).
 
 * **Masthead:** R01 · Checkout Speed, value chain Checkout, GPM Priya Sampleton, lead Lena
   Testfield, as of 12 Oct 2026. Theme switch LIGHT and DARK.
 * **Tab 1:**
   * Headline starts "One page checkout is in test and on plan." State On track, updated 2 days
-    ago, not stale. No check the call warning (data signal On track).
+    ago, Stale flag No (Q2), so no stale line. No check the call warning (data signal On track).
   * Open decision requests: 6, the tab shows 5 and a grey line says 6 are open, showing the
     first 5. The five, in order:
     1. Fund wallet support this half (decide by 21 Oct, Choice point, Next steerco).
@@ -280,18 +290,24 @@ Use this to check that Cowork read the workbook correctly. Values come from
   * Teams: Checkout Web (Mia Sandbox) 3 of 3, 100%; Payments (Noor Testwell) 1 of 2, 50%;
     Checkout Design (Jonas Mockley) 1 of 1, 100%. Total 5 of 6, 83%.
 * **Tab 3:** four milestones visible, one hidden.
-  * One page checkout: MC26Q3, On plan, Committed, 30 Nov, ADO link present.
+  * One page checkout: MC26Q3, On plan, Committed, 30 Nov, ADO link present, owner Lena
+    Testfield, progress 60%.
   * Saved payment methods: MC26Q3, On watch, forecast 10 Dec before its 15 Dec plan, so no slip
-    line. No ADO link, so the ADO id is plain text.
-  * Express pay button: MC26Q3, Completed today (14 Oct), still visible.
-  * Wallet support: Choice point with no dates and no MC quarter, so it appears under "Not dated
+    line. Owner Omar Fictiv, progress 30%. No ADO link, so the ADO id is plain text.
+  * Express pay button: MC26Q3, Completed today (14 Oct), still visible. Lead typed 80% but it
+    is Completed, so the bar shows 100%.
+  * Owners in the list: One page checkout Lena Testfield, Saved payment methods Omar Fictiv,
+    Express pay button Tove Nomen, Wallet support Marco Demoso (Address form speed up, hidden,
+    Lena Testfield, no typed progress, Completed so 100% if shown).
+  * Wallet support: Choice point with no dates, no progress (dash) and no MC quarter, so it appears under "Not dated
     yet" and only when the filter is All.
   * Address form speed up: Completed on 2 Oct, in the past, so Visible is No and it is hidden.
   * With the filter on MC26Q3: the three dated milestones. With MC26Q4: none.
   * Pop up for One page checkout: owner Lena Testfield, description "Single page that replaces
     the five step checkout.", start 17 Aug 2026, planned 30 Nov 2026, forecast 30 Nov 2026,
     status On plan, bullets "Design signed off", "Build in test", "Release window to agree with
-    ops", and an ADO link `https://ado.example.com/rocktracker/items/1101` opening in a new tab.
+    ops", a progress bar at 60%, and an ADO link `https://ado.example.com/rocktracker/items/1101` opening
+    in a new tab.
 * **Tab 3.1:** one card, Fund wallet support this half, decide by 21 Oct, with options A, B and C.
 * **Tab 4:**
   * 2 open risks: Low x Low, score 1 (Payment vendor delays sandbox); Medium x High, score 6,

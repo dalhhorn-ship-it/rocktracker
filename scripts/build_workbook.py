@@ -33,7 +33,7 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 ROOT = Path(__file__).resolve().parent.parent
 MAX_ROWS = 2000  # date formats and validation range on consolidated, history and lookup sheets
 LOOKUP_ROWS = 200  # last row of a lookup list (defined names lst_*); NextSteerco uses the same bound
-INK, SUBTLE, RULE, ACCENT_TINT = "0F1116", "8C9097", "E6E7E9", "F6E8EE"  # design/tokens.css
+INK, SUBTLE, RULE, ACCENT_TINT = "0F1116", "72777D", "E6E7E9", "F6E8EE"  # design/tokens.css
 CALC_GREY, SLATE = "EAEAEA", "5B6067"  # --rule-soft, --slate
 DATE_FORMAT = "d mmm yyyy"
 

@@ -2,7 +2,7 @@
 
 Owner: `developer`. Updated after every task. Entries TD01 to TD08 recorded by the architect at design time (review round 1, 14 Oct 2026).
 
-Open: 27 (high 1, medium 7, low 19). Resolved: 4.
+Open: 28 (high 1, medium 7, low 20). Resolved: 4.
 
 ## Open
 
@@ -27,7 +27,8 @@ Open: 27 (high 1, medium 7, low 19). Resolved: 4.
 | TD19 | `tests/test_recalc.py` (T09) cannot freeze TODAY() in LibreOffice, so it compares with the model at the machine date; a test run across midnight or a changed date rule could differ. Sample snapshots (12 Oct and earlier) cannot be recomputed from today's rock tabs, so since T46 they get a consistency check only; the latest is compared on identity, positions and high risks, not on milestone counts | low | small | Install `faketime` in CI and freeze to the sample date; or regenerate older snapshots from dated rock data | 14 Oct 2026 |
 | TD20 | T43: `snapshot.ts` is type checked only, never executed (no Node harness for the Office Scripts API); the Python mirror carries the rule tests | low | M | Small Node harness with a fake workbook object, or the manual run in DEPLOY | 14 Oct 2026 |
 | TD21 | T43: a snapshot written from the spill gives empty MCQuarter and ActualDate as empty strings, not blank cells | low | S | Write null for empty strings in `snapshot.ts` if reports need real blanks | 14 Oct 2026 |
-| TD22 | T44: `--subtle` changed to `#72777D` in the tokens, but `build_workbook.py`, `render_preview.py` and `portal/COWORK_ROCK_TEST.md` still hardcode `#8C9097` | low | S | Read the token values from `design/tokens.css` in the builder and the preview; update the brief | 14 Oct 2026 |
+| TD22 | T44: `--subtle` changed to `#72777D` in the tokens and the brief (`portal/COWORK_ROCK_TEST.md`) now uses it, but `build_workbook.py` (light value now `#72777D`) and `render_preview.py` read the tokens by hand; check the preview | low | S | Read the token values from `design/tokens.css` in the builder and the preview | 14 Oct 2026 (brief and builder resolved 14 Oct 2026) |
+| TD31 | Milestone Progress is not in MilestoneSnapshots, so history has no progress trend; a typed 0 in Progress shows blank on the consolidated Milestones sheet (ProgressShown keeps the 0) | low | S | M3 look back: add Progress to MilestoneSnapshots, `snapshot.ts`, `snapshot.py` and tests if the trend is wanted | 14 Oct 2026 |
 | TD23 | T44: the theme choice (light or dark) lasts for the session only; no stored preference | low | S | Store the choice in the portal if Cowork allows; otherwise accept | 14 Oct 2026 |
 | TD24 | T41: `tests/test_sample.py` checks the milestone and decision cases by date logic of its own, not through `rock_model` | low | S | Reuse `rock_model.build_model` in test_sample so the cases follow the mirror | 14 Oct 2026 |
 | TD25 | T41: sample snapshots are static synthetic rows (12 Oct and earlier) and do not follow the rock data | low | S | Generate snapshot rows from `rock_model` at build time for dated sample data | 14 Oct 2026 |

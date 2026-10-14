@@ -1,6 +1,6 @@
 # Architecture
 
-Owner: `architect`. Status: v2 for change request 1, 14 Oct 2026. Contract: `schema/workbook.schema.json` (version 2.1.0, schema format 2; v1.0.0 kept in `schema/history/`). Decisions: `docs/DECISIONS.md` 0002 to 0017.
+Owner: `architect`. Status: v2 for change request 1, 14 Oct 2026. Contract: `schema/workbook.schema.json` (version 2.2.0, schema format 2; v1.0.0 kept in `schema/history/`). Decisions: `docs/DECISIONS.md` 0002 to 0019.
 
 ## In one paragraph
 
@@ -51,8 +51,8 @@ Columns: A key (narrow, grey), B labels and titles (wide), C values, D onward bl
 | 2 (hidden) | Strip | formula | the Rocks row: profile, update, key points and signals in Rocks column order |
 | 3 | Guide | static | the 7 minute order of work |
 | 5 to 17 | 1 Update and steerco message | lead, plus grey lines | 6 Update date, 7 State, 8 Main message, 9 to 11 key risks or attention points 1 to 3; grey: 12 open decision requests count, 13 to 17 decision requested 1 to 5 (from section 6) |
-| 19 to 33 | 2 Signals | formula | 20 days since update, 21 data signal, 22 check the call, 23 outlook quarters, 24 committed y, 25 slipped x, 26 on plan, 27 delivered, 28 overdue, 29 open High risks, 30 High risks without action, 31 positions budgeted, 32 positions actual, 33 fill % |
-| 35 to 51 | 3 Milestones | lead | 15 slots (rows 37 to 51): Title, Owner, Commitment, Start, Planned, Forecast, Actual, Lead status, Comment, KR link, ADO id, ADO link, Description, Detail 1 to 3; then grey Status, Slip weeks, Timeline date, MC quarter, In outlook, Visible, Overdue, RockID, Rock, GPM (columns A to AA) |
+| 19 to 33 | 2 Signals | formula | 20 days since update, 21 data signal, 22 check the call, 23 outlook quarters, 24 committed y, 25 slipped x, 26 on plan, 27 completed, 28 overdue, 29 open High risks, 30 High risks without action, 31 positions budgeted, 32 positions actual, 33 fill % |
+| 35 to 51 | 3 Milestones | lead | 15 slots (rows 37 to 51): Title, Owner, Commitment, Start, Planned, Forecast, Actual, Lead status, Comment, KR link, ADO id, ADO link, Description, Detail 1 to 3, Progress % (R); then grey Progress shown (S), Status, Slip weeks, Timeline date, MC quarter, In outlook, Visible, Overdue, RockID, Rock, GPM (columns A to AC). Owner has a lkp_People dropdown (warning style) |
 | 53 to 64 | 4 Risks | lead | 10 slots (55 to 64): Title, Likelihood, Impact, Key action, Action owner, Status; then grey Score, High, Needs action, RockID, Rock, GPM |
 | 66 to 75 | 5 Call outs | lead | 8 slots (68 to 75): Text, Date, Status; then grey RockID, Rock, GPM |
 | 77 to 103 | 6 Decisions | lead | 25 slots (79 to 103): Decision (one line), Steerco, Decide by, Choice point, Options, Outcome, Owner, Follow up; then grey State, Open request no., Due at next steerco, Open follow up, RockID, Rock, GPM |
@@ -61,7 +61,7 @@ Columns: A key (narrow, grey), B labels and titles (wide), C values, D onward bl
 
 Block column order on the rock tab equals the column order of the consolidated sheet, so the stack needs no reordering. Exact rows and formulas are in `rock_tab` of the schema; the generator never hard codes them.
 
-Guard rails: sheet protection without password (entry cells unlocked, no row insert or delete), dropdowns from `lst_lkp_*` names (Decisions.SteercoDate as a warning, not a stop), date validation, whole number validation on Budgeted and Actual, URL validation on ADOLink (`format: url`: empty or starts with https://), a pink Rock ID when another tab uses the same ID, pink highlight for empty required cells on rows that have a title, and a pink row when a block row has data but no title. Columns with `number_format` (FillPct 0%, SlipWeeks 0.0) are formatted on the rock tab and the consolidated sheet.
+Guard rails: sheet protection without password (entry cells unlocked, no row insert or delete), dropdowns from `lst_lkp_*` names (Decisions.SteercoDate and Milestones.Owner as a warning, not a stop), date validation, whole number validation on Budgeted and Actual (Progress: whole number 0 to 100), URL validation on ADOLink (`format: url`: empty or starts with https://), a pink Rock ID when another tab uses the same ID, pink highlight for empty required cells on rows that have a title, and a pink row when a block row has data but no title. Columns with `number_format` (FillPct 0%, SlipWeeks 0.0) are formatted on the rock tab and the consolidated sheet.
 
 ## Consolidation
 
@@ -124,7 +124,7 @@ One table does request, outcome and log. The lead types a request once, as one l
 * The portal reads only Rocks, Milestones, Risks, CallOuts, Decisions, Teams and the lookups, never rock tabs. One tab per section in steerco order: 1, 2, 3, 3.1, 4, 5, full list. Every tab filters on Rocks.Active = Yes and can filter on RockID or GPM, present on every row. Light and dark mode from the same tokens (DECISIONS 0016).
   * Tab 1: rock header (RockName, Lead, GPM, ValueChain, Purpose, Goals, Delivers) when filtered to one rock; Rocks.MainMessage; Rocks.Attention1 to 3; Decisions Requested with RequestNo 1 to 5 (DueNextSteerco first); CallOuts open.
   * Tab 2: Rocks State, DataSignal, CheckCall, Milestones x of y, MilestonesOverdue, OpenHighRisks, PositionsActual of PositionsBudgeted and FillPct; Teams list per rock.
-  * Tab 3: Milestones with Visible Yes; filter on MCQuarter, default Rocks.CurrentMCQuarter and NextMCQuarter; timeline at TimelineDate with planned to forecast slip lines; undated in "Not dated yet"; Overdue marked; pop up with Owner, Description, StartDate, PlannedDate, ForecastDate, Status (Completed in the done stage colour), Detail1 to 3 and ADOLink when present.
+  * Tab 3: Milestones with Visible Yes; filter on MCQuarter, default Rocks.CurrentMCQuarter and NextMCQuarter; timeline at TimelineDate with planned to forecast slip lines; undated in "Not dated yet"; Overdue marked; progress bar from ProgressShown (roadmap list and pop up); pop up with Owner, Description, StartDate, PlannedDate, ForecastDate, Status (Completed in the done stage colour), Detail1 to 3 and ADOLink when present.
   * Tab 3.1: Decisions with ChoicePoint Yes and Requested. Tab 4: Risks by Likelihood and Impact. Tab 5: Decisions Decided.
   * Spotlights rely on precomputed flags (DueNextSteerco, NeedsAction, OpenFollowUp, State, MilestonesOnPlan of MilestonesCommitted) so Cowork needs no date logic.
 * The email (M2) reads the same six sheets: header from Rocks and lkp_People.Role; portfolio table from Rocks (milestones slipped x of y, positions actual of budgeted); call outs from Decisions Requested, Milestones Overdue, CallOuts open; development update from Milestones Status counts, releases = Completed milestones with ActualDate in the last 14 days, mean SlipWeeks; key risks from Rocks.Attention1 to 3 and High risks; per rock section with Teams and the milestone table. Mechanism decided in T21.

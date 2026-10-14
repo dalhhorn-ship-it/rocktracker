@@ -2,6 +2,15 @@
 
 Owner: `architect`. Newest first.
 
+## 0019 Milestone progress and milestone owner dropdown (14 Oct 2026, operator, PRD change request 1 item 7)
+
+* **Context:** leads want to show how far a milestone is, and the user wants an owner name per milestone visible in the roadmap.
+* **Decision 1, progress:** new optional input column `Progress` (label "Progress %", whole number 0 to 100, owner lead) in the Milestones block, placed after Detail 3 so calculated columns follow it. New calculated column `ProgressShown` right after it: 100 when Status is Completed (whatever was typed), else Progress, empty when Progress is empty. The portal reads ProgressShown only. ProgressShown is in `keep_zero_columns` of Milestones so a typed 0 stays 0 (the Progress input column itself is wrapped, a 0 there shows blank on the consolidated sheet). Validation: whole number between 0 and 100 (schema `min`, `max`, built by `value_validation`).
+* **Decision 2, owner:** `Owner` stays optional free text but gets a dropdown from `lkp_People.Name` with warning style, so an unlisted name can still be kept. Read by the roadmap list and pop up (tab 3) and the email per rock section.
+* **Decision 3, history:** MilestoneSnapshots are unchanged (progress is not snapshotted; a later look back can add it).
+* **Schema:** version 2.2.0. Migration 2.1 to 2.2 copies everything; Progress starts empty. Milestone columns are now A to AC (Progress R, ProgressShown S, Status T, Visible Y, Overdue Z, Rock ID, Rock, GPM AA to AC).
+* **Also:** `data/sample.json` lkp_Steercos now holds 2026-10-21, and the builder skips sample lookup rows already in the seed, so the model alone gives the right next steerco.
+
 ## 0018 Teams counts keep real zeros on the consolidated sheet (14 Oct 2026, operator)
 
 * **Context:** VSTACK turns empty cells into 0, so the list pattern wraps every 0 to blank. On the Teams sheet that hides real zeros: a team with 0 actual positions would look like missing data in the portal and the email.

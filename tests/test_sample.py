@@ -132,3 +132,24 @@ def test_snapshots_use_new_columns():
     assert len({r[1] for r in snaps["MilestoneSnapshots"]}) == 3
     assert all("-M" in r[2] and "-E" not in r[2] for r in snaps["MilestoneSnapshots"])
     assert {r[10] for r in snaps["MilestoneSnapshots"]} >= {"Completed", "Slipped", "On hold", "On plan", "Not committed"}
+
+
+def test_progress_cases():
+    ms = [m for _, m in _ms()]
+    vals = [m.get("Progress") for m in ms]
+    assert any(v is None for v in vals) and any(v for v in vals)
+    assert all(v is None or (isinstance(v, int) and 0 <= v <= 100) for v in vals)
+    # a Completed milestone with a typed value below 100 proves the override
+    assert any(m["LeadStatus"] == "Completed" and m.get("Progress") is not None and m["Progress"] < 100 for m in ms)
+    assert any(m.get("Progress") == 0 for m in ms)
+
+
+def test_every_milestone_has_an_owner_from_the_people_lookup():
+    people = {p[0] for p in S["lookups"]["lkp_People"]}
+    ms = [m for _, m in _ms()]
+    assert all(m["Owner"] in people for m in ms)
+    assert len({m["Owner"] for m in ms}) >= 4
+
+
+def test_sample_steercos_hold_the_next_steerco():
+    assert "2026-10-21" in {row[0] for row in S["lookups"]["lkp_Steercos"]}
