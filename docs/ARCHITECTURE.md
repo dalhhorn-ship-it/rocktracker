@@ -1,6 +1,6 @@
 # Architecture
 
-Owner: `architect`. Status: v2 for change request 1, 14 Oct 2026. Contract: `schema/workbook.schema.json` (version 2.2.0, schema format 2; v1.0.0 kept in `schema/history/`). Decisions: `docs/DECISIONS.md` 0002 to 0019.
+Owner: `architect`. Status: v2 for change request 1, 14 Oct 2026. Contract: `schema/workbook.schema.json` (version 2.3.0, schema format 2; v1.0.0 kept in `schema/history/`). Decisions: `docs/DECISIONS.md` 0002 to 0020.
 
 ## In one paragraph
 
@@ -52,7 +52,7 @@ Columns: A key (narrow, grey), B labels and titles (wide), C values, D onward bl
 | 3 | Guide | static | the 7 minute order of work |
 | 5 to 17 | 1 Update and steerco message | lead, plus grey lines | 6 Update date, 7 State, 8 Main message, 9 to 11 key risks or attention points 1 to 3; grey: 12 open decision requests count, 13 to 17 decision requested 1 to 5 (from section 6) |
 | 19 to 33 | 2 Signals | formula | 20 days since update, 21 data signal, 22 check the call, 23 outlook quarters, 24 committed y, 25 slipped x, 26 on plan, 27 completed, 28 overdue, 29 open High risks, 30 High risks without action, 31 positions budgeted, 32 positions actual, 33 fill % |
-| 35 to 51 | 3 Milestones | lead | 15 slots (rows 37 to 51): Title, Owner, Commitment, Start, Planned, Forecast, Actual, Lead status, Comment, KR link, ADO id, ADO link, Description, Detail 1 to 3, Progress % (R); then grey Progress shown (S), Status, Slip weeks, Timeline date, MC quarter, In outlook, Visible, Overdue, RockID, Rock, GPM (columns A to AC). Owner has a lkp_People dropdown (warning style) |
+| 35 to 51 | 3 Milestones | lead | 15 slots (rows 37 to 51): Title, Owner, Commitment, Start, Planned, Forecast, Actual, Lead status, Comment, KR link, ADO id, ADO link, Description, Detail 1 to 3, Progress % (R); then grey Progress shown (S), Status, Slip weeks (U), Slip severity (V), Timeline date, MC quarter (X), Quarter ahead (Y), In outlook, Visible (AA), Overdue, RockID, Rock, GPM (columns A to AE). Owner has a lkp_People dropdown (warning style) |
 | 53 to 64 | 4 Risks | lead | 10 slots (55 to 64): Title, Likelihood, Impact, Key action, Action owner, Status; then grey Score, High, Needs action, RockID, Rock, GPM |
 | 66 to 75 | 5 Call outs | lead | 8 slots (68 to 75): Text, Date, Status; then grey RockID, Rock, GPM |
 | 77 to 103 | 6 Decisions | lead | 25 slots (79 to 103): Decision (one line), Steerco, Decide by, Choice point, Options, Outcome, Owner, Follow up; then grey State, Open request no., Due at next steerco, Open follow up, RockID, Rock, GPM |
@@ -83,17 +83,19 @@ Guard rails: sheet protection without password (entry cells unlocked, no row ins
 
 ## Computed rules
 
-All in the schema (`excel` plus `rule`), mirrored in `scripts/rock_model.py`. Named formulas: HighRiskMin 6, StaleDays 14, MCQuarterStart (first day of the current quarter), MCQuarterEnd, OutlookEnd (last day of the next quarter), CurrentMCQuarter and NextMCQuarter (labels), NextSteerco.
+All in the schema (`excel` plus `rule`), mirrored in `scripts/rock_model.py`. Named formulas: HighRiskMin 6, StaleDays 14, MCQuarterStart (first day of the current quarter), MCQuarterEnd, OutlookEnd (last day of the next quarter), CurrentMCQuarter, NextMCQuarter, ThirdMCQuarter and FourthMCQuarter (labels), HorizonEnd (last day of the 4th MC quarter), NextSteerco.
 
 | Rule | Definition |
 | :--- | :--- |
 | MC quarter label | shift the date back 3 months, then `"MC"&RIGHT(YEAR(d),2)&"Q"&INT((MONTH(d)+2)/3)`: Oct 2026 MC26Q3, Jan 2027 MC26Q4, Apr 2027 MC27Q1. Locale safe (no TEXT year codes) |
 | Milestone Status | first match: Lead status Completed gives Completed; Lead status On hold; commitment not Committed gives Not committed; forecast later than planned gives Slipped; Lead status On watch; else On plan. Empty forecast means on the planned date |
 | SlipWeeks | (forecast minus planned) / 7, one decimal, Slipped only |
+| SlipSeverity | Slipped only: Major when the forecast falls in a later MC quarter than the planned date, else Minor; empty otherwise |
 | TimelineDate | actual, else forecast, else planned; empty when none. ActualDate is recorded, optional, and does not set the status |
 | MCQuarter | MC quarter of TimelineDate; empty when no date |
+| QuarterAhead | MC quarter offset of TimelineDate from the current quarter, 1 to 4; an Overdue milestone from an earlier quarter is 1; empty when undated, after HorizonEnd, or earlier and not Overdue. The portal horizon selector filters on it |
 | InOutlook | planned or timeline date between MCQuarterStart and OutlookEnd (counts and data signal) |
-| Visible | Completed: hidden when the actual date (or, when empty, the planned date) is before today, else InOutlook. Not Completed: shown when InOutlook, undated, or date passed (overdue). Roadmap reads Visible Yes |
+| Visible | No when Completed and the actual date (or, when empty, the planned date) is before today; else Yes when undated or QuarterAhead is 1 to 4; else No. Roadmap reads Visible Yes and filters the horizon on QuarterAhead. InOutlook, signals and x of y stay on the two quarter outlook |
 | Overdue | committed, not Completed or On hold, timeline date before today |
 | Risk Score, High | likelihood times impact (1 to 3 each); High when 6 or more |
 | NeedsAction | High, not Closed, key action or action owner empty |

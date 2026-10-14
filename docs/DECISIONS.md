@@ -2,6 +2,15 @@
 
 Owner: `architect`. Newest first.
 
+## 0020 Roadmap horizon of up to 4 MC quarters, QuarterAhead and SlipSeverity (14 Oct 2026, operator, PRD change request 2 item 1)
+
+* **Context:** the roadmap selector shows 1 to 4 MC quarters ahead (default 2). The portal should only filter, with no date logic.
+* **Decision 1, horizon:** new params `ThirdMCQuarter`, `FourthMCQuarter` (labels, same style as NextMCQuarter, RIGHT(YEAR()) not TEXT) and `HorizonEnd` = EDATE(MCQuarterStart,12)-1. The Rocks strip carries `ThirdMCQuarter` and `FourthMCQuarter` right after NextMCQuarter, so the selector can label its options.
+* **Decision 2, QuarterAhead:** new calculated Milestones column right after MCQuarter. 1 to 4 = MC quarter offset of TimelineDate from the current quarter. An Overdue milestone dated in an earlier quarter is 1. Blank when undated, after HorizonEnd, or in an earlier quarter without being Overdue (for example Not committed with a past date).
+* **Decision 3, Visible:** No when Completed and actual (else planned) date is before today; else Yes when undated or QuarterAhead is 1 to 4; else No. Consequence: a not committed or on hold style milestone whose date lies in a past quarter is no longer shown (before it was shown as overdue); only Overdue (committed, not completed or on hold) ones stay. InOutlook, signals and x of y counts are unchanged and stay on the two quarter outlook.
+* **Decision 4, SlipSeverity (coordinator addition):** new calculated column right after SlipWeeks: Major when Status is Slipped and the MC quarter of the forecast date is later than that of the planned date, Minor when Slipped otherwise, blank elsewhere. The portal colours the slip extension crimson for Major and amber for Minor.
+* **Schema:** version 2.3.0. Migration 2.2 to 2.3 copies everything (all additions are formulas). Milestones columns are now A to AE: SlipWeeks U, SlipSeverity V, TimelineDate W, MCQuarter X, QuarterAhead Y, InOutlook Z, Visible AA, Overdue AB, RockID AC, Rock AD, GPM AE.
+
 ## 0019 Milestone progress and milestone owner dropdown (14 Oct 2026, operator, PRD change request 1 item 7)
 
 * **Context:** leads want to show how far a milestone is, and the user wants an owner name per milestone visible in the roadmap.

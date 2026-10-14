@@ -2,7 +2,7 @@
 
 Owner: `developer`. Updated after every task. Entries TD01 to TD08 recorded by the architect at design time (review round 1, 14 Oct 2026).
 
-Open: 28 (high 1, medium 7, low 20). Resolved: 4.
+Open: 29 (high 1, medium 7, low 21). Resolved: 4.
 
 ## Open
 
@@ -36,6 +36,7 @@ Open: 28 (high 1, medium 7, low 20). Resolved: 4.
 | TD27 | T40: `is_v1` detection of a v1 live copy is a heuristic (sheet names Epics or EpicSnapshots, or a v1 rock tab cell layout) | low | S | Stamp the schema version in a defined name on every build and read it first | 14 Oct 2026 |
 | TD28 | T40: v1 to 2.1.0 migration is tested only on a synthetic v1 fixture, never on a real live copy | low | S | Run `--deploy --from` on the real v1 file once and compare typed values before go live | 14 Oct 2026 |
 | TD29 | T46: LibreOffice 24.2 cannot evaluate the consolidated sheets (VSTACK, FILTER, CHOOSECOLS, LET with SEQUENCE), so the Teams column guard `IF((f=0)*(c<>4)*(c<>5)*(c<>6),"",f)` (DECISIONS 0018) is tested as formula text and on the mirror only; the Excel result is unverified. An empty Budgeted or Actual cell now shows 0 on the Teams sheet | medium | S | Add to the Excel for the web deploy test run (TD14): a team with Actual 0 must show 0, an empty Budgeted must show 0 and FillPct blank | 14 Oct 2026 |
+| TD32 | Change request 2 item 1: a milestone dated in a past quarter that is not Overdue (Not committed or On hold) now has a blank QuarterAhead and is hidden (Visible No); before it showed as overdue | low | S | Confirm with the product owner that this is wanted; otherwise let Visible show any past dated, not Completed milestone | 14 Oct 2026 |
 
 ## Resolved
 

@@ -753,7 +753,7 @@ def test_horizon_params_and_labels():
     s = strip_of()
     assert (s["ThirdMCQuarter"], s["FourthMCQuarter"]) == ("MC27Q1", "MC27Q2")
     p2 = rm.params(D(2027, 1, 5))
-    assert p2["HorizonEnd"] == D(2027, 12, 31) and p2["FourthMCQuarter"] == "MC27Q4"
+    assert p2["HorizonEnd"] == D(2027, 12, 31) and p2["FourthMCQuarter"] == "MC27Q3"
 
 
 @pytest.mark.parametrize("planned,qa", [
