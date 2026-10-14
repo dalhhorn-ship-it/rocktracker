@@ -31,14 +31,104 @@ def test_lookup_values_are_known():
         assert {r["Lead"], r["GPM"]} <= people and r["ValueChain"] in chains
 
 
-def test_coverage_of_cases():
-    epics = [e for r in S["rocks"] for e in r["Epics"] if e]
-    assert {e["Commitment"] for e in epics} == {"Committed", "Choice point", "Not committed"}
-    assert {e["LeadStatus"] for e in epics} >= {"Delivered", "On hold", "On watch"}
+def _ms():
+    return [(r, m) for r in S["rocks"] for m in r["Milestones"] if m]
+
+
+def _find(title):
+    return next(m for _, m in _ms() if m["Title"] == title)
+
+
+def test_no_retired_fields_or_statuses():
+    text = json.dumps(S["rocks"]) + json.dumps(S["snapshots"])
+    for word in ("TopRisk", "PositionsPlanned", "PositionsFilled", "Delivered", "Epics"):
+        assert word not in text, word
+
+
+def test_attention_lines_and_teams():
+    counts = {r["RockID"]: sum(bool(r["Attention%d" % i]) for i in (1, 2, 3)) for r in S["rocks"]}
+    active = [r for r in S["rocks"] if r["Active"] == "Yes"]
+    assert sum(1 for r in active if counts[r["RockID"]] == 0) == 1
+    assert all(0 <= counts[r["RockID"]] <= 3 for r in S["rocks"])
+    for r in S["rocks"]:
+        assert 1 <= len(r["Teams"]) <= 5, r["RockID"]
+    teams = [t for r in S["rocks"] for t in r["Teams"]]
+    assert any(t["Budgeted"] == 0 for t in teams)
+    assert any(t["Budgeted"] and t["Actual"] > t["Budgeted"] for t in teams)
+
+
+def test_milestone_details_and_ado_link():
+    ms = _ms()
+    full = [m for r, m in ms if r["RockID"] in ("R01", "R02", "R03")]
+    for m in full:
+        assert m["Owner"] and m["StartDate"] or m["Commitment"] != "Committed" or m["Title"] == "Points ledger", m["Title"]
+        assert m["Description"] and m["Detail1"], m["Title"]
+    links = [m["ADOLink"] for _, m in ms if m.get("ADOLink")]
+    assert links and all(link.startswith("https://") for link in links)
+    assert any(not m.get("ADOLink") for _, m in ms)
+
+
+def test_milestone_cases():
+    t = S["today"]
+    ms = [m for _, m in _ms()]
+    assert {m["LeadStatus"] for m in ms} == {None, "Completed", "On hold", "On watch"}
+    assert {m["Commitment"] for m in ms} == {"Committed", "Choice point", "Not committed"}
+    # Completed, actual before today
+    assert any(m["LeadStatus"] == "Completed" and m["ActualDate"] and m["ActualDate"] < t for m in ms)
+    # Completed, no actual date, planned before today (About warning)
+    assert any(m["LeadStatus"] == "Completed" and not m["ActualDate"] and m["PlannedDate"] < t for m in ms)
+    # Completed, actual today
+    assert any(m["LeadStatus"] == "Completed" and m["ActualDate"] == t for m in ms)
+    # overdue committed, undelivered, date in MC26Q2 (Jul to Sep 2026)
+    assert any(m["Commitment"] == "Committed" and not m["LeadStatus"] and m["PlannedDate"] and "2026-07-01" <= (m["ForecastDate"] or m["PlannedDate"]) < "2026-10-01" for m in ms)
+    # beyond MC26Q4 (after 2027-03-31), and MC27Q1
+    assert any(m["PlannedDate"] and m["PlannedDate"] > "2027-03-31" for m in ms)
+    # no dates at all
+    assert any(not (m["PlannedDate"] or m["ForecastDate"] or m["ActualDate"]) for m in ms)
+    # off track: planned MC26Q3, forecast MC26Q4
+    assert any(m["Commitment"] == "Committed" and m["PlannedDate"] and "2026-10-01" <= m["PlannedDate"] <= "2026-12-31" and m["ForecastDate"] and m["ForecastDate"] > "2026-12-31" and not m["LeadStatus"] for m in ms)
+    # slipped: forecast later than planned, and planned in each of three quarters
+    assert any(m["ForecastDate"] and m["PlannedDate"] and m["ForecastDate"] > m["PlannedDate"] for m in ms)
+    planned = [m["PlannedDate"] for m in ms if m["PlannedDate"]]
+    assert any("2026-10-01" <= p <= "2026-12-31" for p in planned)
+    assert any("2027-01-01" <= p <= "2027-03-31" for p in planned)
+    assert any("2027-04-01" <= p <= "2027-06-30" for p in planned)
+    # Completed with lead status and On hold also carry a forecast or comment (Completed beats On hold is a mirror test)
+    assert not any(m["LeadStatus"] == "Delivered" for m in ms)
+
+
+def test_decision_cases():
+    r1 = next(r for r in S["rocks"] if r["RockID"] == "R01")
+    open_req = [d for d in r1["Decisions"] if d["Decision"] and not d["Outcome"]]
+    assert len(open_req) == 6
+    assert any(d["ChoicePoint"] == "Yes" and not d["Outcome"] for d in r1["Decisions"])
+    # a decided row sits between two requests
+    idx = [i for i, d in enumerate(r1["Decisions"]) if d["Outcome"]]
+    assert any(0 < i < len(r1["Decisions"]) - 1 and not r1["Decisions"][i - 1]["Outcome"] and not r1["Decisions"][i + 1]["Outcome"] for i in idx)
+    all_d = [d for r in S["rocks"] for d in r["Decisions"]]
+    assert any(d["Outcome"] and d["FollowUp"] == "Open" for d in all_d)
+    assert any(d["Outcome"] and d["FollowUp"] == "Closed" for d in all_d)
+    steercos = {"2026-10-21"} | {row[0] for row in S["lookups"]["lkp_Steercos"]}
+    assert {d["SteercoDate"] for d in all_d if d["SteercoDate"]} <= steercos
+    inactive = next(r for r in S["rocks"] if r["Active"] == "No")
+    assert inactive["Decisions"] and inactive["Teams"]
+
+
+def test_risk_cases():
     risks = [k for r in S["rocks"] for k in r["Risks"] if k.get("Likelihood") and k.get("Impact")]
     assert {k["Likelihood"] for k in risks} == {"Low", "Medium", "High"}
     assert {k["Impact"] for k in risks} == {"Low", "Medium", "High"}
-    decisions = [d for r in S["rocks"] for d in r["Decisions"]]
-    assert any(d["ChoicePoint"] == "Yes" for d in decisions)
-    assert any(d["Outcome"] and d["FollowUp"] != "Closed" for d in decisions)
-    assert len({r[1] for r in S["snapshots"]["RockSnapshots"]}) == 3
+    # a High risk without a key action (R02)
+    assert any(k["Likelihood"] == "High" and k["Impact"] == "High" and not k["KeyAction"] for k in risks)
+
+
+def test_snapshots_use_new_columns():
+    snaps = S["snapshots"]
+    assert set(snaps) == {"RockSnapshots", "MilestoneSnapshots"}
+    cols = {sh["name"]: [c["name"] for c in sh["columns"]] for sh in SCHEMA["sheets"]}
+    for name, rows in snaps.items():
+        assert rows and all(len(row) == len(cols[name]) for row in rows), name
+    assert len({r[1] for r in snaps["RockSnapshots"]}) == 3
+    assert len({r[1] for r in snaps["MilestoneSnapshots"]}) == 3
+    assert all("-M" in r[2] and "-E" not in r[2] for r in snaps["MilestoneSnapshots"])
+    assert {r[10] for r in snaps["MilestoneSnapshots"]} >= {"Completed", "Slipped", "On hold", "On plan", "Not committed"}
