@@ -35,14 +35,14 @@ The live workbook holds real data, so never replace it with a fresh build.
 5. Regenerate the portal in Copilot Cowork if tabs, KPIs or columns changed.
 
 ## 6. Weekly snapshot (history): setup for the director, one time, about 10 minutes
-The snapshot script `scripts/office/snapshot.ts` appends one row per active rock to `RockSnapshots` and one row per epic of an active rock to `EpicSnapshots` (DECISIONS 0007). Running it twice on the same day adds nothing the second time.
+The snapshot script `scripts/office/snapshot.ts` appends one row per active rock to `RockSnapshots` and one row per milestone of an active rock to `MilestoneSnapshots` (DECISIONS 0007). Running it twice on the same day adds nothing the second time.
 
 Prerequisite: the tenant allows Office Scripts and Power Automate. If not, use the button route below only.
 
 **A. Add the script to the workbook** (needs Excel for the web or desktop with the Automate tab)
 1. Open the deployed workbook from SharePoint in Excel.
 2. Automate tab, New Script. Delete the sample code, paste the full contents of `scripts/office/snapshot.ts`, name it `Snapshot`, Save.
-3. Press Run once. The message reads "Snapshot yyyy-mm-dd: N rock rows and M epic rows added." Check that `RockSnapshots` and `EpicSnapshots` gained rows. Press Run again: it must say 0 and 0.
+3. Press Run once. The message reads "Snapshot yyyy-mm-dd: N rock rows and M milestone rows added." Check that `RockSnapshots` and `MilestoneSnapshots` gained rows. Press Run again: it must say 0 and 0.
 
 **B. Schedule it in Power Automate** (signed in as the director)
 1. Go to make.powerautomate.com, Create, Scheduled cloud flow. Name: `Rock Tracker snapshot`.

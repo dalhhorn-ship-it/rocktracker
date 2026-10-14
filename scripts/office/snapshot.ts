@@ -1,26 +1,27 @@
 // Weekly snapshot (DECISIONS 0007). Appends one row per active rock to tbl_RockSnapshots and
-// one row per epic of an active rock to tbl_EpicSnapshots. Safe to run twice on the same day:
+// one row per milestone of an active rock to tbl_MilestoneSnapshots. Safe to run twice on the same day:
 // SnapshotIDs already present are skipped. Python mirror: scripts/snapshot.py.
 // Names below must match schema/workbook.schema.json (tests/test_snapshot.py checks it).
 
 const ROCKS_SHEET = "Rocks";
-const EPICS_SHEET = "Epics";
+const MILESTONES_SHEET = "Milestones";
 const ROCK_SNAP_SHEET = "RockSnapshots";
-const EPIC_SNAP_SHEET = "EpicSnapshots";
+const MILESTONE_SNAP_SHEET = "MilestoneSnapshots";
 const ROCK_SNAP_TABLE = "tbl_RockSnapshots";
-const EPIC_SNAP_TABLE = "tbl_EpicSnapshots";
+const MILESTONE_SNAP_TABLE = "tbl_MilestoneSnapshots";
 
 // Columns copied from the Rocks sheet (same name in the snapshot table).
 const ROCK_COPY_COLUMNS = [
   "RockID", "Rock", "GPM", "UpdateDate", "State", "MainMessage",
-  "EpicsCommitted", "EpicsSlipped", "EpicsDelivered",
-  "PositionsPlanned", "PositionsFilled", "OpenHighRisks"
+  "MilestonesCommitted", "MilestonesSlipped", "MilestonesCompleted",
+  "PositionsBudgeted", "PositionsActual", "OpenHighRisks"
 ];
 // Rocks sheet column that feeds snapshot column "Rock".
 const ROCK_NAME_SOURCE = "RockName";
-// Columns copied from the Epics sheet.
-const EPIC_COPY_COLUMNS = [
-  "EpicKey", "RockID", "Title", "Commitment", "PlannedDate", "ForecastDate", "Status"
+// Columns copied from the Milestones sheet.
+const MILESTONE_COPY_COLUMNS = [
+  "MilestoneKey", "RockID", "Title", "Commitment", "PlannedDate", "ForecastDate",
+  "ActualDate", "MCQuarter", "Status"
 ];
 const ACTIVE_COLUMN = "Active";
 const ACTIVE_VALUE = "Yes";
@@ -36,7 +37,7 @@ function main(workbook: ExcelScript.Workbook): string {
   const serial = Math.round(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000) + 25569;
 
   const rocks = readSheet(workbook, ROCKS_SHEET);
-  const epics = readSheet(workbook, EPICS_SHEET);
+  const milestones = readSheet(workbook, MILESTONES_SHEET);
 
   const activeRockIds = new Set<string>();
   const rockRows: Row[] = [];
@@ -52,18 +53,18 @@ function main(workbook: ExcelScript.Workbook): string {
     rockRows.push(out);
   }
 
-  const epicRows: Row[] = [];
-  for (const r of epics.rows) {
-    const key = String(r[epics.col("EpicKey")]);
-    if (key === "" || !activeRockIds.has(String(r[epics.col("RockID")]))) continue;
+  const milestoneRows: Row[] = [];
+  for (const r of milestones.rows) {
+    const key = String(r[milestones.col("MilestoneKey")]);
+    if (key === "" || !activeRockIds.has(String(r[milestones.col("RockID")]))) continue;
     const out: Row = [isoDay + "|" + key, serial];
-    for (const name of EPIC_COPY_COLUMNS) out.push(r[epics.col(name)]);
-    epicRows.push(out);
+    for (const name of MILESTONE_COPY_COLUMNS) out.push(r[milestones.col(name)]);
+    milestoneRows.push(out);
   }
 
   const addedRocks = append(workbook, ROCK_SNAP_SHEET, ROCK_SNAP_TABLE, rockRows);
-  const addedEpics = append(workbook, EPIC_SNAP_SHEET, EPIC_SNAP_TABLE, epicRows);
-  return "Snapshot " + isoDay + ": " + addedRocks + " rock rows and " + addedEpics + " epic rows added.";
+  const addedMilestones = append(workbook, MILESTONE_SNAP_SHEET, MILESTONE_SNAP_TABLE, milestoneRows);
+  return "Snapshot " + isoDay + ": " + addedRocks + " rock rows and " + addedMilestones + " milestone rows added.";
 }
 
 function ROCKS_KEY(): string {

@@ -31,33 +31,33 @@ def const_value(name):
 
 
 def test_sheet_and_table_names_exist_in_schema():
-    for c in ("ROCKS_SHEET", "EPICS_SHEET", "ROCK_SNAP_SHEET", "EPIC_SNAP_SHEET"):
+    for c in ("ROCKS_SHEET", "MILESTONES_SHEET", "ROCK_SNAP_SHEET", "MILESTONE_SNAP_SHEET"):
         assert const_value(c) in SHEETS, c
     assert const_value("ROCK_SNAP_TABLE") == "tbl_" + const_value("ROCK_SNAP_SHEET")
-    assert const_value("EPIC_SNAP_TABLE") == "tbl_" + const_value("EPIC_SNAP_SHEET")
+    assert const_value("MILESTONE_SNAP_TABLE") == "tbl_" + const_value("MILESTONE_SNAP_SHEET")
 
 
 def test_columns_exist_in_schema():
-    rocks, epics = SHEETS["Rocks"], SHEETS["Epics"]
-    rs, es = SHEETS["RockSnapshots"], SHEETS["EpicSnapshots"]
+    rocks, milestones = SHEETS["Rocks"], SHEETS["Milestones"]
+    rs, es = SHEETS["RockSnapshots"], SHEETS["MilestoneSnapshots"]
     rock_copy = const_strings("ROCK_COPY_COLUMNS")
-    epic_copy = const_strings("EPIC_COPY_COLUMNS")
+    milestone_copy = const_strings("MILESTONE_COPY_COLUMNS")
     src = const_value("ROCK_NAME_SOURCE")
     assert const_value("ACTIVE_COLUMN") in rocks and src in rocks
     for c in rock_copy:
         assert c in rs
         assert (src if c == "Rock" else c) in rocks
-    for c in epic_copy:
-        assert c in es and c in epics
+    for c in milestone_copy:
+        assert c in es and c in milestones
     assert const_value("ID_COLUMN") in rs and const_value("DATE_COLUMN") in es
 
 
 def test_script_column_order_matches_snapshot_tables():
     """Rows are written positionally, so the order must equal the table columns."""
     assert ["SnapshotID", "SnapshotDate"] + const_strings("ROCK_COPY_COLUMNS") == SHEETS["RockSnapshots"]
-    assert ["SnapshotID", "SnapshotDate"] + const_strings("EPIC_COPY_COLUMNS") == SHEETS["EpicSnapshots"]
+    assert ["SnapshotID", "SnapshotDate"] + const_strings("MILESTONE_COPY_COLUMNS") == SHEETS["MilestoneSnapshots"]
     assert snapshot.ROCK_COPY == const_strings("ROCK_COPY_COLUMNS")
-    assert snapshot.EPIC_COPY == const_strings("EPIC_COPY_COLUMNS")
+    assert snapshot.MILESTONE_COPY == const_strings("MILESTONE_COPY_COLUMNS")
 
 
 def test_script_unprotects_and_reprotects():
@@ -73,39 +73,39 @@ def test_typescript_compiles():
 
 ROCKS = [
     {"RockID": "R01", "RockName": "Alpha", "GPM": "G1", "Active": "Yes", "State": "On track",
-     "UpdateDate": 46300, "MainMessage": "ok", "EpicsCommitted": 2, "EpicsSlipped": 0,
-     "EpicsDelivered": 1, "PositionsPlanned": 3, "PositionsFilled": 2, "OpenHighRisks": 0},
+     "UpdateDate": 46300, "MainMessage": "ok", "MilestonesCommitted": 2, "MilestonesSlipped": 0,
+     "MilestonesCompleted": 1, "PositionsBudgeted": 3, "PositionsActual": 2, "OpenHighRisks": 0},
     {"RockID": "R02", "RockName": "Beta", "GPM": "G1", "Active": "No", "State": "Done"},
     {"RockID": "", "Active": ""},
 ]
-EPICS = [
-    {"EpicKey": "R01-E01", "RockID": "R01", "Title": "A", "Status": "On plan"},
-    {"EpicKey": "R01-E02", "RockID": "R01", "Title": "B", "Status": "Delivered"},
-    {"EpicKey": "R02-E01", "RockID": "R02", "Title": "C", "Status": "On plan"},
-    {"EpicKey": "", "RockID": ""},
+MILESTONES = [
+    {"MilestoneKey": "R01-M01", "RockID": "R01", "Title": "A", "Status": "On plan"},
+    {"MilestoneKey": "R01-M02", "RockID": "R01", "Title": "B", "Status": "Completed"},
+    {"MilestoneKey": "R02-M01", "RockID": "R02", "Title": "C", "Status": "On plan"},
+    {"MilestoneKey": "", "RockID": ""},
 ]
 DAY = date(2026, 10, 19)
 
 
-def test_mirror_keeps_only_active_rocks_and_their_epics():
-    r, e = snapshot.snapshot_rows(ROCKS, EPICS, DAY)
+def test_mirror_keeps_only_active_rocks_and_their_milestones():
+    r, e = snapshot.snapshot_rows(ROCKS, MILESTONES, DAY)
     assert [x["SnapshotID"] for x in r] == ["2026-10-19|R01"]
-    assert [x["SnapshotID"] for x in e] == ["2026-10-19|R01-E01", "2026-10-19|R01-E02"]
+    assert [x["SnapshotID"] for x in e] == ["2026-10-19|R01-M01", "2026-10-19|R01-M02"]
     assert r[0]["Rock"] == "Alpha"
     assert list(r[0]) == SHEETS["RockSnapshots"]
-    assert list(e[0]) == SHEETS["EpicSnapshots"]
+    assert list(e[0]) == SHEETS["MilestoneSnapshots"]
 
 
 def test_mirror_is_idempotent():
-    r1, e1 = snapshot.snapshot_rows(ROCKS, EPICS, DAY)
-    r2, e2 = snapshot.snapshot_rows(ROCKS, EPICS, DAY,
+    r1, e1 = snapshot.snapshot_rows(ROCKS, MILESTONES, DAY)
+    r2, e2 = snapshot.snapshot_rows(ROCKS, MILESTONES, DAY,
                                     [x["SnapshotID"] for x in r1], [x["SnapshotID"] for x in e1])
     assert r2 == [] and e2 == []
     # a later week adds rows again
-    r3, _ = snapshot.snapshot_rows(ROCKS, EPICS, date(2026, 10, 26), [x["SnapshotID"] for x in r1])
+    r3, _ = snapshot.snapshot_rows(ROCKS, MILESTONES, date(2026, 10, 26), [x["SnapshotID"] for x in r1])
     assert len(r3) == 1
 
 
 def test_snapshot_ids_unique_within_run():
-    r, e = snapshot.snapshot_rows(ROCKS + ROCKS, EPICS + EPICS, DAY)
+    r, e = snapshot.snapshot_rows(ROCKS + ROCKS, MILESTONES + MILESTONES, DAY)
     assert len(r) == 1 and len(e) == 2
